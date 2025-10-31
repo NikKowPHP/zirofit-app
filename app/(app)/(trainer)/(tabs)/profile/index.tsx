@@ -5,9 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { getTrainerProfile } from '@/lib/api';
 import { YStack, H3, Avatar } from 'tamagui';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { useRouter } from 'expo-router';
 
 export default function ProfileScreen() {
     const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
+    const router = useRouter();
     
     if (isLoading) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
@@ -24,6 +27,10 @@ export default function ProfileScreen() {
                     </Avatar>
                     <H3 mt="$2">{profile.name}</H3>
                     <Text>{profile.email}</Text>
+
+                    <Button mt="$4" onPress={() => router.push('/(trainer)/(tabs)/profile/edit')}>
+                        Edit Profile
+                    </Button>
                 </Card>
             </YStack>
         </SafeAreaView>

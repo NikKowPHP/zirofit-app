@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { sendPushToken } from '@/lib/api';
 import { Subscription } from 'expo-notifications';
+import { router } from 'expo-router';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,7 +22,7 @@ async function registerForPushNotificationsAsync() {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
+      vibrationPattern:,
       lightColor: '#FF231F7C',
     });
   }
@@ -76,6 +77,10 @@ export function usePushNotifications() {
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
       console.log(response);
+      const url = response.notification.request.content.data?.url;
+      if (url) {
+        router.push(url);
+      }
     });
 
     return () => {

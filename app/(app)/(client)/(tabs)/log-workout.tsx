@@ -1,12 +1,16 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator, FlatList } from 'react-native';
-import { YStack, H3 } from 'tamagui';
+import { StyleSheet, ActivityIndicator, FlatList, Pressable } from 'react-native';
+import { YStack, H3, H5 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useWorkoutStore from '@/store/workoutStore';
 import { Button } from '@/components/ui/Button';
 import ActiveExerciseCard from '@/components/workout/ActiveExerciseCard';
 import InlineRestTimer from '@/components/workout/InlineRestTimer';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getWorkoutTemplates } from '@/lib/api';
+import { Modal } from '@/components/ui/Modal';
+import { Card } from '@/components/ui/Card';
 
 export default function LogWorkoutScreen() {
     const { 
@@ -19,11 +23,23 @@ export default function LogWorkoutScreen() {
         checkActiveSession,
         stopResting,
     } = useWorkoutStore();
+    const [templateModalVisible, setTemplateModalVisible] = useState(false);
+
+    const { data: templates, isLoading: templatesLoading } = useQuery({
+      queryKey: ['workoutTemplates'],
+      queryFn: getWorkoutTemplates,
+      enabled: !workoutSession, // Only fetch if no session is active
+    });
 
     useEffect(() => {
         // Check for an active session when the screen loads
         checkActiveSession();
     }, []);
+
+    const handleSelectTemplate = (templateId: string) => {
+        startWorkout(templateId);
+        setTemplateModalVisible(false);
+    }
 
     if (isLoading) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
@@ -55,11 +71,35 @@ export default function LogWorkoutScreen() {
                     </>
                 ) : (
                     <View style={styles.center}>
-                        <Text style={{ marginBottom: 20 }}>Select a template or start a new workout.</Text>
-                        <Button onPress={() => startWorkout('some_template_id')}>Quick Start</Button>
+                        <H5>Start a new session</H5>
+                        <YStack space="$3" width="80%" mt="$4">
+                            <Button onPress={() => startWorkout('blank')}>Start Blank Workout</Button>
+                            <Button onPress={() => setTemplateModalVisible(true)} disabled={templatesLoading}>
+                                {templatesLoading ? 'Loading Templates...' : 'Start from Template'}
+                            </Button>
+                        </YStack>
                     </View>
                 )}
             </YStack>
+
+            <Modal
+                visible={templateModalVisible}
+                onClose={() => setTemplateModalVisible(false)}
+                title="Select a Template"
+            >
+                <FlatList
+                    data={templates}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <Pressable onPress={() => handleSelectTemplate(item.id)}>
+                            <Card padding="$3" marginVertical="$2">
+                                <Text>{item.name}</Text>
+                            </Card>
+                        </Pressable>
+                    )}
+                    ListEmptyComponent={<Text>No templates found.</Text>}
+                />
+            </Modal>
         </SafeAreaView>
     )
 }

@@ -13,15 +13,30 @@ import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
 export default function CalendarScreen() {
     const queryClient = useQueryClient();
-    const { data: events } = useQuery({ queryKey: ['calendarEvents'], queryFn: getCalendarEvents });
+    const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+
+    const { startDate, endDate } = useMemo(() => {
+        const date = new Date(currentMonth + '-02T00:00:00Z'); // Use 2nd day to avoid timezone issues
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        return {
+            startDate: firstDay.toISOString().split('T'),
+            endDate: lastDay.toISOString().split('T')
+        };
+    }, [currentMonth]);
+
+    const { data: events } = useQuery({ 
+        queryKey: ['calendarEvents', startDate, endDate], 
+        queryFn: () => getCalendarEvents(startDate, endDate) 
+    });
     const { data: clients } = useQuery({ queryKey: ['clients'], queryFn: getClients });
     const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
     
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
-    const [sessionTitle, setSessionTitle] = useState('');
+    const [sessionNotes, setSessionNotes] = useState('');
     const [selectedClient, setSelectedClient] = useState('');
-    const [selectedProgram, setSelectedProgram] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState('');
 
     const planSessionMutation = useMutation({
         mutationFn: planSession,
@@ -42,21 +57,21 @@ export default function CalendarScreen() {
 
     const closeModal = () => {
         setModalVisible(false);
-        setSessionTitle('');
+        setSessionNotes('');
         setSelectedClient('');
-        setSelectedProgram('');
+        setSelectedTemplate('');
     }
 
     const handlePlanSession = async () => {
-        if (!sessionTitle || !selectedClient) {
-            Alert.alert("Missing Info", "Please provide a title and select a client.");
+        if (!sessionNotes || !selectedClient) {
+            Alert.alert("Missing Info", "Please provide notes and select a client.");
             return;
         };
         planSessionMutation.mutate({ 
             date: selectedDate, 
-            title: sessionTitle,
-            client_id: selectedClient,
-            program_id: selectedProgram,
+            notes: sessionNotes,
+            clientId: selectedClient,
+            templateId: selectedTemplate,
         });
     }
 
@@ -66,6 +81,7 @@ export default function CalendarScreen() {
                 onDayPress={openModal}
                 markedDates={events}
                 markingType='multi-dot'
+                onMonthChange={(month) => setCurrentMonth(month.dateString.slice(0, 7))}
             />
             <Modal
                 visible={modalVisible}
@@ -74,9 +90,9 @@ export default function CalendarScreen() {
             >
                 <YStack space="$3">
                     <Input 
-                        placeholder="Session Title (e.g., Check-in)"
-                        value={sessionTitle}
-                        onChangeText={setSessionTitle}
+                        placeholder="Session Notes (e.g., Check-in)"
+                        value={sessionNotes}
+                        onChangeText={setSessionNotes}
                     />
                     <Label>Client</Label>
                     <Select value={selectedClient} onValueChange={setSelectedClient}>
@@ -103,8 +119,8 @@ export default function CalendarScreen() {
                         </Select.Content>
                     </Select>
 
-                    <Label>Program (Optional)</Label>
-                    <Select value={selectedProgram} onValueChange={setSelectedProgram}>
+                    <Label>Program/Template (Optional)</Label>
+                    <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
                          <Select.Trigger iconAfter={ChevronDown}>
                             <Select.Value placeholder="Select a program" />
                         </Select.Trigger>

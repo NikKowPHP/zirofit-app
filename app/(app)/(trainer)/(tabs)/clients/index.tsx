@@ -4,15 +4,29 @@ import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { YStack, H3, XStack, Avatar } from 'tamagui';
 import { getClients } from '@/lib/api';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { Text, View } from '@/components/Themed';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { useLayoutEffect } from 'react';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 type Client = { id: string; name: string; avatar_url: string };
 
 export default function ClientsScreen() {
     const router = useRouter();
+    const navigation = useNavigation();
     const { data, isLoading } = useQuery({ queryKey: ['clients'], queryFn: getClients });
+
+    useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                <Pressable onPress={() => router.push('/(trainer)/(tabs)/clients/create')}>
+                    <FontAwesome name="plus" size={20} style={{ marginRight: 15 }} />
+                </Pressable>
+            ),
+        });
+    }, [navigation, router]);
 
     const renderItem = ({ item }: { item: Client }) => (
         <Pressable onPress={() => router.push(`/client/${item.id}`)}>
@@ -31,7 +45,6 @@ export default function ClientsScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
-                <H3>Clients</H3>
                 {isLoading ? (
                     <View style={styles.center}><ActivityIndicator /></View>
                 ) : (

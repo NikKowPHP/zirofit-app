@@ -71,6 +71,7 @@ export const finishWorkoutSession = (sessionId: string) => apiFetch('/workout/se
 });
 
 export const getAvailableExercises = () => apiFetch('/exercises');
+export const getWorkoutTemplates = () => apiFetch('/workout/templates');
 
 
 // == History API ==
@@ -85,15 +86,17 @@ export const getMyTrainer = () => apiFetch('/client/trainer');
 
 // == Trainer API ==
 export const getTrainerDashboard = () => apiFetch('/trainer/dashboard');
-export const getClients = () => apiFetch('/trainer/clients');
-export const getClientDetails = (clientId: string) => apiFetch(`/trainer/clients/${clientId}`);
-export const getTrainerProfile = () => apiFetch('/trainer/profile');
+export const getClients = () => apiFetch('/clients');
+export const getClientDetails = (clientId: string) => apiFetch(`/clients/${clientId}`);
+export const createClient = (email: string) => apiFetch('/clients', { method: 'POST', body: JSON.stringify({ email }) });
+export const getTrainerProfile = () => apiFetch('/profile/me');
 export const getPrograms = () => apiFetch('/trainer/programs');
-export const getCalendarEvents = () => apiFetch('/trainer/calendar');
-export const planSession = (payload: { date: string, title: string, client_id: string, program_id?: string }) => apiFetch('/trainer/calendar/plan', {
+export const getCalendarEvents = (startDate: string, endDate: string) => apiFetch(`/trainer/calendar?startDate=${startDate}&endDate=${endDate}`);
+export const planSession = (payload: { date: string, notes: string, clientId: string, templateId?: string }) => apiFetch('/trainer/calendar', {
     method: 'POST',
     body: JSON.stringify(payload)
 });
+export const getActiveClientWorkoutSession = (clientId: string) => apiFetch(`/clients/${clientId}/session/active`);
 
 // == Payments API ==
 export const createCheckoutSession = (packageId: string) => {
