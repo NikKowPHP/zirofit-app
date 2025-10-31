@@ -5,20 +5,12 @@ import { YStack, H3 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
-
-// Mock API call
-const fetchDashboardData = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return {
-        upcomingSessions: [{ id: '1', time: 'Tomorrow at 10:00 AM', trainer: 'Jane Doe' }],
-        hasTrainer: true,
-    };
-};
+import { getClientDashboard } from '@/lib/api';
 
 export default function DashboardScreen() {
     const { data, isLoading, error } = useQuery({
         queryKey: ['dashboard'],
-        queryFn: fetchDashboardData
+        queryFn: getClientDashboard
     });
 
     if (isLoading) {
@@ -33,7 +25,7 @@ export default function DashboardScreen() {
         <SafeAreaView style={styles.container}>
             <YStack space="$4" padding="$4">
                 <H3>Dashboard</H3>
-                {data?.upcomingSessions && <UpcomingSessions sessions={data.upcomingSessions} />}
+                {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />}
                 {!data?.hasTrainer && <FindTrainerPrompt />}
             </YStack>
         </SafeAreaView>

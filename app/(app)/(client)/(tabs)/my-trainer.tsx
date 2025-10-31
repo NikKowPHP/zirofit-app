@@ -20,9 +20,9 @@ export default function MyTrainerScreen() {
             } else {
                 Alert.alert('Error', 'Could not initiate checkout session.');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            Alert.alert('Error', 'An unexpected error occurred.');
+            Alert.alert('Error', error.message || 'An unexpected error occurred.');
         } finally {
             setLoading(false);
         }

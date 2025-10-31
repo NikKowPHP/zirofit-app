@@ -2,18 +2,26 @@ import { View, Text } from '@/components/Themed';
 import React, { useEffect, useState } from 'react';
 import { YStack, H6 } from 'tamagui';
 
-export default function InlineRestTimer({ duration }: { duration: number }) {
+type InlineRestTimerProps = {
+    duration: number;
+    onFinish: () => void;
+}
+
+export default function InlineRestTimer({ duration, onFinish }: InlineRestTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+        onFinish();
+        return;
+    };
 
     const intervalId = setInterval(() => {
-      setTimeLeft(timeLeft - 1);
+      setTimeLeft(prev => prev - 1);
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [timeLeft]);
+  }, [timeLeft, onFinish]);
 
   return (
     <View style={{ padding: 10, borderRadius: 8, backgroundColor: '#e0e0e0' }}>

@@ -1,19 +1,32 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ActivityIndicator, FlatList } from 'react-native';
 import { YStack, H3 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useWorkoutStore from '@/store/workoutStore';
 import { Button } from '@/components/ui/Button';
 import ActiveExerciseCard from '@/components/workout/ActiveExerciseCard';
 import InlineRestTimer from '@/components/workout/InlineRestTimer';
+import { useEffect } from 'react';
 
 export default function LogWorkoutScreen() {
-    const { workoutSession, startWorkout, finishWorkout, isResting } = useWorkoutStore();
+    const { 
+        workoutSession, 
+        startWorkout, 
+        finishWorkout, 
+        isResting, 
+        restTimerValue,
+        isLoading,
+        checkActiveSession,
+        stopResting,
+    } = useWorkoutStore();
 
-    const handleStartWorkout = () => {
-        // In a real app, you'd select a template or session
-        const mockSession = { id: 'session123', name: 'Push Day', exercises: [{ id: 'ex1', name: 'Bench Press'}] };
-        startWorkout(mockSession);
+    useEffect(() => {
+        // Check for an active session when the screen loads
+        checkActiveSession();
+    }, []);
+
+    if (isLoading) {
+        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
     }
     
     return (
@@ -21,19 +34,29 @@ export default function LogWorkoutScreen() {
             <YStack space="$4" padding="$4" flex={1}>
                 <H3>{workoutSession ? workoutSession.name : 'Log Workout'}</H3>
 
-                {isResting && <InlineRestTimer duration={60} />}
+                {isResting && <InlineRestTimer duration={restTimerValue} onFinish={stopResting} />}
 
                 {workoutSession ? (
                     <>
-                        <ActiveExerciseCard exercise={workoutSession.exercises[0]} />
-                        {/* Add a list of exercises here */}
+                        <FlatList
+                            data={workoutSession.exercises}
+                            renderItem={({ item }) => (
+                                <ActiveExerciseCard 
+                                    exercise={item} 
+                                    loggedSets={workoutSession.logs?.filter(log => log.exercise_id === item.id) || []}
+                                />
+                            )}
+                            keyExtractor={item => item.id}
+                            showsVerticalScrollIndicator={false}
+                            ItemSeparatorComponent={() => <View style={{height: 10}} />}
+                        />
                         <View style={{flex: 1}} />
                         <Button theme="red" onPress={finishWorkout}>Finish Workout</Button>
                     </>
                 ) : (
                     <View style={styles.center}>
                         <Text style={{ marginBottom: 20 }}>Select a template or start a new workout.</Text>
-                        <Button onPress={handleStartWorkout}>Quick Start</Button>
+                        <Button onPress={() => startWorkout('some_template_id')}>Quick Start</Button>
                     </View>
                 )}
             </YStack>

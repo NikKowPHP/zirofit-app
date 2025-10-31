@@ -1,13 +1,31 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useQuery } from '@tanstack/react-query';
+import { getTrainerProfile } from '@/lib/api';
+import { YStack, H3, Avatar } from 'tamagui';
+import { Card } from '@/components/ui/Card';
 
 export default function ProfileScreen() {
+    const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
+    
+    if (isLoading) {
+        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
+    }
+
     return (
         <SafeAreaView style={styles.container}>
-            <View style={styles.center}>
-                <Text>Trainer Profile Screen</Text>
-            </View>
+            <YStack space="$4" padding="$4" alignItems='center'>
+                <H3>My Profile</H3>
+                <Card padding="$4" alignItems='center' width="100%">
+                    <Avatar circular size="$10">
+                        <Avatar.Image src={profile.avatar_url} />
+                        <Avatar.Fallback bc="blue" />
+                    </Avatar>
+                    <H3 mt="$2">{profile.name}</H3>
+                    <Text>{profile.email}</Text>
+                </Card>
+            </YStack>
         </SafeAreaView>
     );
 }

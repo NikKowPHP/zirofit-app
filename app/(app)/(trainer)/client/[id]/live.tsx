@@ -21,7 +21,7 @@ export default function LiveWorkoutScreen() {
                 { event: 'INSERT', schema: 'public', table: 'ClientExerciseLog' /*, filter: `client_id=eq.${clientId}`*/ },
                 (payload) => {
                     console.log('New log received!', payload.new);
-                    setLogs(currentLogs => [...currentLogs, payload.new]);
+                    setLogs(currentLogs => [payload.new, ...currentLogs]);
                 }
             )
             .subscribe();
@@ -45,6 +45,7 @@ export default function LiveWorkoutScreen() {
                         </View>
                     )}
                     ListEmptyComponent={<Text>Waiting for client to log a set...</Text>}
+                    inverted
                 />
             </YStack>
         </SafeAreaView>

@@ -7,7 +7,7 @@ import { View } from '@/components/Themed';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { RoleSelector } from '@/components/ui/RoleSelector';
-import { register } from '@/lib/api';
+import { supabase } from '@/lib/supabase';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -19,10 +19,20 @@ export default function RegisterScreen() {
   const handleRegister = async () => {
     setLoading(true);
     try {
-      // In a real app, your API would handle creating the Supabase user
-      // and inserting the profile with the selected role.
-      // We are simulating this call.
-      await register({ email, password, role });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            role,
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+      
       Alert.alert(
         'Registration Successful',
         'Please check your email to confirm your account, then log in.',

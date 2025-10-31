@@ -1,92 +1,117 @@
-#### **Phase 0: Project Setup & Foundation**
+# Task List
 
--   [x] Install all core dependencies: `npm install zustand react-navigation @react-navigation/native @react-navigation/bottom-tabs @react-navigation/native-stack tamagui @tamagui/config react-native-screens react-native-safe-area-context @tanstack/react-query @supabase/supabase-js @shopify/flash-list`
--   [x] Configure Tamagui by creating a `tamagui.config.ts` file and updating `babel.config.js` as per the official Tamagui documentation.
--   [x] Set up TypeScript path aliases in `tsconfig.json` to mirror your web app's structure (e.g., `@/components`, `@/stores`, `@/lib`).
--   [x] Create the project directory structure as outlined in the strategy document (`/app`, `/components`, `/hooks`, `/lib`, `/store`).
--   [x] Create the Supabase client configuration file at `/lib/supabase.ts`, initializing the client using environment variables.
+#### Phase 1: Foundation - API Layer, Authentication, and State Management
 
-#### **Phase 1: Core Infrastructure & Shared Components**
+This phase is critical. It replaces all mock data and establishes a secure connection to your production backend, setting the stage for all subsequent features.
 
--   [x] **API Client:** Create a file at `/lib/api.ts` to house all `fetch` functions that will call your new Next.js REST API. It should include an interceptor to automatically add the Supabase JWT to the `Authorization` header.
--   [x] **Auth Store:** Create a Zustand store at `/store/authStore.ts` to manage the user session, profile, and authentication state (loading, authenticated, unauthenticated).
--   [x] **Root Navigator:** In `app/_layout.tsx`, implement a root `StackNavigator` that conditionally renders either the `(auth)` stack or the main app layout based on the authentication state from `authStore`.
--   [x] **Platform-Adaptive UI Components:**
-    -   [x] Create `/components/ui/Button.tsx`. The component should check `Platform.OS` and render a button with a subtle press animation for iOS and a Material Design ripple effect for Android.
-    -   [x] Create `/components/ui/Card.tsx`. For iOS, it should have subtle shadows and rounded corners. For Android, it should use elevation.
-    -   [x] Create `/components/ui/Input.tsx`. For iOS, it should have a clean, minimal appearance. For Android, it should use the Material Design "filled" or "outlined" style.
-    -   [x] Create `/components/ui/Modal.tsx`. For iOS, it should present as a sheet modal. For Android, a standard dialog.
--   [x] **Auth Guard Hook:** Create a hook at `/hooks/useAuthGuard.ts` that checks for a valid session and user role, protecting routes and redirecting if necessary.
+-   [x] **1.1. Establish Authenticated API Layer**
+    -   [x] **ASSUMPTION:** Your Next.js web application will expose API endpoints (e.g., in `pages/api` or as Route Handlers in `app/api`) for the mobile app to consume.
+    -   [x] Open `lib/api.ts` and remove all mock functions and data.
+    -   [x] Create a new `apiFetch` helper function within `lib/api.ts`. This function will:
+        -   [x] Accept an endpoint and `RequestInit` options.
+        -   [x] Use the `supabase` client from `lib/supabase.ts` to get the current session's JWT (`supabase.auth.getSession()`).
+        -   [x] Automatically attach the JWT to the `Authorization: 'Bearer [token]'` header for all requests.
+        -   [x] Prepend the production API URL (from `process/env.EXPO_PUBLIC_API_URL`) to the endpoint.
+        -   [x] Handle JSON parsing, and throw a standardized error on non-ok HTTP responses.
 
-#### **Phase 2: Authentication Flow**
+-   [x] **1.2. Implement Real Authentication**
+    -   [x] Open `app/(auth)/register.tsx`.
+    -   [x] In the `handleRegister` function, replace the mock `register()` call with a direct call to `supabase.auth.signUp()`. Include the `role` in the `options.data` object.
+    -   [x] Open `app/(auth)/login.tsx`.
+    -   [x] In the `handleLogin` function, replace the mock `getMe()` call. Instead, after a successful `supabase.auth.signInWithPassword()`, call a new (real) `getMe()` function in `lib/api.ts` that makes an authenticated request to a `/api/auth/me` endpoint on your backend.
+    -   [x] In the success callback for `handleLogin`, ensure the profile returned from your new `getMe` API call (which should include the user's `role`) is stored in the Zustand `authStore` by calling `setProfile(profile)`.
 
--   [x] **Login Screen:**
-    -   [x] Create the file `app/(auth)/login.tsx`.
-    -   [x] Build the UI using the shared `<Input>` and `<Button>` components.
-    -   [x] On submit, call the Supabase `signInWithPassword` function.
-    -   [x] On success, fetch the user's role from `/api/auth/me`, update the `authStore`, and let the root navigator automatically redirect to the correct app layout (client or trainer).
-    -   [x] Display errors using an alert or toast.
--   [x] **Registration Screen:**
-    -   [x] Create the file `app/(auth)/register.tsx`.
-    -   [x] Build the UI, including a Segmented Control (iOS) / Radio Buttons (Android) for selecting "Trainer" or "Client" role.
-    -   [x] On submit, call your `POST /api/auth/register` endpoint.
-    -   [x] On success, show a confirmation message and navigate the user to the login screen.
-#### **Phase 3: Client App MVP**
+-   [x] **1.3. Refactor and Expand State Management (Zustand)**
+    -   [x] Open `store/authStore.ts`. Ensure the `profile` state is typed to match the expected user profile structure from your backend.
+    -   [x] Open `store/workoutStore.ts`. Refactor it to remove mock data and align its structure with the web app's `workoutStore.ts`. It should include states for `workoutSession`, `isLoading`, `error`, `sessionDuration`, `isResting`, etc., but with `null` or empty initial values.
+    -   [x] Create new store files for managing distinct data domains, mirroring the web app's architecture:
+        -   [x] `store/clientStore.ts` for managing a trainer's list of clients and the currently active client's detailed data.
+        -   [x] `store/programStore.ts` for managing a trainer's workout programs and templates.
+    -   [x] Create a root store or initializer hook that determines the user's role from `authStore` and calls the respective `init()` functions on the other stores (e.g., if role is 'trainer', initialize `clientStore` and `programStore`).
 
--   [x] **Client Layout:** Create `app/(client)/_layout.tsx`. Implement a `BottomTabNavigator` with tabs for Dashboard, Log Workout, History, My Progress, and My Trainer. Apply platform-specific styling (frosted glass/blur for iOS, Material 3 style for Android).
--   [x] **Dashboard Tab:**
-    -   [x] Create `app/(client)/(tabs)/dashboard.tsx`.
-    -   [x] Use TanStack Query to fetch data from `/api/client/dashboard`.
-    -   [x] Create and display the `<UpcomingSessions />` and `<FindTrainerPrompt />` components.
--   [x] **Log Workout Tab (Core Feature):**
-    -   [x] Create `app/(client)/(tabs)/log-workout.tsx`.
-    -   [x] **Zustand Store:** Create `store/workoutStore.ts` by adapting the web app's store. It will manage the active `workoutSession`, timers, and real-time updates.
-    -   [x] **Pre-Workout UI:** If `workoutSession` is null, display template cards and a "Quick Start" button.
-    -   [x] **Live Workout UI:** If `workoutSession` is active, display the live workout interface.
-    -   [x] **`<ActiveExerciseCard />` Component:** Build the card for logging a single set, including inputs for reps/weight and a "Save & Rest" button. This component will call the `logSetOptimistic` action in the `workoutStore`.
-    -   [x] **`<InlineRestTimer />` Component:** Build the animated rest timer that appears after saving a set.
-    -   [x] **Real-time Sync:** In the store, use the Supabase client to subscribe to `WorkoutSession` and `ClientExerciseLog` table changes to receive real-time updates from a trainer.
--   [x] **History Tab:**
-    -   [x] Create `app/(client)/(tabs)/history.tsx`.
-    -   [x] Use TanStack Query and `<FlashList />` to display a list of completed sessions from `GET /api/sessions/history`.
-    -   [x] Create the session detail screen `app/(client)/session/[id].tsx` to show exercises and comments.
--   [x] **My Progress & My Trainer Tabs:**
-    -   [x] Create `app/(client)/(tabs)/my-progress.tsx` and `my-trainer.tsx`.
-    -   [x] Build the UI to display charts and trainer information, fetching data as needed.
-#### **Phase 4: Trainer App MVP**
+#### Phase 2: Core Client MVP
 
--   [x] **Trainer Layout:** Create `app/(trainer)/_layout.tsx`. Implement a `BottomTabNavigator` for Dashboard, Clients, Calendar, Programs, and Profile.
--   [x] **Dashboard Tab:**
-    -   [x] Create `app/(trainer)/(tabs)/dashboard.tsx`.
-    -   [x] Fetch and display onboarding or established trainer data from `/api/dashboard/*`.
--   [x] **Clients Tab (Core Feature):**
-    -   [x] Create `app/(trainer)/(tabs)/clients.tsx`.
-    -   [x] Use TanStack Query and `<FlashList />` to display the client list from `GET /api/clients`.
-    -   [x] Implement a nested `StackNavigator` for the client detail flow.
-    -   [x] Create the client detail screen at `app/(trainer)/client/[id]/index.tsx`. Use a top tab navigator for Measurements, Photos, Workouts, etc.
-    -   [x] **Live Workout Screen:** Create `app/(trainer)/client/[id]/live.tsx`. This screen mirrors the client's live workout UI but is non-interactive. It will subscribe to Supabase Realtime to see the client's logs appear instantly.
--   [x] **Calendar Tab:**
-    -   [x] Create `app/(trainer)/(tabs)/calendar.tsx`.
-    -   [x] Use a library like `react-native-calendars` to build the UI.
-    -   [x] Fetch events from `GET /api/calendar/events` and display them.
-    -   [x] Implement modal for creating new sessions which calls `POST /api/sessions/plan`.
-#### **Phase 5: Payments & Advanced Features**
+This phase focuses on delivering the primary value for client users: logging workouts and viewing their history.
 
--   [x] **Package Purchase Flow:**
-    -   [x] On the public trainer profile screen, add a "Buy Package" button.
-    -   [x] On press, call the `POST /api/checkout/session` endpoint.
-    -   [x] On receiving the Stripe Checkout URL, open it using Expo's `WebBrowser` module for a secure, in-app browser experience.
--   [x] **Push Notifications:**
-    -   [x] Integrate **Expo Push Notifications**.
-    -   [x] Create a backend endpoint (`POST /api/profile/me/push-token`) for the app to send its push token after login.
-    -   [x] Modify backend services (e.g., `notificationService`) to send push notifications via Expo's service for events like session reminders and new comments.
-#### **Phase 6: Polish, Optimization & Deployment**
+-   [x] **2.1. Implement Workout Logging**
+    -   [x] In `lib/api.ts`, create real API functions: `getActiveWorkoutSession`, `startWorkoutSession`, `logSet`, `finishWorkoutSession`, and `getAvailableExercises`. These will call the corresponding backend endpoints.
+    -   [x] In `store/workoutStore.ts`, implement the actions (`startWorkout`, `finishWorkout`, etc.) to call the new API functions and update the state accordingly.
+    -   [x] Open `app/(app)/(client)/(tabs)/log-workout.tsx`.
+        -   [x] Replace the mock `handleStartWorkout` with a call to `workoutStore.getState().startWorkout()`.
+        -   [x] The main view should render based on whether `workoutStore.workoutSession` is null.
+        -   [x] If a session is active, render a list of exercises from the session. The `ActiveExerciseCard` should be used for each exercise.
+    -   [x] Open `components/workout/ActiveExerciseCard.tsx`.
+        -   [x] Wire up the "Save & Rest" button to call `workoutStore.getState().logSet()` with the form data.
+        -   [x] Ensure it correctly displays reps and weight for previously logged sets within the same session.
+    -   [x] Open `components/workout/InlineRestTimer.tsx`. Connect its state (e.g., `timeLeft`) to the `restTimerValue` and `isResting` state in `workoutStore`.
 
--   [x] **Haptics:** Integrate `expo-haptics` to provide subtle feedback on button presses and successful actions on iOS.
--   [x] **Offline Support:** For a premium experience, use a library like `zustand-persist` with `AsyncStorage` or WatermelonDB to cache essential data for offline viewing (e.g., workout history, planned sessions).
--   [x] **Testing:** Write unit and integration tests for components and stores using Jest and React Native Testing Library.
--   [x] **Build & Deploy:**
-    -   [x] Configure `app.json` for both iOS and Android (bundle identifiers, icons, splash screens).
-    -   [x] Use **Expo Application Services (EAS)** to build the `.ipa` (iOS) and `.aab` (Android) files.
-    -   [x] Submit the builds to Apple App Store Connect and Google Play Console.
+-   [x] **2.2. Implement Workout History**
+    -   [x] In `lib/api.ts`, create a `getWorkoutHistory()` function that fetches completed sessions.
+    -   [x] In `app/(app)/(client)/(tabs)/history.tsx`, replace the mock `fetchHistory` with a `useQuery` hook that calls the new `getWorkoutHistory()` API function.
+    -   [x] In `app/(app)/(client)/session/[id].tsx`, use `useLocalSearchParams` to get the session ID, create a `getSessionDetails(id)` function in `lib/api.ts`, and use `useQuery` to fetch and display the detailed session data.
+
+#### Phase 3: Core Trainer MVP
+
+This phase builds the essential tools for trainers to manage their clients.
+
+-   [x] **3.1. Implement Client List & Read-Only Details**
+    -   [x] In `lib/api.ts`, implement the real `getClients()` and a new `getClientDetails(clientId)` function.
+    -   [x] In `app/(app)/(trainer)/(tabs)/clients/index.tsx`, replace the mock `getClients` in the `useQuery` hook with the real API call.
+    -   [x] In `app/(app)/(trainer)/client/[id]/index.tsx`, use `useLocalSearchParams` to get the `id` and fetch the client's workout history using `getClientDetails`.
+    -   [x] Implement the UI for the `measurements.tsx` and `photos.tsx` tabs to display data fetched from `getClientDetails`.
+
+-   [x] **3.2. Implement Live Workout Sync View**
+    -   [x] Open `app/(app)/(trainer)/client/[id]/live.tsx`.
+    -   [x] The `useEffect` hook that subscribes to the Supabase channel is correct. Ensure the channel name `client-log-stream-${clientId}` is the same one the client-side app will publish to.
+    -   [x] Implement the UI: Use a `FlatList` to render the `logs` state.
+    -   [x] When a new log is received from the Supabase channel, update the component's state to add the new log to the list, causing it to render at the top.
+
+#### Phase 4: Feature Parity & Mobile Enhancements
+
+This phase implements the remaining features from the web app, adapting them for a mobile experience.
+
+-   [x] **4.1. Build Trainer Profile & Program Screens**
+    -   [x] In `app/(app)/(trainer)/(tabs)/profile/index.tsx`, build a "Profile Settings" screen allowing trainers to view their current information. (Editing can be a separate step).
+    -   [x] In `app/(app)/(trainer)/(tabs)/programs/index.tsx`, implement a view to list the trainer's existing workout programs and templates, fetched via a new API call.
+
+-   [x] **4.2. Implement Calendar**
+    -   [x] Open `app/(app)/(trainer)/(tabs)/calendar/index.tsx`.
+    -   [x] Replace the mock `getCalendarEvents` in the `useQuery` hook with the real API call.
+    -   [x] Enhance the `planSession` modal and API call to include all necessary fields (client select, template select, notes), mirroring the web app's functionality.
+
+-   [x] **4.3. Integrate Push Notifications**
+    -   [x] In `lib/api.ts`, implement the real `sendPushToken` function. This will call a backend endpoint that saves the Expo push token to the user's profile in the database.
+    -   [x] The `usePushNotifications` hook correctly calls this. Ensure this hook is used at the top level of the authenticated app (e.g., in `app/(app)/_layout.tsx`).
+    -   [x] On the backend, trigger push notifications for key events (e.g., when a client books a session, when a comment is made).
+
+-   [x] **4.4. Testing and Validation**
+    -   [x] **Unit/Integration Tests (Jest):**
+        -   [x] In `store/authStore.test.ts`, write tests to ensure the `authenticationState` transitions correctly based on real session data.
+        -   [x] Create `store/workoutStore.test.ts` to test the state transitions for starting, logging, and finishing a workout.
+        -   [x] Add tests for any new utility functions or complex component logic.
+    -   [x] **End-to-End Testing (Manual or Automated):**
+        -   [x] Manually test the complete user registration and login flow for both a client and a trainer.
+        -   [x] Perform a full client-side workout logging session and verify the data appears correctly in the history.
+        -   [x] As a trainer, open the live workout view for a client, and on a separate device, log a set as that client. Verify the trainer's screen updates in real-time.
+
+#### Phase 5: Clean-up & Polish
+
+This phase addresses remaining mock data and placeholder screens to complete the application.
+
+-   [x] **5.1. Implement Real Dashboard Data**
+    -   [x] In `lib/api.ts`, create real functions for `getClientDashboard` and `getTrainerDashboard`.
+    -   [x] Update `app/(app)/(client)/(tabs)/dashboard.tsx` to use `getClientDashboard`.
+    -   [x] Update `app/(app)/(trainer)/(tabs)/dashboard/index.tsx` to use `getTrainerDashboard`.
+
+-   [x] **5.2. Implement Progress Visualization**
+    -   [x] Create an API endpoint and a corresponding `lib/api.ts` function to fetch progress data (e.g., weight changes over time, personal records).
+    -   [x] In `app/(app)/(client)/(tabs)/my-progress.tsx`, implement a charting library (e.g., `react-native-svg-charts`) to display the fetched data.
+
+-   [x] **5.3. Implement Real Payments**
+    -   [x] In `lib/api.ts`, implement a real `createCheckoutSession` function that calls the backend to generate a Stripe session.
+    -   [x] Update the button in `app/(app)/(client)/(tabs)/my-trainer.tsx` to use this function.
+
+-   [x] **5.4. UI/UX Refinements**
+    -   [x] Replace the basic `Pressable` lists in the Calendar modal with a more robust dropdown/selector component.
+    -   [x] Implement a global toast/notification system for non-critical errors or success messages.
       

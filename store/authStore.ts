@@ -3,13 +3,20 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session, User } from '@supabase/supabase-js';
 
+export type UserProfile = {
+  // This should match your backend's profile structure
+  id: string;
+  role: 'client' | 'trainer';
+  [key: string]: any; // Allow other properties
+};
+
 type AuthState = {
   session: Session | null;
   user: User | null;
-  profile: any | null; // Replace 'any' with a proper profile type
+  profile: UserProfile | null;
   authenticationState: 'loading' | 'authenticated' | 'unauthenticated';
   setSession: (session: Session | null) => void;
-  setProfile: (profile: any) => void;
+  setProfile: (profile: UserProfile | null) => void;
 };
 
 const useAuthStore = create<AuthState>()(

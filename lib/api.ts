@@ -1,8 +1,8 @@
 import { supabase } from './supabase';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api'; // Mock URL for now
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     const token = session?.access_token;
@@ -44,64 +44,59 @@ const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   }
 };
 
-// == Client API ==
-export const getMe = async () => {
-    console.log('Fetching user profile from /api/auth/me');
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-    return { role: 'client' }; // Mock response, change to 'trainer' to test trainer flow
-};
+// == Auth API ==
+export const getMe = () => apiFetch('/auth/me');
 
-export const register = async (payload: Record<string, any>) => {
-    return apiFetch('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-    });
-};
+
+// == Workout API ==
+export const getActiveWorkoutSession = () => apiFetch('/workout/session/active');
+
+export const startWorkoutSession = (templateId: string) => apiFetch('/workout/session/start', {
+    method: 'POST',
+    body: JSON.stringify({ templateId }),
+});
+
+export const logSet = (payload: { reps: number; weight: number; exercise_id: string; workout_session_id: string }) => apiFetch('/workout/log', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+});
+
+export const finishWorkoutSession = (sessionId: string) => apiFetch('/workout/session/finish', {
+    method: 'POST',
+    body: JSON.stringify({ sessionId }),
+});
+
+export const getAvailableExercises = () => apiFetch('/exercises');
+
+
+// == History API ==
+export const getWorkoutHistory = () => apiFetch('/workout/history');
+export const getSessionDetails = (sessionId: string) => apiFetch(`/workout/history/${sessionId}`);
+
+// == Client API ==
+export const getClientDashboard = () => apiFetch('/client/dashboard');
+export const getProgressData = () => apiFetch('/client/progress');
+
 
 // == Trainer API ==
-export const getTrainerDashboard = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { upcomingAppointments: 5, activeClients: 10 };
-}
-
-export const getClients = async () => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return Array.from({ length: 15 }, (_, i) => ({
-        id: `client_${i}`,
-        name: `Client #${i + 1}`,
-        avatar_url: `https://i.pravatar.cc/150?u=client${i}`
-    }))
-}
-
-export const getCalendarEvents = async () => {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const today = new Date();
-    const dateString = today.toISOString().split('T')[0];
-    return {
-        [dateString]: [{ name: 'Session with Client #1' }, { name: 'Check-in with Client #3' }]
-    }
-}
-
-export const planSession = async (payload: { date: string, title: string }) => {
-    console.log("Planning session:", payload);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true, ...payload };
-};
+export const getTrainerDashboard = () => apiFetch('/trainer/dashboard');
+export const getClients = () => apiFetch('/trainer/clients');
+export const getClientDetails = (clientId: string) => apiFetch(`/trainer/clients/${clientId}`);
+export const getTrainerProfile = () => apiFetch('/trainer/profile');
+export const getPrograms = () => apiFetch('/trainer/programs');
+export const getCalendarEvents = () => apiFetch('/trainer/calendar');
+export const planSession = (payload: { date: string, title: string, client_id: string, program_id?: string }) => apiFetch('/trainer/calendar/plan', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+});
 
 // == Payments API ==
-export const createCheckoutSession = async (packageId: string) => {
-    console.log(`Requesting checkout session for package: ${packageId}`);
-    // This would typically return a real Stripe URL
-    // return apiFetch('/checkout/session', { method: 'POST', body: JSON.stringify({ packageId }) });
-    await new Promise(resolve => setTimeout(resolve, 700));
-    return { url: 'https://stripe.com/docs/testing' }; // Mock Stripe URL
+export const createCheckoutSession = (packageId: string) => {
+    return apiFetch('/checkout/session', { method: 'POST', body: JSON.stringify({ packageId }) });
 };
 
 // == Notifications API ==
 export const sendPushToken = async (token: string) => {
-    console.log(`Sending push token to backend: ${token}`);
-    // return apiFetch('/profile/me/push-token', { method: 'POST', body: JSON.stringify({ token }) });
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { success: true };
+    return apiFetch('/profile/me/push-token', { method: 'POST', body: JSON.stringify({ token }) });
 };
       
