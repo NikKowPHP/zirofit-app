@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { Button as TamaguiButton, ButtonProps, styled } from 'tamagui';
+import { triggerHaptic } from '@/lib/haptics';
 
 const StyledButton = styled(TamaguiButton, {
   // Base styles for the button
@@ -9,12 +10,18 @@ const StyledButton = styled(TamaguiButton, {
     },
     android: {
       // Tamagui handles ripple effect on Android by default
-      // You can customize it if needed, but it's usually automatic
     },
   }),
 });
 
 export function Button(props: ButtonProps) {
-  return <StyledButton {...props} />;
+  const handlePress = (e: any) => {
+    triggerHaptic();
+    if (props.onPress) {
+      props.onPress(e);
+    }
+  };
+
+  return <StyledButton {...props} onPress={handlePress} />;
 }
       
