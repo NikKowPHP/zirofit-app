@@ -24,7 +24,7 @@ Here is the step-by-step implementation plan in a format ready for a code agent.
 
 #### **Phase 0: Project Setup & Foundation**
 
--   [ ] Initialize a new Expo project with the "Tabs" template: `npx create-expo-app -t tabs`
+-  
 -   [ ] Install all core dependencies: `npm install zustand react-navigation @react-navigation/native @react-navigation/bottom-tabs @react-navigation/native-stack tamagui @tamagui/config react-native-screens react-native-safe-area-context @tanstack/react-query @supabase/supabase-js @shopify/flash-list`
 -   [ ] Configure Tamagui by creating a `tamagui.config.ts` file and updating `babel.config.js` as per the official Tamagui documentation.
 -   [ ] Set up TypeScript path aliases in `tsconfig.json` to mirror your web app's structure (e.g., `@/components`, `@/stores`, `@/lib`).
