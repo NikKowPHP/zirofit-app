@@ -1,99 +1,115 @@
-### Implementation Plan: ZIRO.FIT React Native MVP Completion
 
-The application has made significant progress, moving from a static prototype to a data-driven foundation with centralized state management and a real API layer. This plan focuses on connecting the UI to this new foundation and implementing the core business logic.
+### **Phase 1: Backend API Implementation (Next.js)**
 
-#### Phase 1: Finalize Backend Integration & State Management
+**Goal:** Build all the API endpoints defined in the documentation to serve the mobile app.
 
-This phase completes the foundational data flow, ensuring all stores fetch, receive, and manage real data from your backend.
+*   **Task 1.1: Create Trainer Dashboard Endpoint**
+    *   **File:** Create `src/app/api/trainer/dashboard/route.ts`.
+    *   **Action:** Implement a `GET` handler.
+    *   **Logic:** Authenticate the user for the `trainer` role. Call the service functions from `dashboardService.ts` (`getBusinessPerformanceData`, `getClientEngagementData`, etc.) and aggregate the results into the documented JSON structure.
 
--   [x] **1.1. Implement API Endpoints**
-    -   [x] **ASSUMPTION:** You have a Next.js backend. Create API Route Handlers (e.g., in `src/app/api/.../route.ts`) for every function defined in the mobile app's `lib/api.ts`.
-    -   [x] Ensure every API route is protected and uses `getAuthContext` (from the web app's `lib/api/auth.ts`) to authorize requests using the JWT sent from the mobile app.
+*   **Task 1.2: Create Client Dashboard Endpoint**
+    *   **File:** Create `src/app/api/client/dashboard/route.ts`.
+    *   **Action:** Implement a `GET` handler.
+    *   **Logic:** Authenticate the user for the `client` role. Call the `fetchClientDashboardData` function from `client-dashboard/actions.ts` and return its payload.
 
--   [x] **1.2. Make Data Stores Live**
-    -   [x] Open `store/clientStore.ts`. In `fetchClients`, replace `console.log` with a real `apiFetch('/trainer/clients')` call and set the state with the response.
-    -   [x] In `store/clientStore.ts`, implement `fetchClientDetails` to call `apiFetch(`/trainer/clients/${clientId}\`)`.
-    -   [x] Open `store/programStore.ts`. In `fetchPrograms`, replace `console.log` with a real `apiFetch('/trainer/programs')` call.
-    -   [x] Open `store/workoutStore.ts`. Ensure all actions (`checkActiveSession`, `startWorkout`, `logSet`, `finishWorkout`) are correctly calling their corresponding functions in `lib/api.ts`.
+*   **Task 1.3: Create Centralized Workout Logging Endpoint**
+    *   **File:** Create `src/app/api/workout/log/route.ts`.
+    *   **Action:** Implement a `POST` handler.
+    *   **Logic:** Authenticate for `client` or `trainer`. Adapt the simple payload (`reps`, `weight`, `exerciseId`, `workoutSessionId`) to the detailed payload expected by the `upsertExerciseLog` function in `src/lib/api/workout-sessions.ts` and call it. Return the result.
 
--   [x] **1.3. Refine Global State Initialization**
-    -   [x] Open `app/(app)/_layout.tsx`. Confirm that `useInitializeStores()` is called within the main authenticated layout to trigger the data-fetching cascade on app launch.
-    -   [x] In `app/(app)/index.tsx`, ensure the `getMe()` API call correctly populates `authStore.profile`, which is the trigger for `useInitializeStores`.
+*   **Task 1.4: Create Active Session Endpoint Alias**
+    *   **File:** Create `src/app/api/workout/session/active/route.ts`.
+    *   **Action:** Implement a `GET` handler.
+    *   **Logic:** This route will simply call and return the response from the existing `GET` handler in `app/api/workout-sessions/live/route.ts`.
 
-#### Phase 2: Implement Core Trainer Features (MVP)
+*   **Task 1.5: Create Trainer Programs Endpoint**
+    *   **File:** Create `src/app/api/trainer/programs/route.ts`.
+    *   **Action:** Implement a `GET` handler for the `trainer` role.
+    *   **Logic:** Call the `getProgramsAndTemplates` function and return the data in the documented structure.
 
-With data flowing, this phase builds the essential views for trainers.
+*   **Task 1.6: Create Calendar Endpoints**
+    *   **File:** Create `src/app/api/trainer/calendar/route.ts`.
+    *   **Action:** Implement `GET` and `POST` handlers.
+    *   **GET Logic:** Authenticate trainer, parse `startDate` and `endDate` from query params, call `getCalendarEvents`, and return the events.
+    *   **POST Logic:** Authenticate trainer, parse the request body, and call `createCalendarSession` to plan a workout.
 
--   [x] **2.1. Implement Client Detail Views**
-    -   [x] Open `app/(app)/(trainer)/client/[id]/measurements.tsx`.
-        -   [x] Use the `useClientDetails(id)` hook to fetch client data.
-        -   [x] Display an `<ActivityIndicator />` while `isLoading` is true.
-        -   [x] Use a `<FlatList />` to render the `client.measurements` array.
-        -   [x] Show an "empty state" component if the array is empty.
-    -   [x] Open `app/(app)/(trainer)/client/[id]/photos.tsx`.
-        -   [x] Use the `useClientDetails(id)` hook.
-        -   [x] Use a `<FlatList numColumns={2} />` to render `client.photos`, using `<Image />` for each photo.
-        -   [x] Show an "empty state" component if the array is empty.
-    -   [x] Open `app/(app)/(trainer)/client/[id]/index.tsx`.
-        -   [x] The existing `useClientDetails` hook is correct.
-        -   [x] Use the `client.workouts` data to populate the `<FlatList />` instead of mock data.
+*   **Task 1.7: Create Push Notification Token Endpoint**
+    *   **Schema:** Add `pushTokens: String[]` to the `User` model in `prisma/schema.prisma`. Run `npx prisma migrate dev`.
+    *   **File:** Create `src/app/api/profile/me/push-token/route.ts`.
+    *   **Action:** Implement a `POST` handler.
+    *   **Logic:** Authenticate the user, extract the token from the body, and add it to the user's `pushTokens` array in the database, preventing duplicates.
 
--   [x] **2.2. Build Live Workout Sync UI**
-    -   [x] Open `app/(app)/(trainer)/client/[id]/live.tsx`.
-    -   [x] The `useEffect` hook for subscribing to Supabase channels is correctly set up.
-    -   [x] Use a `<FlatList inverted />` to display the `logs` state, which will make new logs appear at the bottom (like a chat).
-    -   [x] Style the `logItem` view to be more informative, showing reps, weight, and a timestamp.
+*   **Task 1.8: Create Generic Exercise Library Endpoint**
+    *   **File:** Create `src/app/api/exercises/route.ts`.
+    *   **Action:** Implement a `GET` handler for both `client` and `trainer` roles.
+    *   **Logic:** Fetch and return all system exercises (`createdById: null`) plus any custom exercises relevant to the user (their own if a trainer, or their linked trainer's if a client).
 
--   [x] **2.3. Enhance Calendar Functionality**
-    -   [x] In `app/(app)/(trainer)/(tabs)/calendar/index.tsx`, ensure the data from `useQuery({ queryKey: ['calendarEvents'] })` correctly formats events into the `markedDates` prop for `react-native-calendars`.
-    -   [x] Enhance the "Plan Session" modal by adding `<Select>` components for choosing a client (from `clients` data) and a program/template (from `programs` data).
-    -   [x] The `handlePlanSession` mutation should pass the selected IDs to the `planSession` API call.
+---
 
-#### Phase 3: Implement Core Client Features (MVP)
+### **Phase 2: Mobile App API Layer Refactoring (React Native)**
 
-This phase focuses on the primary client experience: logging a workout and seeing progress.
+**Goal:** Update the mobile app's data-fetching layer to align with the new, complete backend API.
 
--   [x] **3.1. Finalize Workout Logging Screen**
-    -   [x] Open `app/(app)/(client)/(tabs)/log-workout.tsx`.
-    -   [x] The `checkActiveSession()` call in `useEffect` is correct.
-    -   [x] When `workoutSession` is active, use a `<FlatList />` to render an `<ActiveExerciseCard />` for each exercise in `workoutSession.exercises`.
-    -   [x] Pass the logged sets for each exercise (`workoutSession.logs`) as a prop to `ActiveExerciseCard`.
-    -   [x] In `components/workout/ActiveExerciseCard.tsx`, render the list of `loggedSets` passed from the parent.
+*   **Task 2.1: Refactor `lib/api.ts`**
+    *   **Action:** Modify or create functions for every endpoint in the API documentation.
+    *   **Checklist:**
+        *   ✅ `getTrainerDashboard()` -> `GET /api/trainer/dashboard`
+        *   ✅ `getPrograms()` -> `GET /api/trainer/programs`
+        *   ✅ `getCalendarEvents(start, end)` -> `GET /api/trainer/calendar?startDate=...&endDate=...`
+        *   ✅ `planSession(payload)` -> `POST /api/trainer/calendar`
+        *   ✅ `getClientDashboard()` -> `GET /api/client/dashboard`
+        *   ✅ `getProgressData()` -> `GET /api/client/progress` (Create this)
+        *   ✅ `getMyTrainer()` -> `GET /api/client/trainer`
+        *   ✅ `getAvailableExercises()` -> `GET /api/exercises`
+        *   ✅ `getActiveWorkoutSession()` -> Update path to `GET /api/workout/session/active`.
+        *   ✅ `logSet(payload)` -> Update path to `POST /api/workout/log` and ensure the body matches the documentation.
+        *   ✅ `sendPushToken(token)` -> `POST /api/profile/me/push-token`
+        *   ✅ Verify all other paths use the `/api/` prefix (e.g., `/api/clients` instead of `/trainer/clients`).
 
--   [x] **3.2. Implement Data Visualization**
-    -   [x] Open `app/(app)/(client)/(tabs)/my-progress.tsx`.
-    -   [x] The `useQuery` hook for `getProgressData` is correct.
-    -   [x] Use the `react-native-svg-charts` components (`LineChart`, `YAxis`, `Grid`) to plot the `data.weight` array.
-    -   [x] Add a segmented control or buttons to switch between different metrics (e.g., weight, body fat) if the API provides them.
+*   **Task 2.2: Update `workoutStore.ts`**
+    *   **Action:** Modify the `logSet` action in the store.
+    *   **Logic:** Ensure it constructs the full payload required by the new `logSet` function in `lib/api.ts`, including `workout_session_id`, `exercise_id`, `reps`, and `weight`.
 
--   [x] **3.3. Connect "My Trainer" Page**
-    -   [x] In `lib/api.ts`, create a `getMyTrainer()` function.
-    -   [x] In `app/(app)/(client)/(tabs)/my-trainer.tsx`, use `useQuery` to call `getMyTrainer()`.
-    -   [x] Render the trainer's details (avatar, name) from the query result. If no trainer is linked, show the `FindTrainerPrompt` component.
+---
 
-#### Phase 4: Feature Parity and Testing
+### **Phase 3: Mobile App Feature Implementation (React Native)**
 
-This phase brings the app closer to the web version's functionality and ensures stability.
+**Goal:** Build the missing UI and features to achieve parity with the web application.
 
--   [ ] **4.1. Build Trainer CRUD operations**
-    -   [ ] Create a "New Client" screen with a form that calls a `createClient` function in `lib/api.ts`.
-    -   [ ] Add "Add Measurement" and "Upload Photo" forms within the respective client detail tabs, which call new API functions.
+*   **Task 3.1: Build Client CRUD Functionality (Trainer)**
+    *   **File:** `app/(app)/(trainer)/(tabs)/clients/index.tsx`
+    *   **Action:** Add a "Create Client" button that navigates to a new form screen.
+    *   **Logic:** The new form will use `api.createClient`. Add edit/delete buttons to the client list items, which will navigate to an edit form or trigger a delete confirmation.
 
--   [ ] **4.2. Implement Program Builder UI**
-    -   [ ] In `app/(app)/(trainer)/(tabs)/programs/index.tsx`, add UI for creating new programs and templates. This will involve creating modals similar to the Calendar screen.
-    -   [ ] Create API functions (`createProgram`, `createTemplate`) and corresponding mutations.
+*   **Task 3.2: Enhance Trainer Dashboard**
+    *   **File:** `app/(app)/(trainer)/(tabs)/dashboard/index.tsx`
+    *   **Action:** Replace the basic dashboard with a richer view.
+    *   **Logic:** Use the data from `getTrainerDashboard` to render charts for performance/engagement and lists for upcoming sessions and activity.
 
--   [ ] **4.3. Full Push Notification Integration**
-    -   [ ] On the backend, identify all key events that should trigger a push notification (e.g., new booking, session reminder, new comment).
-    -   [ ] When these events occur, call a service that uses the stored Expo Push Token to send a notification.
-    -   [ ] In the mobile app, handle incoming notifications (e.g., navigating to the relevant screen when a notification is tapped).
+*   **Task 3.3: Build Interactive Trainer Live Session UI**
+    *   **File:** `app/(app)/(trainer)/client/[id]/live.tsx`
+    *   **Action:** Convert the component from a passive feed to an interactive controller.
+    *   **Logic:**
+        *   Use the `workoutStore` to access the shared session state.
+        *   Add buttons to "Add Exercise" (opening a modal), "Add Rest," and "Finish Workout."
+        *   These buttons should call the corresponding actions in the `workoutStore`.
 
--   [ ] **4.4. Testing and Validation**
-    -   [ ] **Unit/Integration Tests (Jest):**
-        -   [ ] In `store/clientStore.test.ts`, write tests to verify that `fetchClients` and `fetchClientDetails` correctly update the state and handle loading/error states.
-        -   [ ] In `store/workoutStore.test.ts`, expand tests to cover the full lifecycle, including optimistic updates and error rollbacks for `logSet`.
-    -   [ ] **End-to-End Test (Manual):**
-        -   [ ] **Scenario 1 (Client):** Log in as a client, start a workout, log several sets for different exercises, use the rest timer, and finish the workout. Verify the session appears correctly in the history.
-        -   [ ] **Scenario 2 (Trainer):** Log in as a trainer, view the client list, navigate to a client's details, and see the workout that was just logged.
-        -   [ ] **Scenario 3 (Live Sync):** With two devices (or simulators), log in as a trainer on one and a client on the other. As the trainer, navigate to the client's "Live Workout" screen. As the client, start a workout and log a set. Verify the new log appears on the trainer's screen within seconds.
-      
+*   **Task 3.4: Implement Full Pre-Workout Flow (Client)**
+    *   **File:** `app/(app)/(client)/(tabs)/log-workout.tsx`
+    *   **Action:** Before starting a session, present the user with options.
+    *   **Logic:**
+        *   Fetch the user's templates using `api.getPrograms`.
+        *   Display options: "Start Blank Workout," "Start from Template."
+        *   Call the `workoutStore.startWorkout()` action with or without a `templateId` based on user selection.
+
+*   **Task 3.5: Build Trainer Profile Editor**
+    *   **File:** `app/(app)/(trainer)/(tabs)/profile/index.tsx`
+    *   **Action:** Add an "Edit Profile" button. Create a new stack of screens for editing different profile sections (Core Info, Services, Packages, etc.).
+    *   **Logic:** Each screen will fetch its data using the appropriate `/api/profile/me/...` endpoints and use `PUT`/`POST`/`DELETE` requests to save changes.
+
+*   **Task 3.6: Implement Push Notification Logic**
+    *   **File:** `hooks/usePushNotifications.ts`
+    *   **Action:** In the `useEffect` where the token is received, ensure the `sendPushToken(token)` API call is made.
+    *   **File:** `app/_layout.tsx` or a similar root component.
+    *   **Action:** Add logic to handle incoming notifications while the app is open and to navigate to specific screens when a user taps a notification.
