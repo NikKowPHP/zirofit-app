@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-// import { apiFetch } from '@/lib/api';
+import { apiFetch } from '@/lib/api';
 
 // Define types based on backend schema
 export type ProgramTemplate = {
@@ -24,9 +24,8 @@ const useProgramStore = create<ProgramState>((set) => ({
     fetchPrograms: async () => {
         set({ isLoading: true });
         try {
-            // const programs = await apiFetch('/programs');
-            // set({ programs, isLoading: false });
-            console.log("Fetching programs...");
+            const programs = await apiFetch('/trainer/programs');
+            set({ programs, isLoading: false, error: null });
         } catch (e: any) {
             set({ error: e.message, isLoading: false });
         }

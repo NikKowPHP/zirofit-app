@@ -22,6 +22,10 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     });
 
     if (!response.ok) {
+        // Handle 404 specifically for cases like "no trainer found"
+        if (response.status === 404) {
+            return null;
+        }
         const errorBody = await response.text();
         console.error("API Error:", response.status, errorBody);
         // Attempt to parse error JSON from backend
@@ -76,6 +80,7 @@ export const getSessionDetails = (sessionId: string) => apiFetch(`/workout/histo
 // == Client API ==
 export const getClientDashboard = () => apiFetch('/client/dashboard');
 export const getProgressData = () => apiFetch('/client/progress');
+export const getMyTrainer = () => apiFetch('/client/trainer');
 
 
 // == Trainer API ==
