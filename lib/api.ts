@@ -44,7 +44,18 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     return response.json();
   } catch (error) {
     console.error("Failed to fetch API:", error);
-    throw error;
+    
+    // Handle network errors specifically
+    if (error instanceof TypeError && error.message === 'Network request failed') {
+      throw new Error('Network connection failed. Please check your internet connection and try again.');
+    }
+    
+    // Handle other errors with more user-friendly messages
+    if (error instanceof Error) {
+      throw new Error(error.message || 'An unexpected error occurred. Please try again.');
+    }
+    
+    throw new Error('An unexpected error occurred. Please try again.');
   }
 };
 
