@@ -7,6 +7,7 @@ import { YStack, H3, Avatar } from 'tamagui';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function ProfileScreen() {
     const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
@@ -15,6 +16,11 @@ export default function ProfileScreen() {
     if (isLoading) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
     }
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        // Auth guard will redirect
+    };
 
     return (
         <SafeAreaView style={styles.container}>
@@ -30,6 +36,9 @@ export default function ProfileScreen() {
 
                     <Button mt="$4" onPress={() => router.push('/(trainer)/(tabs)/profile/edit')}>
                         Edit Profile
+                    </Button>
+                    <Button mt="$2" theme="red" onPress={handleLogout}>
+                        Logout
                     </Button>
                 </Card>
             </YStack>

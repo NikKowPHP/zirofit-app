@@ -27,11 +27,12 @@ const useAuthStore = create<AuthState>()(
       profile: null,
       authenticationState: 'loading',
       setSession: (session) => {
-        set({
+        set(state => ({
           session,
           user: session?.user ?? null,
+          profile: session ? state.profile : null, // Clear profile on logout
           authenticationState: session ? 'authenticated' : 'unauthenticated',
-        });
+        }));
       },
       setProfile: (profile) => set({ profile }),
     }),

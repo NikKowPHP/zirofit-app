@@ -13,28 +13,142 @@ Authorization: Bearer <your_supabase_jwt_token>
 
 ---
 
-## Trainer Endpoints
+## Shared Endpoints
 
-These endpoints require the authenticated user to have the `trainer` role.
+These endpoints can be accessed by both `client` and `trainer` roles.
 
-### 1. Get Trainer Dashboard
+### 1. Get Dashboard Data (Unified)
 
-- **Path:** `GET /api/trainer/dashboard`
-- **Description:** Retrieves an aggregation of all data needed for the main trainer dashboard view.
-- **Auth:** `trainer` role required.
+- **Path:** `GET /api/dashboard`
+- **Description:** Retrieves the appropriate dashboard data for the authenticated user based on their role (`trainer` or `client`). This is the recommended endpoint for fetching initial dashboard data after login.
+- **Auth:** `client` or `trainer` role required.
+- **Success Response (200 OK):**
+  - The structure of the `data` object will differ based on the user's role.
+  - **For Trainers:**
+    ```json
+    {
+      "data": {
+        "businessPerformance": { /* ... */ },
+        "clientEngagement": { /* ... */ },
+        "servicePopularity": { /* ... */ },
+        "upcomingSessions": [ /* ... */ ],
+        "activityFeed": [ /* ... */ ],
+        "profileChecklist": { /* ... */ }
+      }
+    }
+    ```
+  - **For Clients:**
+    ```json
+    {
+      "data": {
+        "clientData": {
+          "id": "...",
+          "name": "Test Client",
+          "trainer": { /* ... */ },
+          "workoutSessions": [ /* ... */ ],
+          "measurements": [ /* ... */ ]
+        },
+        "weightUnit": "KG"
+      }
+    }
+    ```
+
+### 2. Get Exercise Library
+
+- **Path:** `GET /api/exercises`
+- **Description:** Fetches all system exercises plus custom exercises relevant to the user (their own if a trainer, their trainer's if a client).
+- **Auth:** `client` or `trainer` role required.
 - **Success Response (200 OK):**
   ```json
   {
     "data": {
-      "businessPerformance": { /* ... */ },
-      "clientEngagement": { /* ... */ },
-      "servicePopularity": { /* ... */ },
-      "upcomingSessions": [ /* ... */ ],
-      "activityFeed": [ /* ... */ ],
-      "profileChecklist": { /* ... */ }
+      "exercises": [
+        {
+          "id": "...",
+          "name": "Barbell Squat",
+          "muscleGroup": "Legs",
+          "createdById": null
+        }
+      ]
     }
   }
   ```
+
+### 3. Get Active Workout Session
+
+- **Path:** `GET /api/workout/session/active` (alias for `/api/workout-sessions/live`)
+- **Description:** Retrieves the user's currently active workout session, if one exists.
+- **Auth:** `client` or `trainer` role required.
+- **Success Response (200 OK):**
+  ```json
+  {
+    "data": {
+      "session": {
+        "id": "session-id-string",
+        "status": "IN_PROGRESS",
+        "startTime": "...",
+        "exerciseLogs": [ /* ... */ ]
+      }
+    }
+  }
+  ```
+
+### 4. Log an Exercise Set
+
+- **Path:** `POST /api/workout/log`
+- **Description:** Creates or updates a single exercise set log within a workout session.
+- **Auth:** `client` or `trainer` role required.
+- **Request Body:**
+  ```json
+  {
+    "logId": "existing-log-id-for-updates", // Optional
+    "workoutSessionId": "active-session-id",
+    "exerciseId": "exercise-id-string",
+    "reps": 10,
+    "weight": 100
+  }
+  ```
+- **Success Response (201 Created or 200 OK):**
+  ```json
+  {
+    "data": {
+      "log": { /* ... created/updated log object ... */ },
+      "newRecords": [ /* ... any new personal records achieved ... */ ]
+    }
+  }
+  ```
+
+### 5. Register Push Notification Token
+
+- **Path:** `POST /api/profile/me/push-token`
+- **Description:** Registers a new push notification token for the authenticated user.
+- **Auth:** `client` or `trainer` role required.
+- **Request Body:**
+  ```json
+  {
+    "token": "ExponentPushToken[...]"
+  }
+  ```
+- **Success Response (200 OK):**
+  ```json
+  {
+    "data": {
+      "message": "Push token registered successfully."
+    }
+  }
+  ```
+
+---
+
+## Trainer Endpoints
+
+### 1. Get Trainer Dashboard (**DEPRECATED**)
+
+**Note:** Use the unified `GET /api/dashboard` endpoint instead.
+
+- **Path:** `GET /api/trainer/dashboard`
+- **Description:** Retrieves an aggregation of all data needed for the main trainer dashboard view.
+- **Auth:** `trainer` role required.
 
 ### 2. Get Trainer Programs & Templates
 
@@ -125,28 +239,13 @@ For API path consistency, the following aliases exist:
 
 ## Client Endpoints
 
-These endpoints require the authenticated user to have the `client` role.
+### 1. Get Client Dashboard (**DEPRECATED**)
 
-### 1. Get Client Dashboard
+**Note:** Use the unified `GET /api/dashboard` endpoint instead.
 
 - **Path:** `GET /api/client/dashboard`
 - **Description:** Retrieves an aggregation of all data needed for the main client dashboard view.
 - **Auth:** `client` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "clientData": {
-        "id": "...",
-        "name": "Test Client",
-        "trainer": { /* ... */ },
-        "workoutSessions": [ /* ... */ ],
-        "measurements": [ /* ... */ ]
-      },
-      "weightUnit": "KG"
-    }
-  }
-  ```
 
 ### 2. Get Client Progress Data
 
@@ -179,97 +278,6 @@ These endpoints require the authenticated user to have the `client` role.
         "email": "nik.kowalev@gmail.com",
         "profile": { /* ... */ }
       }
-    }
-  }
-  ```
-
----
-
-## Shared Endpoints
-
-These endpoints can be accessed by both `client` and `trainer` roles.
-
-### 1. Get Exercise Library
-
-- **Path:** `GET /api/exercises`
-- **Description:** Fetches all system exercises plus custom exercises relevant to the user (their own if a trainer, their trainer's if a client).
-- **Auth:** `client` or `trainer` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "exercises": [
-        {
-          "id": "...",
-          "name": "Barbell Squat",
-          "muscleGroup": "Legs",
-          "createdById": null
-        }
-      ]
-    }
-  }
-  ```
-
-### 2. Get Active Workout Session
-
-- **Path:** `GET /api/workout/session/active` (alias for `/api/workout-sessions/live`)
-- **Description:** Retrieves the user's currently active workout session, if one exists.
-- **Auth:** `client` or `trainer` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "session": {
-        "id": "session-id-string",
-        "status": "IN_PROGRESS",
-        "startTime": "...",
-        "exerciseLogs": [ /* ... */ ]
-      }
-    }
-  }
-  ```
-
-### 3. Log an Exercise Set
-
-- **Path:** `POST /api/workout/log`
-- **Description:** Creates or updates a single exercise set log within a workout session.
-- **Auth:** `client` or `trainer` role required.
-- **Request Body:**
-  ```json
-  {
-    "logId": "existing-log-id-for-updates", // Optional
-    "workoutSessionId": "active-session-id",
-    "exerciseId": "exercise-id-string",
-    "reps": 10,
-    "weight": 100
-  }
-  ```
-- **Success Response (201 Created or 200 OK):**
-  ```json
-  {
-    "data": {
-      "log": { /* ... created/updated log object ... */ },
-      "newRecords": [ /* ... any new personal records achieved ... */ ]
-    }
-  }
-  ```
-
-### 4. Register Push Notification Token
-
-- **Path:** `POST /api/profile/me/push-token`
-- **Description:** Registers a new push notification token for the authenticated user.
-- **Auth:** `client` or `trainer` role required.
-- **Request Body:**
-  ```json
-  {
-    "token": "ExponentPushToken[...]"
-  }
-  ```
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "message": "Push token registered successfully."
     }
   }
   ```

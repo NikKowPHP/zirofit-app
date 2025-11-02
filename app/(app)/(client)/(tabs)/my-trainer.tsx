@@ -9,6 +9,7 @@ import { createCheckoutSession, getMyTrainer, getTrainerPackages } from '@/lib/a
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
+import { supabase } from '@/lib/supabase';
 
 export default function MyTrainerScreen() {
     const [loadingPackageId, setLoadingPackageId] = useState<string | null>(null);
@@ -41,6 +42,10 @@ export default function MyTrainerScreen() {
         } finally {
             setLoadingPackageId(null);
         }
+    };
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
     };
 
     if (isTrainerLoading) {
@@ -92,6 +97,10 @@ export default function MyTrainerScreen() {
                 ) : (
                     <FindTrainerPrompt />
                 )}
+
+                <Button theme="red" onPress={handleLogout} width="100%" marginTop="$4">
+                    Logout
+                </Button>
             </YStack>
         </SafeAreaView>
     );
