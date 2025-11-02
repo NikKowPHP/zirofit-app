@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { View, Text } from '@/components/Themed';
 import { YStack, H5 } from 'tamagui';
-import { VictoryChart, VictoryBar, VictoryAxis } from 'victory';
+import { VictoryChart, VictoryBar, VictoryAxis } from 'victory-native';
 
 type ChartData = {
     value: number;

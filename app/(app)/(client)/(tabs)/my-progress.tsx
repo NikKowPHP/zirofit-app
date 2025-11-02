@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { H3, YStack, ToggleGroup, Label, H5, XStack } from 'tamagui';
 import { useQuery } from '@tanstack/react-query';
 import { getProgressData, getClientAssessments } from '@/lib/api';
-import { VictoryChart, VictoryLine, VictoryAxis } from 'victory';
+import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 
