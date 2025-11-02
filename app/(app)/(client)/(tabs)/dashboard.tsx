@@ -5,7 +5,7 @@ import { YStack, H3 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
-import { getClientDashboard } from '@/lib/api';
+import { getDashboard } from '@/lib/api';
 import { router } from 'expo-router';
 import useAuthStore from '@/store/authStore';
 
@@ -13,7 +13,7 @@ export default function DashboardScreen() {
     const { authenticationState } = useAuthStore();
     const { data, isLoading, error } = useQuery({
         queryKey: ['dashboard'],
-        queryFn: getClientDashboard,
+        queryFn: getDashboard,
         enabled: authenticationState === 'authenticated',
         retry: false
     });

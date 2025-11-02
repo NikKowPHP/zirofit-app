@@ -4,11 +4,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { H3, H5, YStack } from 'tamagui';
 import { Card } from '@/components/ui/Card';
-import { getTrainerDashboard } from '@/lib/api';
+import { getDashboard } from '@/lib/api';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 
 export default function TrainerDashboard() {
-    const { data, isLoading } = useQuery({ queryKey: ['trainerDashboard'], queryFn: getTrainerDashboard });
+    const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: getDashboard });
 
     if (isLoading) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>

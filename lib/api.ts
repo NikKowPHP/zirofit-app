@@ -64,6 +64,9 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
 // == Auth API ==
 export const getMe = () => apiFetch('/auth/me');
 
+// == Dashboard API ==
+export const getDashboard = () => apiFetch('/dashboard');
+
 
 // == Workout API ==
 export const getActiveWorkoutSession = () => apiFetch('/workout/session/active');
@@ -92,14 +95,12 @@ export const getWorkoutHistory = () => apiFetch('/workout/history');
 export const getSessionDetails = (sessionId: string) => apiFetch(`/workout/history/${sessionId}`);
 
 // == Client API ==
-export const getClientDashboard = () => apiFetch('/client/dashboard');
 export const getProgressData = () => apiFetch('/client/progress');
 export const getMyTrainer = () => apiFetch('/client/trainer');
 export const getClientAssessments = () => apiFetch('/client/assessments');
 
 
 // == Trainer API ==
-export const getTrainerDashboard = () => apiFetch('/trainer/dashboard');
 export const getClients = () => apiFetch('/clients');
 export const getClientDetails = (clientId: string) => apiFetch(`/clients/${clientId}`);
 export const createClient = (email: string) => apiFetch('/clients', { method: 'POST', body: JSON.stringify({ email }) });

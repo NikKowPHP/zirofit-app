@@ -27,12 +27,16 @@ const useAuthStore = create<AuthState>()(
       profile: null,
       authenticationState: 'loading',
       setSession: (session) => {
-        set(state => ({
-          session,
-          user: session?.user ?? null,
-          profile: session ? state.profile : null, // Clear profile on logout
-          authenticationState: session ? 'authenticated' : 'unauthenticated',
-        }));
+        set((state) => {
+            // If the user ID changes (or on logout), clear the profile to force a refetch.
+            const profile = state.user?.id === session?.user?.id ? state.profile : null;
+            return {
+                session,
+                user: session?.user ?? null,
+                profile,
+                authenticationState: session ? 'authenticated' : 'unauthenticated',
+            };
+        });
       },
       setProfile: (profile) => set({ profile }),
     }),

@@ -5,4 +5,7 @@
 - [x] Resolve dependency conflicts and standardize on `victory-native` for charting.
 - [x] Fix `import.meta` syntax error on web by expanding the babel include list in `app.json` for web builds.
 - [x] Add logout functionality.
+- [x] Refactor dashboard fetching to use unified `/api/dashboard` endpoint.
+- [x] Answer question about trainer functionality.
+- [x] Fix incorrect redirect after trainer login.
       
