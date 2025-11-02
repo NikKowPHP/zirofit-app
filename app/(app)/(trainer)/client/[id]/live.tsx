@@ -2,12 +2,14 @@ import { View, Text } from '@/components/Themed';
 import { supabase } from '@/lib/supabase';
 import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useState, useMemo } from 'react';
-import { StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { YStack, H4, H5 } from 'tamagui';
-import { useQuery } from '@tanstack/react-query';
-import { getActiveClientWorkoutSession } from '@/lib/api';
+import { YStack, H4, H5, XStack } from 'tamagui';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getActiveClientWorkoutSession, logSet, finishWorkoutSession } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 
 type ClientExerciseLog = { id: string; reps: number; weight: number; created_at: string; exercise_id: string; };
 type WorkoutExercise = { id: string; name: string; };
@@ -15,12 +17,42 @@ type WorkoutSession = { id: string; name: string; exercises: WorkoutExercise[], 
 
 export default function LiveWorkoutScreen() {
     const { id: clientId } = useLocalSearchParams();
+    const queryClient = useQueryClient();
     const [liveLogs, setLiveLogs] = useState<ClientExerciseLog[]>([]);
+    
+    // State for trainer-side logging
+    const [reps, setReps] = useState('');
+    const [weight, setWeight] = useState('');
 
-    const { data: session, isLoading, error } = useQuery<WorkoutSession>({
+    const { data: session, isLoading, error, refetch } = useQuery<WorkoutSession>({
         queryKey: ['activeClientSession', clientId],
         queryFn: () => getActiveClientWorkoutSession(clientId as string),
         enabled: !!clientId,
+    });
+
+    const finishWorkoutMutation = useMutation({
+        mutationFn: () => finishWorkoutSession(session!.id),
+        onSuccess: () => {
+            Alert.alert("Success", "Client's workout has been finished.");
+            queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
+        },
+        onError: (e: any) => Alert.alert('Error', e.message),
+    });
+
+    const logSetMutation = useMutation({
+        mutationFn: (data: { exercise_id: string }) => logSet({ 
+            reps: parseInt(reps), 
+            weight: parseFloat(weight),
+            exercise_id: data.exercise_id,
+            workout_session_id: session!.id,
+        }),
+        onSuccess: () => {
+            setReps('');
+            setWeight('');
+            // Real-time should update the list, but we can invalidate to be safe
+            // queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
+        },
+        onError: (e: any) => Alert.alert('Error', e.message),
     });
 
     useEffect(() => {
@@ -49,18 +81,18 @@ export default function LiveWorkoutScreen() {
         return uniqueLogs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }, [session?.logs, liveLogs]);
     
-    if (isLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
-    }
-    
-    if (error || !session) {
-        return <SafeAreaView style={styles.center}><Text>Client does not have an active workout session.</Text></SafeAreaView>
-    }
+    if (isLoading) return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>;
+    if (error || !session) return <SafeAreaView style={styles.center}><Text>Client does not have an active workout session.</Text></SafeAreaView>;
 
     return (
         <SafeAreaView style={styles.container}>
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
-                <H4>Live Feed: {session.name}</H4>
+                <XStack justifyContent='space-between' alignItems='center'>
+                    <H4>Live Feed: {session.name}</H4>
+                    <Button size="$3" theme="red" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
+                        Finish Workout
+                    </Button>
+                </XStack>
                 <FlatList
                     data={session.exercises}
                     keyExtractor={(item) => item.id}
@@ -76,6 +108,11 @@ export default function LiveWorkoutScreen() {
                                 ) : (
                                     <Text style={styles.timestamp}>No sets logged yet.</Text>
                                 )}
+                                <XStack space="$2" alignItems="center" mt="$3">
+                                    <Input placeholder="Reps" keyboardType="numeric" value={reps} onChangeText={setReps} flex={1} />
+                                    <Input placeholder="Weight" keyboardType="numeric" value={weight} onChangeText={setWeight} flex={1} />
+                                    <Button flex={1} onPress={() => logSetMutation.mutate({ exercise_id: item.id })} disabled={logSetMutation.isPending}>Log Set</Button>
+                                </XStack>
                             </Card>
                         )
                     }}
@@ -89,10 +126,6 @@ export default function LiveWorkoutScreen() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    timestamp: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 4,
-    }
+    timestamp: { fontSize: 12, color: '#666', marginTop: 4, }
 });
       

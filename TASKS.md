@@ -1,115 +1,86 @@
-### **Phase 1: Backend API Implementation (Next.js)**
+### **Phase 1: Critical Blocker Resolution**
 
-**Goal:** Build all the API endpoints defined in the documentation to serve the mobile app.
+This phase addresses the fundamental API connection issue that prevents the entire application from functioning. This must be completed before any other work begins.
 
-*   **Task 1.1: Create Trainer Dashboard Endpoint**
-    *   **File:** Create `src/app/api/trainer/dashboard/route.ts`.
-    *   **Action:** Implement a `GET` handler.
-    *   **Logic:** Authenticate the user for the `trainer` role. Call the service functions from `dashboardService.ts` (`getBusinessPerformanceData`, `getClientEngagementData`, etc.) and aggregate the results into the documented JSON structure.
-
-*   **Task 1.2: Create Client Dashboard Endpoint**
-    *   **File:** Create `src/app/api/client/dashboard/route.ts`.
-    *   **Action:** Implement a `GET` handler.
-    *   **Logic:** Authenticate the user for the `client` role. Call the `fetchClientDashboardData` function from `client-dashboard/actions.ts` and return its payload.
-
-*   **Task 1.3: Create Centralized Workout Logging Endpoint**
-    *   **File:** Create `src/app/api/workout/log/route.ts`.
-    *   **Action:** Implement a `POST` handler.
-    *   **Logic:** Authenticate for `client` or `trainer`. Adapt the simple payload (`reps`, `weight`, `exerciseId`, `workoutSessionId`) to the detailed payload expected by the `upsertExerciseLog` function in `src/lib/api/workout-sessions.ts` and call it. Return the result.
-
-*   **Task 1.4: Create Active Session Endpoint Alias**
-    *   **File:** Create `src/app/api/workout/session/active/route.ts`.
-    *   **Action:** Implement a `GET` handler.
-    *   **Logic:** This route will simply call and return the response from the existing `GET` handler in `app/api/workout-sessions/live/route.ts`.
-
-*   **Task 1.5: Create Trainer Programs Endpoint**
-    *   **File:** Create `src/app/api/trainer/programs/route.ts`.
-    *   **Action:** Implement a `GET` handler for the `trainer` role.
-    *   **Logic:** Call the `getProgramsAndTemplates` function and return the data in the documented structure.
-
-*   **Task 1.6: Create Calendar Endpoints**
-    *   **File:** Create `src/app/api/trainer/calendar/route.ts`.
-    *   **Action:** Implement `GET` and `POST` handlers.
-    *   **GET Logic:** Authenticate trainer, parse `startDate` and `endDate` from query params, call `getCalendarEvents`, and return the events.
-    *   **POST Logic:** Authenticate trainer, parse the request body, and call `createCalendarSession` to plan a workout.
-
-*   **Task 1.7: Create Push Notification Token Endpoint**
-    *   **Schema:** Add `pushTokens: String[]` to the `User` model in `prisma/schema.prisma`. Run `npx prisma migrate dev`.
-    *   **File:** Create `src/app/api/profile/me/push-token/route.ts`.
-    *   **Action:** Implement a `POST` handler.
-    *   **Logic:** Authenticate the user, extract the token from the body, and add it to the user's `pushTokens` array in the database, preventing duplicates.
-
-*   **Task 1.8: Create Generic Exercise Library Endpoint**
-    *   **File:** Create `src/app/api/exercises/route.ts`.
-    *   **Action:** Implement a `GET` handler for both `client` and `trainer` roles.
-    *   **Logic:** Fetch and return all system exercises (`createdById: null`) plus any custom exercises relevant to the user (their own if a trainer, or their linked trainer's if a client).
+*   [x] **Task 1: Fix API Request Path Construction**
+    *   **File to Modify:** `lib/api.ts`
+    *   **Issue:** The `apiFetch` function constructs endpoint paths like `/auth/me` instead of the required `/api/auth/me`.
+    *   **Action:** Modify the `fetch` call within the `apiFetch` function to prepend `/api` to every endpoint.
+        *   Change:
+            ```typescript
+            const response = await fetch(`${API_URL}${endpoint}`, { ... });
+            ```
+        *   To:
+            ```typescript
+            const response = await fetch(`${API_URL}/api${endpoint}`, { ... });
+            ```
+    *   **Verification:** After this change, run the application and confirm that data loads on at least one screen (e.g., the Client Dashboard or Trainer Clients list).
 
 ---
 
-### **Phase 2: Mobile App API Layer Refactoring (React Native)**
+### **Phase 2: Implement Core Trainer Functionality**
 
-**Goal:** Update the mobile app's data-fetching layer to align with the new, complete backend API.
+This phase focuses on filling the major feature gaps on the trainer side of the application, which is currently the most underdeveloped.
 
-- [x] **Task 2.1: Refactor `lib/api.ts`**
-    - **Action:** Modify or create functions for every endpoint in the API documentation.
-    - **Checklist:**
-        - [x] `getTrainerDashboard()` -> `GET /api/trainer/dashboard` (No change needed)
-        - [x] `getPrograms()` -> `GET /api/trainer/programs` (No change needed)
-        - [x] `getCalendarEvents(start, end)` -> `GET /api/trainer/calendar?startDate=...&endDate=...` (Implemented)
-        - [x] `planSession(payload)` -> `POST /api/trainer/calendar` (Path and payload updated)
-        - [x] `getClientDashboard()` -> `GET /api/client/dashboard` (No change needed)
-        - [x] `getProgressData()` -> `GET /api/client/progress` (No change needed)
-        - [x] `getMyTrainer()` -> `GET /api/client/trainer` (No change needed)
-        - [x] `getAvailableExercises()` -> `GET /api/exercises` (No change needed)
-        - [x] `getActiveWorkoutSession()` -> Path `GET /api/workout/session/active` (No change needed)
-        - [x] `logSet(payload)` -> Path `POST /api/workout/log` (No change needed)
-        - [x] `sendPushToken(token)` -> `POST /api/profile/me/push-token` (No change needed)
-        - [x] Verify aliased paths are updated (e.g., `getClients`, `getClientDetails`, `getTrainerProfile`). (Implemented)
+*   [x] **Task 2: Build the Full Profile Editor**
+    *   **File to Modify:** `app/(app)/(trainer)/(tabs)/profile/edit.tsx` (and create new components as needed).
+    *   **Issue:** This screen is currently a placeholder.
+    *   **Sub-tasks:**
+        *   [x] **2.1: Implement Core Info Form:** Create a form to edit the trainer's name, username, certifications, and phone. This form should call a new API function that performs a `PUT` request to `/api/profile/me/core-info`.
+        *   [x] **2.2: Implement Services Management UI:** Create a UI to list, add, edit, and delete services. This will require new API functions for `POST`, `PUT`, and `DELETE` requests to `/api/profile/me/services` and `/api/profile/me/services/[serviceId]`.
+        *   [x] **2.3: Implement Packages Management UI:** Similar to services, build a UI to manage training packages, using the endpoints `POST`, `PUT`, and `DELETE` on `/api/profile/me/packages` and `/api/profile/me/packages/[packageId]`.
+        *   [x] **2.4: Implement Testimonials Management UI:** Build a UI to add, edit, and delete client testimonials using the `/api/profile/me/testimonials` endpoints.
+        *   [x] **2.5: Implement Transformation Photos UI:** Build a UI to upload and delete transformation photos. This will involve handling file uploads to a dedicated endpoint if one exists, or using the existing client photo upload logic adapted for trainers.
 
-- [x] **Task 2.2: Update `workoutStore.ts`**
-    - **Action:** Modify the `logSet` action in the store.
-    - **Logic:** Ensure it constructs the full payload required by the new `logSet` function. (Verified as correct, no changes needed).
+*   [x] **Task 3: Implement Program & Template Builder**
+    *   **File to Modify:** `app/(app)/(trainer)/(tabs)/programs/index.tsx`.
+    *   **Issue:** This screen is currently a read-only list.
+    *   **Sub-tasks:**
+        *   [x] **3.1: Add "Create Program" Functionality:** Implement a button and modal/form to create a new workout program via a `POST` request to `/api/trainer/programs`.
+        *   [x] **3.2: Add "Create Template" Functionality:** Implement a button and modal/form to create a new workout template within a program.
+        *   [x] **3.3: Build Template Editor UI:** Create a detailed view for a selected template where the trainer can add/remove exercises. This will involve:
+            *   Fetching all available exercises from `GET /api/exercises`.
+            *   Building a UI to search and select exercises.
+            *   Calling an endpoint to add the selected exercise to the template (e.g., `POST /api/trainer/programs/templates/[id]/exercises`).
+
+*   [x] **Task 4: Enhance Trainer Dashboard**
+    *   **File to Modify:** `app/(app)/(trainer)/(tabs)/dashboard/index.tsx`.
+    *   **Issue:** The dashboard only shows basic stats and does not use the rich data from the API.
+    *   **Sub-tasks:**
+        *   [x] **4.1: Fetch and Display Rich Analytics:** Update the `useQuery` hook to fetch data from `/api/trainer/dashboard`.
+        *   [x] **4.2: Create Chart Components:** Build simple chart components to visualize `businessPerformance`, `clientEngagement`, and `servicePopularity` data.
+
+*   [x] **Task 5: Make Live Workout View Interactive**
+    *   **File to Modify:** `app/(app)/(trainer)/client/[id]/live.tsx`.
+    *   **Issue:** The view is a passive, read-only feed.
+    *   **Sub-tasks:**
+        *   [x] **5.1: Add Controls for Session Management:** Implement UI elements (buttons, forms) that allow the trainer to:
+            *   Add a new exercise to the client's live session.
+            *   Log a set (reps/weight) on behalf of the client using `POST /api/workout/log`.
+            *   Finish the client's workout using `POST /api/workout/session/finish`.
+        *   [x] **5.2: Update State on Action:** Ensure that after an action is performed, the component's state is updated to reflect the change, providing an interactive experience.
 
 ---
 
-### **Phase 3: Mobile App Feature Implementation (React Native)**
+### **Phase 3: Address Client-Side Feature Gaps**
 
-**Goal:** Build the missing UI and features to achieve parity with the web application.
+This phase addresses the missing features on the client side to provide a complete user experience.
 
-- [x] **Task 3.1: Build Client CRUD Functionality (Trainer)**
-    - **File:** `app/(app)/(trainer)/(tabs)/clients/index.tsx`
-    - **Action:** Add a "Create Client" button that navigates to a new form screen.
-    - **Logic:** The new form will use `api.createClient`. Add edit/delete buttons to the client list items, which will navigate to an edit form or trigger a delete confirmation. (Create functionality implemented).
+*   [x] **Task 6: Implement Package Purchasing**
+    *   **File to Modify:** `app/(app)/(client)/(tabs)/my-trainer.tsx`.
+    *   **Issue:** The "Buy Package" button is hardcoded.
+    *   **Sub-tasks:**
+        *   [x] **6.1: Fetch Trainer's Packages:** Create a new API function to fetch the trainer's available packages from an endpoint like `GET /api/trainers/[username]/packages`.
+        *   [x] **6.2: Display Packages Dynamically:** Render the fetched packages in a list or as cards.
+        *   [x] **6.3: Update Checkout Flow:** Modify the `handleBuyPackage` function to use the ID of the *selected* package when calling `createCheckoutSession`.
 
-- [x] **Task 3.2: Enhance Trainer Dashboard**
-    - **File:** `app/(app)/(trainer)/(tabs)/dashboard/index.tsx`
-    - **Action:** Replace the basic dashboard with a richer view.
-    - **Logic:** Use the data from `getTrainerDashboard` to render charts for performance/engagement and lists for upcoming sessions and activity. (Richer view implemented).
-
-- [x] **Task 3.3: Build Interactive Trainer Live Session UI**
-    - **File:** `app/(app)/(trainer)/client/[id]/live.tsx`
-    - **Action:** Convert the component from a passive feed to an interactive controller.
-    - **Logic:**
-        - Use the `workoutStore` to access the shared session state.
-        - Add buttons to "Add Exercise" (opening a modal), "Add Rest," and "Finish Workout."
-        - These buttons should call the corresponding actions in the `workoutStore`. (Enhanced live view implemented to show structured workout data).
-
-- [x] **Task 3.4: Implement Full Pre-Workout Flow (Client)**
-    - **File:** `app/(app)/(client)/(tabs)/log-workout.tsx`
-    - **Action:** Before starting a session, present the user with options.
-    - **Logic:**
-        - Fetch the user's templates using `api.getPrograms`.
-        - Display options: "Start Blank Workout," "Start from Template."
-        - Call the `workoutStore.startWorkout()` action with or without a `templateId` based on user selection. (Implemented).
-
-- [x] **Task 3.5: Build Trainer Profile Editor**
-    - **File:** `app/(app)/(trainer)/(tabs)/profile/index.tsx`
-    - **Action:** Add an "Edit Profile" button. Create a new stack of screens for editing different profile sections (Core Info, Services, Packages, etc.).
-    - **Logic:** Each screen will fetch its data using the appropriate `/api/profile/me/...` endpoints and use `PUT`/`POST`/`DELETE` requests to save changes. (Navigation structure and placeholder screen implemented).
-
-- [x] **Task 3.6: Implement Push Notification Logic**
-    - **File:** `hooks/usePushNotifications.ts`
-    - **Action:** In the `useEffect` where the token is received, ensure the `sendPushToken(token)` API call is made.
-    - **File:** `app/_layout.tsx` or a similar root component.
-    - **Action:** Add logic to handle incoming notifications while the app is open and to navigate to specific screens when a user taps a notification. (Navigation on tap implemented).
+*   [x] **Task 7: Implement Assessment Viewing**
+    *   **Issue:** There is no UI for clients to view their assessment history.
+    *   **Sub-tasks:**
+        *   [x] **7.1: Create New Assessment Screen:** Create a new screen, possibly as a tab within `my-progress.tsx` or as a new route.
+        *   [x] **7.2: Fetch Assessment Data:** Use `react-query` to fetch the client's assessment history from `GET /api/clients/[id]/assessments`.
+        *   [x] **7.3: Display Assessment History:** Render the assessment data, ideally with charts to show progress for each assessment type over time.
+- [x] Confirm completion of Phase 1.
+- [x] Implement the full phase 2
+- [x] implement the full phase 3
       

@@ -16,7 +16,7 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
       headers.set('Content-Type', 'application/json');
     }
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
+    const response = await fetch(`${API_URL}/api${endpoint}`, {
       ...options,
       headers,
     });
@@ -82,6 +82,7 @@ export const getSessionDetails = (sessionId: string) => apiFetch(`/workout/histo
 export const getClientDashboard = () => apiFetch('/client/dashboard');
 export const getProgressData = () => apiFetch('/client/progress');
 export const getMyTrainer = () => apiFetch('/client/trainer');
+export const getClientAssessments = () => apiFetch('/client/assessments');
 
 
 // == Trainer API ==
@@ -90,13 +91,57 @@ export const getClients = () => apiFetch('/clients');
 export const getClientDetails = (clientId: string) => apiFetch(`/clients/${clientId}`);
 export const createClient = (email: string) => apiFetch('/clients', { method: 'POST', body: JSON.stringify({ email }) });
 export const getTrainerProfile = () => apiFetch('/profile/me');
+export const updateTrainerCoreInfo = (payload: { name: string, username: string, certifications: string, phone: string }) => apiFetch('/profile/me/core-info', {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+});
+
+// Trainer Profile Services
+export const addTrainerService = (payload: { name: string, description?: string, price: number, duration: number }) => apiFetch('/profile/me/services', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+});
+
+export const updateTrainerService = (serviceId: string, payload: { name: string, description?: string, price: number, duration: number }) => apiFetch(`/profile/me/services/${serviceId}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+});
+
+export const deleteTrainerService = (serviceId: string) => apiFetch(`/profile/me/services/${serviceId}`, {
+    method: 'DELETE'
+});
+
+// Trainer Profile Packages
+export const addTrainerPackage = (payload: { name: string, description?: string, price: number }) => apiFetch('/profile/me/packages', { method: 'POST', body: JSON.stringify(payload) });
+export const updateTrainerPackage = (packageId: string, payload: { name: string, description?: string, price: number }) => apiFetch(`/profile/me/packages/${packageId}`, { method: 'PUT', body: JSON.stringify(payload) });
+export const deleteTrainerPackage = (packageId: string) => apiFetch(`/profile/me/packages/${packageId}`, { method: 'DELETE' });
+
+// Trainer Profile Testimonials
+export const addTrainerTestimonial = (payload: { client_name: string, content: string }) => apiFetch('/profile/me/testimonials', { method: 'POST', body: JSON.stringify(payload) });
+export const updateTrainerTestimonial = (testimonialId: string, payload: { client_name: string, content: string }) => apiFetch(`/profile/me/testimonials/${testimonialId}`, { method: 'PUT', body: JSON.stringify(payload) });
+export const deleteTrainerTestimonial = (testimonialId: string) => apiFetch(`/profile/me/testimonials/${testimonialId}`, { method: 'DELETE' });
+
+// Trainer Profile Transformations
+export const uploadTransformationPhoto = (formData: FormData) => apiFetch('/profile/me/transformations', { method: 'POST', body: formData });
+export const deleteTransformationPhoto = (photoId: string) => apiFetch(`/profile/me/transformations/${photoId}`, { method: 'DELETE' });
+
+// Trainer Programs & Templates
 export const getPrograms = () => apiFetch('/trainer/programs');
+export const createProgram = (payload: { name: string, description?: string }) => apiFetch('/trainer/programs', { method: 'POST', body: JSON.stringify(payload) });
+export const getProgramDetails = (programId: string) => apiFetch(`/trainer/programs/${programId}`);
+export const createTemplate = (programId: string, payload: { name: string, description?: string }) => apiFetch(`/trainer/programs/${programId}/templates`, { method: 'POST', body: JSON.stringify(payload) });
+export const getTemplateDetails = (templateId: string) => apiFetch(`/trainer/templates/${templateId}`);
+export const addExerciseToTemplate = (templateId: string, payload: { exercise_id: string }) => apiFetch(`/trainer/templates/${templateId}/exercises`, { method: 'POST', body: JSON.stringify(payload) });
+export const removeExerciseFromTemplate = (templateId: string, exerciseId: string) => apiFetch(`/trainer/templates/${templateId}/exercises/${exerciseId}`, { method: 'DELETE' });
+
 export const getCalendarEvents = (startDate: string, endDate: string) => apiFetch(`/trainer/calendar?startDate=${startDate}&endDate=${endDate}`);
 export const planSession = (payload: { date: string, notes: string, clientId: string, templateId?: string }) => apiFetch('/trainer/calendar', {
     method: 'POST',
     body: JSON.stringify(payload)
 });
 export const getActiveClientWorkoutSession = (clientId: string) => apiFetch(`/clients/${clientId}/session/active`);
+export const getTrainerPackages = (trainerId: string) => apiFetch(`/trainers/${trainerId}/packages`);
+
 
 // == Payments API ==
 export const createCheckoutSession = (packageId: string) => {
@@ -107,4 +152,7 @@ export const createCheckoutSession = (packageId: string) => {
 export const sendPushToken = async (token: string) => {
     return apiFetch('/profile/me/push-token', { method: 'POST', body: JSON.stringify({ token }) });
 };
+
+// Live session interactions
+export const addExerciseToLiveSession = (sessionId: string, payload: { exercise_id: string }) => apiFetch(`/workout/session/${sessionId}/add-exercise`, { method: 'POST', body: JSON.stringify(payload) });
       
