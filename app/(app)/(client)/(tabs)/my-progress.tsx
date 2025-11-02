@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { H3, YStack, ToggleGroup, Label, H5, XStack } from 'tamagui';
 import { useQuery } from '@tanstack/react-query';
 import { getProgressData, getClientAssessments } from '@/lib/api';
-import { LineChart, YAxis, Grid } from 'react-native-svg-charts';
+import { VictoryChart, VictoryLine, VictoryAxis } from 'victory';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 
@@ -34,30 +34,14 @@ export default function MyProgressScreen() {
             return <Text>No {activeTab} data logged yet.</Text>;
         }
 
-        const chartData = progressData[activeTab].map((d: any) => d.value);
-        const contentInset = { top: 20, bottom: 20 };
+        const data = progressData[activeTab].map((d: any, index: number) => ({ x: index, y: d.value }));
 
         return (
-            <View style={{ height: 200, flexDirection: 'row' }}>
-                <YAxis
-                    data={chartData}
-                    contentInset={contentInset}
-                    svg={{
-                        fill: 'grey',
-                        fontSize: 10,
-                    }}
-                    numberOfTicks={5}
-                    formatLabel={(value) => `${value}${activeTab === 'weight' ? 'kg' : '%'}`}
-                />
-                <LineChart
-                    style={{ flex: 1, marginLeft: 16 }}
-                    data={chartData}
-                    svg={{ stroke: 'rgb(134, 65, 244)' }}
-                    contentInset={contentInset}
-                >
-                    <Grid />
-                </LineChart>
-            </View>
+            <VictoryChart height={200} padding={{ top: 20, bottom: 60, left: 60, right: 20 }}>
+                <VictoryLine data={data} style={{ data: { stroke: 'rgb(134, 65, 244)' } }} />
+                <VictoryAxis dependentAxis tickFormat={(t) => `${t}${activeTab === 'weight' ? 'kg' : '%'}`} />
+                <VictoryAxis />
+            </VictoryChart>
         );
     };
 

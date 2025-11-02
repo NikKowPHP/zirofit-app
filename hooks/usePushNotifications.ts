@@ -22,7 +22,7 @@ async function registerForPushNotificationsAsync() {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern:,
+      vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C',
     });
   }
@@ -59,8 +59,8 @@ async function registerForPushNotificationsAsync() {
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | undefined>('');
   const [notification, setNotification] = useState<Notifications.Notification | false>(false);
-  const notificationListener = useRef<Subscription>();
-  const responseListener = useRef<Subscription>();
+  const notificationListener = useRef<Subscription | null>(null);
+  const responseListener = useRef<Subscription | null>(null);
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => {
