@@ -15,6 +15,8 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
     if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }
+      
+      console.log('api request with endpoint', API_URL, endpoint)
 
     const response = await fetch(`${API_URL}/api${endpoint}`, {
       ...options,

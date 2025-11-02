@@ -1,16 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { View, Text } from '@/components/Themed';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, Alert } from 'react-native';
 import { YStack, H3 } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
 import { getClientDashboard } from '@/lib/api';
+import { router } from 'expo-router';
+import useAuthStore from '@/store/authStore';
 
 export default function DashboardScreen() {
+    const { authenticationState } = useAuthStore();
     const { data, isLoading, error } = useQuery({
         queryKey: ['dashboard'],
-        queryFn: getClientDashboard
+        queryFn: getClientDashboard,
+        enabled: authenticationState === 'authenticated',
+        retry: false
     });
 
     if (isLoading) {
@@ -18,7 +23,35 @@ export default function DashboardScreen() {
     }
 
     if (error) {
-        return <SafeAreaView style={styles.center}><Text>Error fetching data</Text></SafeAreaView>
+        // Handle authentication errors specifically
+        if (error.message?.includes('Missing or invalid Authorization header') ||
+            error.message?.includes('401')) {
+            Alert.alert(
+                'Authentication Required',
+                'Please log in to view your dashboard',
+                [
+                    { text: 'OK', onPress: () => router.replace('/(auth)/login') }
+                ]
+            );
+            return <SafeAreaView style={styles.center}><Text>Redirecting to login...</Text></SafeAreaView>
+        }
+        
+        return <SafeAreaView style={styles.center}><Text>Error fetching data: {error.message}</Text></SafeAreaView>
+    }
+
+    // If not authenticated, show login prompt
+    if (authenticationState === 'unauthenticated') {
+        return (
+            <SafeAreaView style={styles.container}>
+                <YStack space="$4" padding="$4" alignItems="center">
+                    <H3>Authentication Required</H3>
+                    <Text>Please log in to view your dashboard</Text>
+                    <Text onPress={() => router.replace('/(auth)/login')} style={{ color: 'blue' }}>
+                        Go to Login
+                    </Text>
+                </YStack>
+            </SafeAreaView>
+        );
     }
 
     return (
