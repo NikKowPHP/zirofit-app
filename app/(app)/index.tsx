@@ -21,9 +21,9 @@ export default function AppIndex() {
 
   // Once profile is loaded, redirect based on role.
   if (profile?.role === 'trainer') {
-    return <Redirect href="/(trainer)" />;
+    return <Redirect href="/(app)/(trainer)" />;
   }
   
-  return <Redirect href="/(client)" />;
+  return <Redirect href="/(app)/(client)" as any />;
 }
       

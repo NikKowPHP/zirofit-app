@@ -1,21 +1,19 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
+import { useTheme } from 'tamagui';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TrainerTabLayout() {
-  const colorScheme = useColorScheme();
+  const theme = useTheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: theme.primary.get(),
         headerShown: false,
       }}>
       <Tabs.Screen

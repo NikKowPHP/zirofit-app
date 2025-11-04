@@ -21,7 +21,7 @@ export default function ClientsScreen() {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable onPress={() => router.push('/(trainer)/(tabs)/clients/create')}>
+                <Pressable onPress={() => router.push('/(app)/(trainer)/(tabs)/clients/create')}>
                     <FontAwesome name="plus" size={20} style={{ marginRight: 15 }} />
                 </Pressable>
             ),

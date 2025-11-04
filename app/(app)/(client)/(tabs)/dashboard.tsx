@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { View, Text } from '@/components/Themed';
-import { ActivityIndicator, StyleSheet, Alert } from 'react-native';
+import { ActivityIndicator, Alert } from 'react-native';
 import { YStack, H3 } from 'tamagui';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '@/components/ui/Screen';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
 import { getDashboard } from '@/lib/api';
@@ -19,7 +19,7 @@ export default function DashboardScreen() {
     });
 
     if (isLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
+        return <Screen center><ActivityIndicator /></Screen>
     }
 
     if (error) {
@@ -33,46 +33,33 @@ export default function DashboardScreen() {
                     { text: 'OK', onPress: () => router.replace('/(auth)/login') }
                 ]
             );
-            return <SafeAreaView style={styles.center}><Text>Redirecting to login...</Text></SafeAreaView>
+            return <Screen center><Text>Redirecting to login...</Text></Screen>
         }
         
-        return <SafeAreaView style={styles.center}><Text>Error fetching data: {error.message}</Text></SafeAreaView>
+        return <Screen center><Text>Error fetching data: {error.message}</Text></Screen>
     }
 
     // If not authenticated, show login prompt
     if (authenticationState === 'unauthenticated') {
         return (
-            <SafeAreaView style={styles.container}>
-                <YStack space="$4" padding="$4" alignItems="center">
+            <Screen center>
+                <YStack space="$4" alignItems="center">
                     <H3>Authentication Required</H3>
                     <Text>Please log in to view your dashboard</Text>
                     <Text onPress={() => router.replace('/(auth)/login')} style={{ color: 'blue' }}>
                         Go to Login
                     </Text>
                 </YStack>
-            </SafeAreaView>
+            </Screen>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <YStack space="$4" padding="$4">
-                <H3>Dashboard</H3>
-                {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />}
-                {!data?.hasTrainer && <FindTrainerPrompt />}
-            </YStack>
-        </SafeAreaView>
+        <Screen>
+            <H3>Dashboard</H3>
+            {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />}
+            {!data?.hasTrainer && <FindTrainerPrompt />}
+        </Screen>
     )
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    center: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-    }
-})
       

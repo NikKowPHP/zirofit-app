@@ -89,7 +89,7 @@ export default function LiveWorkoutScreen() {
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
                 <XStack justifyContent='space-between' alignItems='center'>
                     <H4>Live Feed: {session.name}</H4>
-                    <Button size="$3" theme="red" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
+                    <Button size="$3" variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
                         Finish Workout
                     </Button>
                 </XStack>

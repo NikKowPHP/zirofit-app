@@ -57,7 +57,7 @@ export default function ProgramsScreen() {
                     <Accordion.Content>
                         <YStack padding="$3" borderTopWidth={1} borderColor="$borderColor">
                             {item.templates?.map(template => (
-                                <Pressable key={template.id} onPress={() => router.push(`/(trainer)/(tabs)/programs/${template.id}`)}>
+                                <Pressable key={template.id} onPress={() => router.push(`/(app)/(trainer)/(tabs)/programs/${template.id}`)}>
                                     <Card padding="$3" my="$1" backgroundColor="$backgroundHover">
                                         <Text>{template.name}</Text>
                                     </Card>

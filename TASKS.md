@@ -8,4 +8,18 @@
 - [x] Refactor dashboard fetching to use unified `/api/dashboard` endpoint.
 - [x] Answer question about trainer functionality.
 - [x] Fix incorrect redirect after trainer login.
-      
+
+- [ ] Extend Tamagui theme with brand tokens (colors, spacing, radii, typography).
+- [ ] Update components/Themed.tsx to use Tamagui tokens instead of constants/Colors.ts.
+- [ ] Replace Colors usage in navigators/tabs with theme tokens.
+- [ ] Refactor Button, Card, Input, Modal, RoleSelector to consume tokens and add variants.
+- [ ] Remove platform-specific inline styles; implement tokenized elevation/shadows in components.
+- [ ] Introduce Screen layout primitive (SafeAreaView wrapper) and replace repeated container/center styles.
+- [ ] Introduce Section/List helpers where patterns repeat.
+- [ ] Standardize typography scale; unify text components to use tokens; remove ad-hoc font sizes.
+- [ ] Centralize tab bar styling into a shared helper using tokens (blur/elevation).
+- [ ] Replace hard-coded chart colors with theme tokens; ensure dark-mode contrast for lines/bars/axes.
+- [ ] Add ESLint/CI guardrails to disallow inline hex colors/backgroundColor literals outside theme.
+- [ ] Accessibility pass to verify WCAG AA contrast; adjust tokens as needed.
+- [ ] Documentation: Design System Usage Guide with examples; link from README/API docs.
+- [ ] Tests: snapshots for components and screens under light/dark themes.

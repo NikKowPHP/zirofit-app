@@ -12,7 +12,7 @@ import TestimonialFormModal from '@/components/profile/TestimonialFormModal';
 import { Card } from '@/components/ui/Card';
 import * as ImagePicker from 'expo-image-picker';
 
-type Service = { id: string; name: string; description: string; price: number; duration: number; };
+type Service = { id: string; name: string; description?: string; price: number; duration: number; };
 type Package = { id: string; name: string; description: string; price: number; };
 type Testimonial = { id: string; client_name: string; content: string; };
 type Transformation = { id: string; photo_url: string; };
@@ -132,7 +132,7 @@ export default function EditProfileScreen() {
                                 </YStack>
                                 <YStack space="$2">
                                     <Button size="$3" onPress={() => { setSelectedService(s); setServiceModalVisible(true); }}>Edit</Button>
-                                    <Button size="$3" theme="red" onPress={() => confirmDelete(() => deleteServiceMutation.mutate(s.id))}>Delete</Button>
+                                    <Button size="$3" variant="danger" onPress={() => confirmDelete(() => deleteServiceMutation.mutate(s.id))}>Delete</Button>
                                 </YStack>
                             </XStack>
                         </Card>
@@ -155,7 +155,7 @@ export default function EditProfileScreen() {
                                 </YStack>
                                 <YStack space="$2">
                                     <Button size="$3" onPress={() => { setSelectedPackage(p); setPackageModalVisible(true); }}>Edit</Button>
-                                    <Button size="$3" theme="red" onPress={() => confirmDelete(() => deletePackageMutation.mutate(p.id))}>Delete</Button>
+                                    <Button size="$3" variant="danger" onPress={() => confirmDelete(() => deletePackageMutation.mutate(p.id))}>Delete</Button>
                                 </YStack>
                             </XStack>
                         </Card>
@@ -177,7 +177,7 @@ export default function EditProfileScreen() {
                                 </YStack>
                                 <YStack space="$2">
                                     <Button size="$3" onPress={() => { setSelectedTestimonial(t); setTestimonialModalVisible(true); }}>Edit</Button>
-                                    <Button size="$3" theme="red" onPress={() => confirmDelete(() => deleteTestimonialMutation.mutate(t.id))}>Delete</Button>
+                                    <Button size="$3" variant="danger" onPress={() => confirmDelete(() => deleteTestimonialMutation.mutate(t.id))}>Delete</Button>
                                 </YStack>
                             </XStack>
                         </Card>

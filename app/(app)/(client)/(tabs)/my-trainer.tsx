@@ -80,7 +80,7 @@ export default function MyTrainerScreen() {
                                             <Text style={styles.price}>${(pkg.price / 100).toFixed(2)}</Text>
                                             <Button 
                                                 mt="$3"
-                                                theme="green" 
+                                                variant="primary" 
                                                 onPress={() => handleBuyPackage(pkg.id)} 
                                                 disabled={!!loadingPackageId}
                                             >
@@ -98,7 +98,7 @@ export default function MyTrainerScreen() {
                     <FindTrainerPrompt />
                 )}
 
-                <Button theme="red" onPress={handleLogout} width="100%" marginTop="$4">
+                <Button variant="danger" onPress={handleLogout} width="100%" marginTop="$4">
                     Logout
                 </Button>
             </YStack>

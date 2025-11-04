@@ -1,9 +1,11 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { H3, H5, YStack } from 'tamagui';
+import { H3, YStack } from 'tamagui';
 import { Card } from '@/components/ui/Card';
+import { Screen } from '@/components/ui/Screen';
+import { Section } from '@/components/ui/Section';
+import { List } from '@/components/ui/List';
 import { getDashboard } from '@/lib/api';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 
@@ -11,11 +13,11 @@ export default function TrainerDashboard() {
     const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: getDashboard });
 
     if (isLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
+        return <Screen center><ActivityIndicator /></Screen>
     }
     
     return (
-        <SafeAreaView style={styles.container}>
+        <Screen>
             <ScrollView>
                 <YStack space="$4" padding="$4">
                     <H3>Trainer Dashboard</H3>
@@ -28,45 +30,41 @@ export default function TrainerDashboard() {
                         <AnalyticsChart title="Client Engagement" data={data.clientEngagement} />
                     )}
 
-                    <Card padding="$4">
-                        <H5>Quick Stats</H5>
-                        <Text>Upcoming Appointments: {data?.upcomingAppointments}</Text>
-                        <Text>Active Clients: {data?.activeClients}</Text>
-                    </Card>
+                    <Section title="Quick Stats">
+                        <Card padding="$4">
+                            <Text>Upcoming Appointments: {data?.upcomingAppointments}</Text>
+                            <Text>Active Clients: {data?.activeClients}</Text>
+                        </Card>
+                    </Section>
 
                     {data?.upcomingSessions && data.upcomingSessions.length > 0 && (
-                         <Card padding="$4">
-                            <H5>Upcoming Sessions</H5>
-                            {data.upcomingSessions.map((s: any) => (
-                                <Text key={s.id}>{s.clientName} - {new Date(s.time).toLocaleString()}</Text>
-                            ))}
-                        </Card>
+                         <Section title="Upcoming Sessions">
+                             <Card padding="$4">
+                                 <List>
+                                     {data.upcomingSessions.map((s: any) => (
+                                         <Text key={s.id}>{s.clientName} - {new Date(s.time).toLocaleString()}</Text>
+                                     ))}
+                                 </List>
+                             </Card>
+                         </Section>
                     )}
 
-                    <H5 mt="$4">Recent Activity</H5>
-                    {data?.activityFeed && data.activityFeed.length > 0 ? (
-                        data.activityFeed.map((item: any) => (
-                            <Card key={item.id} marginVertical="$2" padding="$3">
-                                <Text>{item.description}</Text>
-                                <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleString()}</Text>
-                            </Card>
-                        ))
-                    ) : (
-                        <Text style={{textAlign: 'center', marginTop: 20}}>No recent activity.</Text>
-                    )}
+                    <Section title="Recent Activity">
+                        {data?.activityFeed && data.activityFeed.length > 0 ? (
+                            <List>
+                                {data.activityFeed.map((item: any) => (
+                                    <Card key={item.id} padding="$3">
+                                        <Text>{item.description}</Text>
+                                        <Text lightColor="$color.textSecondary" darkColor="$color.textSecondary" fontSize="$xs" marginTop="$1">{new Date(item.timestamp).toLocaleString()}</Text>
+                                    </Card>
+                                ))}
+                            </List>
+                        ) : (
+                            <Text style={{textAlign: 'center'}} marginTop="$4">No recent activity.</Text>
+                        )}
+                    </Section>
                 </YStack>
             </ScrollView>
-        </SafeAreaView>
+        </Screen>
     );
 }
-
-const styles = StyleSheet.create({
-    container: { flex: 1 },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    timestamp: {
-        fontSize: 12,
-        color: 'gray',
-        marginTop: 4,
-    }
-});
-      

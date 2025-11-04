@@ -1,7 +1,7 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, ActivityIndicator, FlatList, Pressable } from 'react-native';
 import { YStack, H3, H5 } from 'tamagui';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '@/components/ui/Screen';
 import useWorkoutStore from '@/store/workoutStore';
 import { Button } from '@/components/ui/Button';
 import ActiveExerciseCard from '@/components/workout/ActiveExerciseCard';
@@ -42,12 +42,12 @@ export default function LogWorkoutScreen() {
     }
 
     if (isLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
+        return <Screen center><ActivityIndicator /></Screen>
     }
     
     return (
-        <SafeAreaView style={styles.container}>
-            <YStack space="$4" padding="$4" flex={1}>
+        <>
+            <Screen>
                 <H3>{workoutSession ? workoutSession.name : 'Log Workout'}</H3>
 
                 {isResting && <InlineRestTimer duration={restTimerValue} onFinish={stopResting} />}
@@ -67,7 +67,7 @@ export default function LogWorkoutScreen() {
                             ItemSeparatorComponent={() => <View style={{height: 10}} />}
                         />
                         <View style={{flex: 1}} />
-                        <Button theme="red" onPress={finishWorkout}>Finish Workout</Button>
+                        <Button variant="danger" onPress={() => finishWorkout()}>Finish Workout</Button>
                     </>
                 ) : (
                     <View style={styles.center}>
@@ -80,7 +80,7 @@ export default function LogWorkoutScreen() {
                         </YStack>
                     </View>
                 )}
-            </YStack>
+            </Screen>
 
             <Modal
                 visible={templateModalVisible}
@@ -100,14 +100,11 @@ export default function LogWorkoutScreen() {
                     ListEmptyComponent={<Text>No templates found.</Text>}
                 />
             </Modal>
-        </SafeAreaView>
+        </>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
     center: {
         flex: 1,
         justifyContent: 'center',

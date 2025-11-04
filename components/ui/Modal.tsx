@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal as RNModal, ModalProps as RNModalProps, Platform, Pressable, StyleSheet } from 'react-native';
 import { View, Text } from '@/components/Themed';
 import { Button } from './Button';
+import { useTheme } from 'tamagui';
 
 interface ModalProps extends Omit<RNModalProps, 'presentationStyle'> {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface ModalProps extends Omit<RNModalProps, 'presentationStyle'> {
 }
 
 export function Modal({ children, onClose, title, ...props }: ModalProps) {
+  const theme = useTheme();
   const presentationStyle = Platform.select({
     ios: 'pageSheet', // Presents as a dismissible sheet on iOS
     android: undefined, // Standard modal on Android
@@ -21,8 +23,8 @@ export function Modal({ children, onClose, title, ...props }: ModalProps) {
       presentationStyle={presentationStyle}
       onRequestClose={onClose}
       {...props}>
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View style={[styles.container, { backgroundColor: theme.background.get() }]}>
+        <View style={[styles.header, { borderBottomColor: theme.border.get() }]}>
             {title && <Text style={styles.title}>{title}</Text>}
             <Pressable onPress={onClose} style={styles.closeButton}>
                 <Text>Close</Text>
@@ -47,7 +49,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         padding: 15,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
     },
     title: {
         fontSize: 18,

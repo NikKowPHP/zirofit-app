@@ -47,7 +47,7 @@ describe('authStore', () => {
     });
 
     it('should set the user profile', () => {
-        const mockProfile = { role: 'client', name: 'John Doe' };
+        const mockProfile = { id: '123', role: 'client' as const, name: 'John Doe' };
         
         act(() => {
             useAuthStore.getState().setProfile(mockProfile);

@@ -34,10 +34,10 @@ export default function ProfileScreen() {
                     <H3 mt="$2">{profile.name}</H3>
                     <Text>{profile.email}</Text>
 
-                    <Button mt="$4" onPress={() => router.push('/(trainer)/(tabs)/profile/edit')}>
+                    <Button mt="$4" onPress={() => router.push('/(app)/(trainer)/(tabs)/profile/edit')}>
                         Edit Profile
                     </Button>
-                    <Button mt="$2" theme="red" onPress={handleLogout}>
+                    <Button mt="$2" variant="danger" onPress={handleLogout}>
                         Logout
                     </Button>
                 </Card>
