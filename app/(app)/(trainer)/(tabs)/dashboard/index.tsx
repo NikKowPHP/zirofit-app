@@ -55,12 +55,12 @@ export default function TrainerDashboard() {
                                 {data.activityFeed.map((item: any) => (
                                     <Card key={item.id} padding="$3">
                                         <Text>{item.description}</Text>
-                                        <Text lightColor="$color.textSecondary" darkColor="$color.textSecondary" fontSize="$xs" marginTop="$1">{new Date(item.timestamp).toLocaleString()}</Text>
+                                        <Text lightColor="$color.textSecondary" darkColor="$color.textSecondary" style={{ fontSize: 12, marginTop: 4 }}>{new Date(item.timestamp).toLocaleString()}</Text>
                                     </Card>
                                 ))}
                             </List>
                         ) : (
-                            <Text style={{textAlign: 'center'}} marginTop="$4">No recent activity.</Text>
+                            <Text style={{textAlign: 'center', marginTop: 16}}>No recent activity.</Text>
                         )}
                     </Section>
                 </YStack>

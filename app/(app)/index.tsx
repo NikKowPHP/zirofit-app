@@ -24,6 +24,6 @@ export default function AppIndex() {
     return <Redirect href="/(app)/(trainer)" />;
   }
   
-  return <Redirect href="/(app)/(client)" as any />;
+  return <Redirect href={"/(app)/(client)" as any} />;
 }
       

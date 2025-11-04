@@ -16,269 +16,2372 @@ Authorization: Bearer <your_supabase_jwt_token>
 ## Shared Endpoints
 
 These endpoints can be accessed by both `client` and `trainer` roles.
-
-### 1. Get Dashboard Data (Unified)
-
-- **Path:** `GET /api/dashboard`
-- **Description:** Retrieves the appropriate dashboard data for the authenticated user based on their role (`trainer` or `client`). This is the recommended endpoint for fetching initial dashboard data after login.
-- **Auth:** `client` or `trainer` role required.
-- **Success Response (200 OK):**
-  - The structure of the `data` object will differ based on the user's role.
-  - **For Trainers:**
-    ```json
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "zirofit-next Documentation",
+    "description": "Automatically generated documentation based on available route handlers.",
+    "version": "1.0.0"
+  },
+  "servers": [
     {
-      "data": {
-        "businessPerformance": { /* ... */ },
-        "clientEngagement": { /* ... */ },
-        "servicePopularity": { /* ... */ },
-        "upcomingSessions": [ /* ... */ ],
-        "activityFeed": [ /* ... */ ],
-        "profileChecklist": { /* ... */ }
+      "url": "http://localhost:3000",
+      "description": "Local development server."
+    }
+  ],
+  "paths": {
+    "/api/trainers": {
+      "get": {
+        "summary": "GET /api/trainers",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainers"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/openapi": {
+      "get": {
+        "summary": "GET /api/openapi",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "openapi"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "summary": "GET /api/notifications",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "notifications"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard": {
+      "get": {
+        "summary": "GET /api/dashboard",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/exercises": {
+      "get": {
+        "summary": "GET /api/exercises",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "exercises"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients": {
+      "get": {
+        "summary": "GET /api/clients",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/clients",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/bookings": {
+      "post": {
+        "summary": "POST /api/bookings",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "bookings"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout/log": {
+      "post": {
+        "summary": "POST /api/workout/log",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/start": {
+      "post": {
+        "summary": "POST /api/workout-sessions/start",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/live": {
+      "get": {
+        "summary": "GET /api/workout-sessions/live",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/workout-sessions/live",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/history": {
+      "get": {
+        "summary": "GET /api/workout-sessions/history",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/finish": {
+      "post": {
+        "summary": "POST /api/workout-sessions/finish",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}": {
+      "get": {
+        "summary": "GET /api/workout-sessions/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/workout-sessions/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/webhooks/stripe": {
+      "post": {
+        "summary": "POST /api/webhooks/stripe",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainers/{username}": {
+      "get": {
+        "summary": "GET /api/trainers/{username}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainers"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs": {
+      "get": {
+        "summary": "GET /api/trainer/programs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/trainer/programs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/profile": {
+      "get": {
+        "summary": "GET /api/trainer/profile",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/clients": {
+      "get": {
+        "summary": "GET /api/trainer/clients",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/trainer/clients",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/calendar": {
+      "get": {
+        "summary": "GET /api/trainer/calendar",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/trainer/calendar",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/assessments": {
+      "get": {
+        "summary": "GET /api/trainer/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me": {
+      "get": {
+        "summary": "GET /api/profile/me",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/notifications/{id}": {
+      "put": {
+        "summary": "PUT /api/notifications/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "notifications"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/exercises/find-media": {
+      "get": {
+        "summary": "GET /api/exercises/find-media",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "exercises"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/request-link": {
+      "post": {
+        "summary": "POST /api/clients/request-link",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}": {
+      "get": {
+        "summary": "GET /api/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/client/trainer": {
+      "get": {
+        "summary": "GET /api/client/trainer",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "client"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/client/progress": {
+      "get": {
+        "summary": "GET /api/client/progress",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "client"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/client/dashboard": {
+      "get": {
+        "summary": "GET /api/client/dashboard",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "client"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/checkout/session": {
+      "post": {
+        "summary": "POST /api/checkout/session",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "checkout"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/auth/sync-user": {
+      "post": {
+        "summary": "POST /api/auth/sync-user",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/auth/signout": {
+      "post": {
+        "summary": "POST /api/auth/signout",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "POST /api/auth/register",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "GET /api/auth/me",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "POST /api/auth/login",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "auth"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout/session/active": {
+      "get": {
+        "summary": "GET /api/workout/session/active",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}/summary": {
+      "get": {
+        "summary": "GET /api/workout-sessions/{id}/summary",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}/save-as-template": {
+      "post": {
+        "summary": "POST /api/workout-sessions/{id}/save-as-template",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}/comments": {
+      "post": {
+        "summary": "POST /api/workout-sessions/{id}/comments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainers/{username}/testimonials": {
+      "get": {
+        "summary": "GET /api/trainers/{username}/testimonials",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainers"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainers/{username}/schedule": {
+      "get": {
+        "summary": "GET /api/trainers/{username}/schedule",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainers"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainers/{username}/packages": {
+      "get": {
+        "summary": "GET /api/trainers/{username}/packages",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainers"
+        ],
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs/templates": {
+      "post": {
+        "summary": "POST /api/trainer/programs/templates",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/clients/{id}": {
+      "get": {
+        "summary": "GET /api/trainer/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/trainer/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/trainer/clients/{id}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/calendar/{sessionId}": {
+      "put": {
+        "summary": "PUT /api/trainer/calendar/{sessionId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/trainer/calendar/{sessionId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/public/workout-summary/{sessionId}": {
+      "get": {
+        "summary": "GET /api/public/workout-summary/{sessionId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "public"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/transformation-photos": {
+      "post": {
+        "summary": "POST /api/profile/me/transformation-photos",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "get": {
+        "summary": "GET /api/profile/me/transformation-photos",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/text-content": {
+      "get": {
+        "summary": "GET /api/profile/me/text-content",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/profile/me/text-content",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/testimonials": {
+      "get": {
+        "summary": "GET /api/profile/me/testimonials",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/testimonials",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/social-links": {
+      "get": {
+        "summary": "GET /api/profile/me/social-links",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/social-links",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/services": {
+      "get": {
+        "summary": "GET /api/profile/me/services",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/services",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/push-token": {
+      "post": {
+        "summary": "POST /api/profile/me/push-token",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/packages": {
+      "get": {
+        "summary": "GET /api/profile/me/packages",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/packages",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/external-links": {
+      "get": {
+        "summary": "GET /api/profile/me/external-links",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/external-links",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/exercises": {
+      "get": {
+        "summary": "GET /api/profile/me/exercises",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/exercises",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/core-info": {
+      "get": {
+        "summary": "GET /api/profile/me/core-info",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/profile/me/core-info",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/billing": {
+      "get": {
+        "summary": "GET /api/profile/me/billing",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/billing",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/benefits": {
+      "get": {
+        "summary": "GET /api/profile/me/benefits",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/benefits",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/availability": {
+      "get": {
+        "summary": "GET /api/profile/me/availability",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/profile/me/availability",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/assessments": {
+      "get": {
+        "summary": "GET /api/profile/me/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/photos": {
+      "get": {
+        "summary": "GET /api/clients/{id}/photos",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/clients/{id}/photos",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/packages": {
+      "get": {
+        "summary": "GET /api/clients/{id}/packages",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/measurements": {
+      "get": {
+        "summary": "GET /api/clients/{id}/measurements",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/clients/{id}/measurements",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/exercise-logs": {
+      "post": {
+        "summary": "POST /api/clients/{id}/exercise-logs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/assessments": {
+      "get": {
+        "summary": "GET /api/clients/{id}/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/clients/{id}/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/client/trainer/link": {
+      "post": {
+        "summary": "POST /api/client/trainer/link",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "client"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/client/trainer/link",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "client"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/bookings/{bookingId}/decline": {
+      "put": {
+        "summary": "PUT /api/bookings/{bookingId}/decline",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "bookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/bookings/{bookingId}/confirm": {
+      "put": {
+        "summary": "PUT /api/bookings/{bookingId}/confirm",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "bookings"
+        ],
+        "parameters": [
+          {
+            "name": "bookingId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}/rest/start": {
+      "post": {
+        "summary": "POST /api/workout-sessions/{id}/rest/start",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout-sessions/{id}/rest/end": {
+      "post": {
+        "summary": "POST /api/workout-sessions/{id}/rest/end",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout-sessions"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/transformation-photos/{photoId}": {
+      "delete": {
+        "summary": "DELETE /api/profile/me/transformation-photos/{photoId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/testimonials/{testimonialId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/testimonials/{testimonialId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "testimonialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/testimonials/{testimonialId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "testimonialId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/social-links/{linkId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/social-links/{linkId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/social-links/{linkId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/services/{serviceId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/services/{serviceId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "serviceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/services/{serviceId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "serviceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/packages/{packageId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/packages/{packageId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/packages/{packageId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "packageId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/external-links/{linkId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/external-links/{linkId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/external-links/{linkId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "linkId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/exercises/{exerciseId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/exercises/{exerciseId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "exerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/exercises/{exerciseId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "exerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/benefits/order": {
+      "put": {
+        "summary": "PUT /api/profile/me/benefits/order",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/benefits/{benefitId}": {
+      "put": {
+        "summary": "PUT /api/profile/me/benefits/{benefitId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "benefitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/profile/me/benefits/{benefitId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "parameters": [
+          {
+            "name": "benefitId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/sessions/{sessionId}": {
+      "put": {
+        "summary": "PUT /api/clients/{id}/sessions/{sessionId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/clients/{id}/sessions/{sessionId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/photos/{photoId}": {
+      "delete": {
+        "summary": "DELETE /api/clients/{id}/photos/{photoId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "photoId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/measurements/{measurementId}": {
+      "put": {
+        "summary": "PUT /api/clients/{id}/measurements/{measurementId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "measurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/clients/{id}/measurements/{measurementId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "measurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/assessments/{resultId}": {
+      "put": {
+        "summary": "PUT /api/clients/{id}/assessments/{resultId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resultId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/clients/{id}/assessments/{resultId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "resultId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs/templates/{templateId}/rest": {
+      "get": {
+        "summary": "GET /api/trainer/programs/templates/{templateId}/rest",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs/templates/{templateId}/exercises": {
+      "put": {
+        "summary": "PUT /api/trainer/programs/templates/{templateId}/exercises",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs/templates/{templateId}/copy": {
+      "post": {
+        "summary": "POST /api/trainer/programs/templates/{templateId}/copy",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/calendar/sessions/{sessionId}/remind": {
+      "post": {
+        "summary": "POST /api/trainer/calendar/sessions/{sessionId}/remind",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "sessionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
       }
     }
-    ```
-  - **For Clients:**
-    ```json
+  },
+  "tags": [
     {
-      "data": {
-        "clientData": {
-          "id": "...",
-          "name": "Test Client",
-          "trainer": { /* ... */ },
-          "workoutSessions": [ /* ... */ ],
-          "measurements": [ /* ... */ ]
-        },
-        "weightUnit": "KG"
-      }
+      "name": "trainers",
+      "description": "Trainers endpoints."
+    },
+    {
+      "name": "openapi",
+      "description": "Openapi endpoints."
+    },
+    {
+      "name": "notifications",
+      "description": "Notifications endpoints."
+    },
+    {
+      "name": "dashboard",
+      "description": "Dashboard endpoints."
+    },
+    {
+      "name": "exercises",
+      "description": "Exercises endpoints."
+    },
+    {
+      "name": "clients",
+      "description": "Clients endpoints."
+    },
+    {
+      "name": "bookings",
+      "description": "Bookings endpoints."
+    },
+    {
+      "name": "workout",
+      "description": "Workout endpoints."
+    },
+    {
+      "name": "workout-sessions",
+      "description": "Workout-sessions endpoints."
+    },
+    {
+      "name": "webhooks",
+      "description": "Webhooks endpoints."
+    },
+    {
+      "name": "trainer",
+      "description": "Trainer endpoints."
+    },
+    {
+      "name": "profile",
+      "description": "Profile endpoints."
+    },
+    {
+      "name": "client",
+      "description": "Client endpoints."
+    },
+    {
+      "name": "checkout",
+      "description": "Checkout endpoints."
+    },
+    {
+      "name": "auth",
+      "description": "Auth endpoints."
+    },
+    {
+      "name": "public",
+      "description": "Public endpoints."
     }
-    ```
-
-### 2. Get Exercise Library
-
-- **Path:** `GET /api/exercises`
-- **Description:** Fetches all system exercises plus custom exercises relevant to the user (their own if a trainer, their trainer's if a client).
-- **Auth:** `client` or `trainer` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "exercises": [
-        {
-          "id": "...",
-          "name": "Barbell Squat",
-          "muscleGroup": "Legs",
-          "createdById": null
-        }
-      ]
-    }
-  }
-  ```
-
-### 3. Get Active Workout Session
-
-- **Path:** `GET /api/workout/session/active` (alias for `/api/workout-sessions/live`)
-- **Description:** Retrieves the user's currently active workout session, if one exists.
-- **Auth:** `client` or `trainer` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "session": {
-        "id": "session-id-string",
-        "status": "IN_PROGRESS",
-        "startTime": "...",
-        "exerciseLogs": [ /* ... */ ]
-      }
-    }
-  }
-  ```
-
-### 4. Log an Exercise Set
-
-- **Path:** `POST /api/workout/log`
-- **Description:** Creates or updates a single exercise set log within a workout session.
-- **Auth:** `client` or `trainer` role required.
-- **Request Body:**
-  ```json
-  {
-    "logId": "existing-log-id-for-updates", // Optional
-    "workoutSessionId": "active-session-id",
-    "exerciseId": "exercise-id-string",
-    "reps": 10,
-    "weight": 100
-  }
-  ```
-- **Success Response (201 Created or 200 OK):**
-  ```json
-  {
-    "data": {
-      "log": { /* ... created/updated log object ... */ },
-      "newRecords": [ /* ... any new personal records achieved ... */ ]
-    }
-  }
-  ```
-
-### 5. Register Push Notification Token
-
-- **Path:** `POST /api/profile/me/push-token`
-- **Description:** Registers a new push notification token for the authenticated user.
-- **Auth:** `client` or `trainer` role required.
-- **Request Body:**
-  ```json
-  {
-    "token": "ExponentPushToken[...]"
-  }
-  ```
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "message": "Push token registered successfully."
-    }
-  }
-  ```
-
----
-
-## Trainer Endpoints
-
-### 1. Get Trainer Dashboard (**DEPRECATED**)
-
-**Note:** Use the unified `GET /api/dashboard` endpoint instead.
-
-- **Path:** `GET /api/trainer/dashboard`
-- **Description:** Retrieves an aggregation of all data needed for the main trainer dashboard view.
-- **Auth:** `trainer` role required.
-
-### 2. Get Trainer Programs & Templates
-
-- **Path:** `GET /api/trainer/programs`
-- **Description:** Fetches all workout programs and templates, separating user-created ones from system defaults.
-- **Auth:** `trainer` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "userPrograms": [ /* ... */ ],
-      "systemPrograms": [ /* ... */ ],
-      "userTemplates": [ /* ... */ ],
-      "systemTemplates": [ /* ... */ ]
-    }
-  }
-  ```
-
-### 3. Get Calendar Events
-
-- **Path:** `GET /api/trainer/calendar`
-- **Description:** Retrieves all calendar events (bookings and planned sessions) for the trainer within a given date range.
-- **Auth:** `trainer` role required.
-- **Query Params:**
-  - `startDate` (string, ISO 8601 format, e.g., `2025-10-01`)
-  - `endDate` (string, ISO 8601 format, e.g., `2025-10-31`)
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "events": [
-        {
-          "id": "...",
-          "title": "Workout: Client Name",
-          "start": "2025-10-15T10:00:00.000Z",
-          "end": "2025-10-15T11:00:00.000Z",
-          "type": "session_planned",
-          "clientId": "..."
-        }
-      ]
-    }
-  }
-  ```
-
-### 4. Plan a Workout Session
-
-- **Path:** `POST /api/trainer/calendar`
-- **Description:** Creates one or more planned workout sessions for a client.
-- **Auth:** `trainer` role required.
-- **Request Body:**
-  ```json
-  {
-    "clientId": "client-id-string",
-    "startTime": "2025-11-20T14:00:00",
-    "endTime": "2025-11-20T15:00:00",
-    "notes": "Focus on form.",
-    "templateId": "template-id-string",
-    "repeats": true,
-    "repeatWeeks": 4
-  }
-  ```
-- **Success Response (201 Created):**
-  ```json
-  {
-    "data": {
-      "message": "4 session(s) planned successfully."
-    }
-  }
-  ```
-- **Error Response (409 Conflict):**
-  ```json
-  {
-    "error": {
-      "message": "A conflict was detected for the session on..."
-    }
-  }
-  ```
-
-### 5. Alias Endpoints
-
-For API path consistency, the following aliases exist:
-- `GET /api/trainer/clients` -> `GET /api/clients`
-- `POST /api/trainer/clients` -> `POST /api/clients`
-- `GET /api/trainer/clients/[id]` -> `GET /api/clients/[id]`
-- `GET /api/trainer/profile` -> `GET /api/profile/me`
-
----
-
-## Client Endpoints
-
-### 1. Get Client Dashboard (**DEPRECATED**)
-
-**Note:** Use the unified `GET /api/dashboard` endpoint instead.
-
-- **Path:** `GET /api/client/dashboard`
-- **Description:** Retrieves an aggregation of all data needed for the main client dashboard view.
-- **Auth:** `client` role required.
-
-### 2. Get Client Progress Data
-
-- **Path:** `GET /api/client/progress`
-- **Description:** Fetches all historical measurements and workout sessions for the client to build progress charts.
-- **Auth:** `client` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "measurements": [ /* ... */ ],
-      "workoutSessions": [ /* ... */ ]
-    }
-  }
-  ```
-
-### 3. Get "My Trainer" Info
-
-- **Path:** `GET /api/client/trainer`
-- **Description:** Fetches the profile information for the client's linked trainer.
-- **Auth:** `client` role required.
-- **Success Response (200 OK):**
-  ```json
-  {
-    "data": {
-      "trainer": {
-        "id": "...",
-        "name": "Nik Kowalev",
-        "username": "nik-kowalev",
-        "email": "nik.kowalev@gmail.com",
-        "profile": { /* ... */ }
-      }
-    }
-  }
-  ```
-      
+  ],
+  "x-generated-at": "2025-11-04T13:27:10.842Z"
+}

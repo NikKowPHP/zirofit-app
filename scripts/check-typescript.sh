@@ -51,8 +51,8 @@ check_specific_files() {
     
     echo -e "\n${BLUE}📁 Checking: $check_name${NC}"
     
-    # Find TypeScript files matching the pattern
-    files=$(find . -name "*.ts" -o -name "*.tsx" | grep -E "$pattern" | head -10)
+    # Find TypeScript files matching the pattern, excluding gitignored files
+    files=$(find . -name "*.ts" -o -name "*.tsx" | grep -E "$pattern" | while read -r file; do if ! git check-ignore --quiet "$file" 2>/dev/null; then echo "$file"; fi; done)
     
     if [ -z "$files" ]; then
         echo -e "${YELLOW}⚠️  No files found matching pattern: $pattern${NC}"

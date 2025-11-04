@@ -21,14 +21,14 @@ export default function CalendarScreen() {
         const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
         const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
         return {
-            startDate: firstDay.toISOString().split('T'),
-            endDate: lastDay.toISOString().split('T')
+            startDate: firstDay.toISOString().split('T')[0],
+            endDate: lastDay.toISOString().split('T')[0]
         };
     }, [currentMonth]);
 
-    const { data: events } = useQuery({ 
-        queryKey: ['calendarEvents', startDate, endDate], 
-        queryFn: () => getCalendarEvents(startDate, endDate) 
+    const { data: events } = useQuery({
+        queryKey: ['calendarEvents', startDate, endDate],
+        queryFn: () => getCalendarEvents(startDate, endDate)
     });
     const { data: clients } = useQuery({ queryKey: ['clients'], queryFn: getClients });
     const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });

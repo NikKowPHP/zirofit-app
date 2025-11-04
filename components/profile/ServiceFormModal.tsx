@@ -8,7 +8,7 @@ import { Alert } from 'react-native';
 type Service = {
     id: string;
     name: string;
-    description: string;
+    description?: string;
     price: number;
     duration: number;
 }
