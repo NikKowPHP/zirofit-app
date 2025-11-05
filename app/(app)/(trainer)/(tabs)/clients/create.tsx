@@ -30,7 +30,7 @@ export default function CreateClientScreen() {
             Alert.alert('Error', 'Please enter an email address.');
             return;
         }
-        mutation.mutate(email);
+        mutation.mutate({ email });
     };
 
     return (

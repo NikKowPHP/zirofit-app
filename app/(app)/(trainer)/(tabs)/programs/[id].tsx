@@ -33,7 +33,7 @@ export default function TemplateEditorScreen() {
     const [isAddExerciseModalVisible, setAddExerciseModalVisible] = useState(false);
 
     const addExerciseMutation = useMutation({
-        mutationFn: (exerciseId: string) => api.addExerciseToTemplate(templateId, { exercise_id: exerciseId }),
+        mutationFn: (exerciseId: string) => api.addExerciseToTemplate({ templateId, exercise_id: exerciseId }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['template', templateId] }),
         onError: (e: any) => Alert.alert('Error', e.message),
     });

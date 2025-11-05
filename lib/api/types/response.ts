@@ -17,6 +17,9 @@ export interface WorkoutSession {
   started_at: string;
   finished_at?: string;
   notes?: string;
+  name?: string;
+  exercises?: any[];
+  logs?: any[];
 }
 
 export interface WorkoutSessionSummary {
@@ -60,6 +63,9 @@ export interface Client {
   medical_conditions?: string;
   created_at: string;
   updated_at: string;
+  workouts?: any[];
+  measurements?: any[];
+  photos?: any[];
 }
 
 export interface ClientAssessment {
@@ -134,6 +140,11 @@ export interface TrainerProfile {
   };
   created_at: string;
   updated_at: string;
+  services?: TrainerService[];
+  packages?: TrainerPackage[];
+  testimonials?: TrainerTestimonial[];
+  transformations?: { id: string; photo_url: string; }[];
+  avatar_url?: string;
 }
 
 export interface TrainerService {
@@ -262,6 +273,9 @@ export interface CalendarEvent {
   template_id?: string;
   created_at: string;
   updated_at: string;
+  name?: string;
+  exercises?: any[];
+  logs?: any[];
 }
 
 // Notification Response Types
@@ -287,6 +301,12 @@ export interface DashboardData {
     completed_sessions: number;
     monthly_revenue: number;
   };
+  hasTrainer?: boolean;
+  businessPerformance?: any;
+  clientEngagement?: any;
+  upcomingAppointments?: number;
+  activeClients?: number;
+  activityFeed?: any[];
 }
 
 // Progress Response Types

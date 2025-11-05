@@ -28,12 +28,12 @@ export default function CalendarScreen() {
 
     const { data: events } = useQuery({
         queryKey: ['calendarEvents', startDate, endDate],
-        queryFn: () => getCalendarEvents(startDate, endDate)
+        queryFn: () => getCalendarEvents({ startDate, endDate })
     });
     const markedDates = useMemo(() => {
         if (!events) return {};
         const dates: { [key: string]: { dots: { key: string; color: string }[] } } = {};
-        events.forEach(event => {
+        events.forEach((event: any) => {
             const date = event.start_time.split('T')[0];
             if (!dates[date]) {
                 dates[date] = { dots: [] };

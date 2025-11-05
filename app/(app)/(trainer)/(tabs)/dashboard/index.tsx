@@ -37,11 +37,11 @@ export default function TrainerDashboard() {
                         </Card>
                     </Section>
 
-                    {data?.upcomingSessions && data.upcomingSessions.length > 0 && (
+                    {data?.upcoming_sessions && data.upcoming_sessions.length > 0 && (
                          <Section title="Upcoming Sessions">
                              <Card padding="$4">
                                  <List>
-                                     {data.upcomingSessions.map((s: any) => (
+                                     {data.upcoming_sessions.map((s: any) => (
                                          <Text key={s.id}>{s.clientName} - {new Date(s.time).toLocaleString()}</Text>
                                      ))}
                                  </List>

@@ -32,7 +32,7 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
   checkActiveSession: async () => {
     set({ isLoading: true });
     try {
-      const session = await api.getActiveWorkoutSession();
+      const session = await api.getActiveWorkoutSession() as any;
       set({ 
         workoutSession: session ? { 
           ...session, 
@@ -52,7 +52,7 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
   startWorkout: async (templateId: string) => {
     set({ isLoading: true });
     try {
-      const session = await api.startWorkoutSession(templateId);
+      const session = await api.startWorkoutSession({ templateId });
       set({ 
         workoutSession: { 
           ...session, 
@@ -83,12 +83,12 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     }));
 
     try {
-      const newLog = await api.logSet({ 
-        reps: logData.sets[0].reps, 
-        weight: logData.sets[0].weight, 
+      const newLog = await api.logSet({
+        reps: logData.sets[0].reps,
+        weight: logData.sets[0].weight,
         exercise_id: logData.exercise_id,
-        workout_session_id: currentSession.id 
-      });
+        workout_session_id: currentSession.id
+      } as any);
       // Replace temp log with real one from API
       set(state => ({
         workoutSession: state.workoutSession ? {
@@ -118,7 +118,7 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     if (!currentSession) return;
 
     try {
-      await api.finishWorkoutSession(currentSession.id);
+      await api.finishWorkoutSession({ sessionId: currentSession.id });
       set({ workoutSession: null, isResting: false });
     } catch (e: any) {
       set({ error: e.message });

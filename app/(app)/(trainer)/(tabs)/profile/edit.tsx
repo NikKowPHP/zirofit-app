@@ -84,7 +84,7 @@ export default function EditProfileScreen() {
 
     // Core info mutation
     const coreInfoMutation = useMutation({
-        mutationFn: api.updateTrainerCoreInfo,
+        mutationFn: api.updateProfileCoreInfo,
         ...genericMutationOptions('Core Info')
     });
     
@@ -180,7 +180,7 @@ export default function EditProfileScreen() {
                     type: 'image/jpeg',
                 } as any);
                 
-                uploadPhotoMutation.mutate(formData);
+                uploadPhotoMutation.mutate({ formData });
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to pick image. Please try again.');
@@ -231,7 +231,7 @@ export default function EditProfileScreen() {
                             username,
                             certifications: certifications.split(',').map(s => s.trim()).filter(s => s),
                             phone
-                        })}
+                        } as any)}
                         disabled={coreInfoMutation.isPending}
                     >
                         {coreInfoMutation.isPending ? 'Saving...' : 'Save Core Info'}

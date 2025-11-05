@@ -30,7 +30,7 @@ export default function LiveWorkoutScreen() {
     });
 
     const finishWorkoutMutation = useMutation({
-        mutationFn: () => finishWorkoutSession(session!.id),
+        mutationFn: () => finishWorkoutSession({ sessionId: session!.id }),
         onSuccess: () => {
             Alert.alert("Success", "Client's workout has been finished.");
             queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
