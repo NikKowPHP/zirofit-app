@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import * as api from '@/lib/api';
+import type { WorkoutSession as ApiWorkoutSession, ClientExerciseLog as ApiClientExerciseLog } from '@/lib/api/types';
 
 const REST_DURATION = 60; // seconds
 
 // Define your types. These should match your database schema.
-type ClientExerciseLog = { id: string; reps: number; weight: number; workout_session_id: string; exercise_id: string };
+type ClientExerciseLog = ApiClientExerciseLog;
 type WorkoutExercise = { id: string; name: string; };
-type WorkoutSession = { id: string; name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
+type WorkoutSession = ApiWorkoutSession & { name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
 
 type WorkoutState = {
   workoutSession: WorkoutSession | null;

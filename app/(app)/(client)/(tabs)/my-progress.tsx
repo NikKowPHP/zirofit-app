@@ -7,6 +7,7 @@ import { getProgressData, getClientAssessments } from '@/lib/api';
 import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
+import type { ProgressData } from '@/lib/api/types';
 
 type Metric = 'weight' | 'bodyfat';
 type ActiveTab = Metric | 'assessments';
@@ -30,11 +31,11 @@ export default function MyProgressScreen() {
         if (isProgressLoading) {
             return <ActivityIndicator />;
         }
-        if (!progressData || !progressData[activeTab] || progressData[activeTab].length === 0) {
+        if (!progressData || !progressData[activeTab as keyof ProgressData] || (progressData as any)[activeTab]?.length === 0) {
             return <Text>No {activeTab} data logged yet.</Text>;
         }
 
-        const data = progressData[activeTab].map((d: any, index: number) => ({ x: index, y: d.value }));
+        const data = (progressData as any)[activeTab].map((d: any, index: number) => ({ x: index, y: d.value }));
 
         return (
             <VictoryChart height={200} padding={{ top: 20, bottom: 60, left: 60, right: 20 }}>
@@ -49,18 +50,18 @@ export default function MyProgressScreen() {
         if (areAssessmentsLoading) {
             return <ActivityIndicator />;
         }
-        if (!assessments || assessments.length === 0) {
+        if (!assessments || (assessments as any[]).length === 0) {
             return <Text>No assessments found.</Text>;
         }
 
         return (
             <ScrollView style={{width: '100%'}}>
                 <YStack space="$3">
-                    {assessments.map((assessment: any) => (
+                    {(assessments as any[]).map((assessment: any) => (
                         <Card key={assessment.id} padding="$3">
                             <H5>{assessment.name}</H5>
                             <Text style={styles.dateText}>{new Date(assessment.date).toDateString()}</Text>
-                             {assessment.metrics.map((metric: any) => (
+                             {(assessment.metrics as any[]).map((metric: any) => (
                                 <XStack key={metric.id} justifyContent='space-between' my="$1">
                                     <Text>{metric.name}:</Text>
                                     <Text style={styles.metricValue}>{metric.value} {metric.unit}</Text>

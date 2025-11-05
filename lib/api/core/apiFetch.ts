@@ -32,16 +32,18 @@ export const apiFetch = async (endpoint: string, options: ApiFetchOptions = {}):
     let url = `${API_URL}/api${endpoint}`;
     if (options.method === 'GET' && options.params) {
       const queryParams = new URLSearchParams();
-      Object.keys(options.params).forEach(key => {
-        if (options.params[key] !== undefined && options.params[key] !== null) {
-          queryParams.append(key, String(options.params[key]));
+      const params = options.params; // Type assertion to satisfy TypeScript
+      Object.keys(params).forEach(key => {
+        const paramValue = (params as Record<string, any>)[key];
+        if (paramValue !== undefined && paramValue !== null) {
+          queryParams.append(key, String(paramValue));
         }
       });
       if (queryParams.toString()) {
         url += `?${queryParams.toString()}`;
       }
       // Remove params from options since they're now in the URL
-      const { params, ...restOptions } = options;
+      const { params: _, ...restOptions } = options;
       options = restOptions;
     }
 

@@ -262,8 +262,8 @@ export const updateTrainerTestimonial = (testimonialId: string, request: any): P
  * @param testimonialId Testimonial ID
  * @returns Deletion result
  */
-export const deleteTrainerTestimonial = (testimonialId: string): Promise<void> => 
-  apiFetch(`/trainer/testimonials/${testimonialialId}`, {
+export const deleteTrainerTestimonial = (testimonialId: string): Promise<void> =>
+  apiFetch(`/trainer/testimonials/${testimonialId}`, {
     method: 'DELETE'
   });
 

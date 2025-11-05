@@ -32,6 +32,9 @@ export interface WorkoutSession {
   started_at: string;
   finished_at?: string;
   notes?: string;
+  name?: string;
+  exercises?: any[];
+  logs?: any[];
 }
 
 export interface WorkoutSessionSummary {
@@ -73,6 +76,7 @@ export interface Client {
   date_of_birth?: string;
   fitness_goals?: string;
   medical_conditions?: string;
+  avatar_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -141,6 +145,7 @@ export interface TrainerProfile {
   phone?: string;
   email?: string;
   website?: string;
+  avatar_url?: string;
   social_links?: {
     instagram?: string;
     tiktok?: string;
@@ -294,8 +299,15 @@ export interface Notification {
 // Dashboard Types
 export interface DashboardData {
   upcoming_sessions: CalendarEvent[];
+  upcomingSessions?: CalendarEvent[];
   recent_workouts: WorkoutSession[];
   client_progress: any[];
+  hasTrainer?: boolean;
+  businessPerformance?: any[];
+  clientEngagement?: any[];
+  upcomingAppointments?: number;
+  activeClients?: number;
+  activityFeed?: any[];
   stats: {
     total_clients: number;
     active_sessions: number;
@@ -321,6 +333,13 @@ export interface ProgressData {
     target_weight?: number;
     target_date?: string;
   };
+  weight?: Array<{ value: number; date: string }>;
+  bodyfat?: Array<{ value: number; date: string }>;
+}
+
+// Add index signature for ProgressData
+export interface ProgressDataIndex extends ProgressData {
+  [key: string]: any;
 }
 
 // Booking Types

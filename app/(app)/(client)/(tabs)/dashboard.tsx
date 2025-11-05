@@ -57,7 +57,9 @@ export default function DashboardScreen() {
     return (
         <Screen>
             <H3>Dashboard</H3>
-            {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />}
+            {/* TODO: Transform CalendarEvent[] to Session[] for UpcomingSessions component */}
+            {/* {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />} */}
+            {/* {data?.upcoming_sessions && data.upcoming_sessions.length > 0 && <UpcomingSessions sessions={data.upcoming_sessions} />} */}
             {!data?.hasTrainer && <FindTrainerPrompt />}
         </Screen>
     )

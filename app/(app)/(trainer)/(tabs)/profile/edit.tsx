@@ -12,9 +12,11 @@ import TestimonialFormModal from '@/components/profile/TestimonialFormModal';
 import { Card } from '@/components/ui/Card';
 import * as ImagePicker from 'expo-image-picker';
 
-type Service = { id: string; name: string; description?: string; price: number; duration: number; };
-type Package = { id: string; name: string; description: string; price: number; };
-type Testimonial = { id: string; client_name: string; content: string; };
+import type { TrainerService, TrainerPackage, TrainerTestimonial } from '@/lib/api/types';
+
+type Service = TrainerService;
+type Package = TrainerPackage;
+type Testimonial = TrainerTestimonial;
 type Transformation = { id: string; photo_url: string; };
 
 
@@ -26,7 +28,7 @@ export default function EditProfileScreen() {
     // Form states
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
-    const [certifications, setCertifications] = useState('');
+    const [certifications, setCertifications] = useState<string[]>([]);
     const [phone, setPhone] = useState('');
 
     // Modal states

@@ -16,10 +16,53 @@ export * from './endpoints/client';
 export * from './endpoints/trainer';
 
 // Profile management endpoints
-export * from './endpoints/profile';
+export {
+  // Profile-specific exports (avoiding conflicts with trainer endpoints)
+  getProfile,
+  getProfileCoreInfo,
+  updateProfileCoreInfo,
+  getProfileTextContent,
+  updateProfileTextContent,
+  getProfileSocialLinks,
+  addSocialLink,
+  updateSocialLink,
+  deleteSocialLink,
+  getProfileExternalLinks,
+  addExternalLink,
+  updateExternalLink,
+  deleteExternalLink,
+  getProfileBenefits,
+  addProfileBenefit,
+  updateProfileBenefit,
+  deleteProfileBenefit,
+  orderProfileBenefits,
+  getProfileAvailability,
+  updateProfileAvailability,
+  getProfileExercises,
+  addProfileExercise,
+  updateProfileExercise,
+  deleteProfileExercise,
+  getTransformationPhotos,
+  uploadTransformationPhoto,
+  deleteTransformationPhoto,
+  getProfileTestimonials,
+  addTrainerTestimonial,
+  getProfileServices,
+  addTrainerService,
+  getProfilePackages,
+  addTrainerPackage,
+  sendPushToken
+} from './endpoints/profile';
 
 // Calendar management endpoints
-export * from './endpoints/calendar';
+export {
+  // Calendar-specific exports (avoiding conflicts with trainer endpoints)
+  getCalendarEvents as getTrainerCalendarEvents,
+  planSession as planTrainerSession,
+  updateCalendarSession as updateTrainerCalendarSession,
+  deleteCalendarSession as deleteTrainerCalendarSession,
+  sendSessionReminder as sendTrainerSessionReminder
+} from './endpoints/calendar';
 
 // Notification & webhook endpoints
 export * from './endpoints/notification';
@@ -28,7 +71,13 @@ export * from './endpoints/notification';
 export * from './endpoints/public';
 
 // Booking & miscellaneous endpoints
-export * from './endpoints/misc';
+export {
+  // Misc-specific exports (avoiding conflicts with client endpoints)
+  getClientDashboard as getClientDashboardData,
+  confirmBooking,
+  declineBooking,
+  getAvailableTimeSlots
+} from './endpoints/misc';
 
 // Types
 export * from './types';

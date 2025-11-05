@@ -1,13 +1,22 @@
 import { act } from '@testing-library/react-native';
 import useWorkoutStore from './workoutStore';
 import * as api from '@/lib/api';
+import type { WorkoutSession as ApiWorkoutSession, ClientExerciseLog as ApiClientExerciseLog } from '@/lib/api/types';
 
 // Mock the API module
 jest.mock('@/lib/api');
 const mockedApi = api as jest.Mocked<typeof api>;
 
-const mockSession = {
+// Define local types that extend the API types
+type ClientExerciseLog = ApiClientExerciseLog;
+type WorkoutExercise = { id: string; name: string; };
+type WorkoutSession = ApiWorkoutSession & { name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
+
+const mockSession: WorkoutSession = {
   id: 'session1',
+  user_id: 'user1',
+  status: 'active',
+  started_at: new Date().toISOString(),
   name: 'Test Workout',
   exercises: [{ id: 'ex1', name: 'Push Ups' }],
   logs: [],
