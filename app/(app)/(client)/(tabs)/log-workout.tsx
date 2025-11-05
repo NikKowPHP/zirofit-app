@@ -48,36 +48,40 @@ export default function LogWorkoutScreen() {
     return (
         <>
             <Screen>
-                <H3>{workoutSession ? workoutSession.name : 'Log Workout'}</H3>
+                <H3>{workoutSession?.name || 'Log Workout'}</H3>
 
                 {isResting && <InlineRestTimer duration={restTimerValue} onFinish={stopResting} />}
 
                 {workoutSession ? (
                     <>
                         <FlatList
-                            data={workoutSession.exercises}
+                            data={workoutSession.exercises || []}
                             renderItem={({ item }) => (
                                 <ActiveExerciseCard 
                                     exercise={item} 
-                                    loggedSets={workoutSession.logs?.filter(log => log.exercise_id === item.id) || []}
+                                    loggedSets={(workoutSession?.logs || []).filter((log: any) => log.exercise_id === item.id).flatMap((log: any) => log.sets) || []}
                                 />
                             )}
-                            keyExtractor={item => item.id}
+                            keyExtractor={(item) => item.id}
                             showsVerticalScrollIndicator={false}
                             ItemSeparatorComponent={() => <View style={{height: 10}} />}
                         />
                         <View style={{flex: 1}} />
-                        <Button variant="danger" onPress={() => finishWorkout()}>Finish Workout</Button>
+                        <Button mt="$4" variant="danger" onPress={finishWorkout}>
+                            Finish Workout
+                        </Button>
                     </>
                 ) : (
                     <View style={styles.center}>
-                        <H5>Start a new session</H5>
-                        <YStack space="$3" width="80%" mt="$4">
-                            <Button onPress={() => startWorkout('blank')}>Start Blank Workout</Button>
-                            <Button onPress={() => setTemplateModalVisible(true)} disabled={templatesLoading}>
-                                {templatesLoading ? 'Loading Templates...' : 'Start from Template'}
-                            </Button>
-                        </YStack>
+                        <Card padding="$4">
+                            <YStack space="$3">
+                                <H5>No active workout session.</H5>
+                                <Button onPress={() => startWorkout('blank')}>Start Blank Workout</Button>
+                                <Button onPress={() => setTemplateModalVisible(true)} disabled={templatesLoading}>
+                                    {templatesLoading ? 'Loading Templates...' : 'Start from Template'}
+                                </Button>
+                            </YStack>
+                        </Card>
                     </View>
                 )}
             </Screen>

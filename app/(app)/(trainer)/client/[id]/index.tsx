@@ -9,7 +9,7 @@ export default function ClientWorkoutsTab() {
   const router = useRouter();
   const { data: client, isLoading } = useClientDetails(id as string);
   
-  if (isLoading) {
+  if (isLoading || !client) {
     return <View style={styles.center}><ActivityIndicator /></View>
   }
 
@@ -21,7 +21,7 @@ export default function ClientWorkoutsTab() {
         renderItem={({ item }) => (
             <View style={styles.workoutItem}>
                 <Text style={styles.workoutName}>{item.name}</Text>
-                <Text>{new Date(item.date).toLocaleDateString()}</Text>
+                <Text>{new Date(item.started_at).toLocaleDateString()}</Text>
             </View>
         )}
         ListHeaderComponent={
@@ -29,7 +29,7 @@ export default function ClientWorkoutsTab() {
             View Live Workout
           </Button>
         }
-        ListEmptyComponent={<Text>No workouts logged yet.</Text>}
+        ListEmptyComponent={<Text>No workouts found.</Text>}
         contentContainerStyle={{ padding: 10 }}
       />
     </View>

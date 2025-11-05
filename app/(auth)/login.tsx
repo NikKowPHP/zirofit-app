@@ -30,7 +30,7 @@ export default function LoginScreen() {
       try {
         // On success, fetch user profile which contains the role
         const profile = await getMe();
-        setProfile(profile);
+        setProfile(profile.user);
         // The root navigator will handle redirection automatically
       } catch (e: any) {
         Alert.alert('Profile Error', e.message);

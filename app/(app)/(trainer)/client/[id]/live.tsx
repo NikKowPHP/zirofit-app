@@ -10,10 +10,9 @@ import { getActiveClientWorkoutSession, logSet, finishWorkoutSession } from '@/l
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import type { WorkoutSession, ClientExerciseLog } from '@/lib/api.types';
 
-type ClientExerciseLog = { id: string; reps: number; weight: number; created_at: string; exercise_id: string; };
 type WorkoutExercise = { id: string; name: string; };
-type WorkoutSession = { id: string; name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
 
 export default function LiveWorkoutScreen() {
     const { id: clientId } = useLocalSearchParams();
@@ -24,7 +23,7 @@ export default function LiveWorkoutScreen() {
     const [reps, setReps] = useState('');
     const [weight, setWeight] = useState('');
 
-    const { data: session, isLoading, error, refetch } = useQuery<WorkoutSession>({
+    const { data: session, isLoading, error, refetch } = useQuery<WorkoutSession | null>({
         queryKey: ['activeClientSession', clientId],
         queryFn: () => getActiveClientWorkoutSession(clientId as string),
         enabled: !!clientId,
@@ -49,8 +48,7 @@ export default function LiveWorkoutScreen() {
         onSuccess: () => {
             setReps('');
             setWeight('');
-            // Real-time should update the list, but we can invalidate to be safe
-            // queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
+            refetch();
         },
         onError: (e: any) => Alert.alert('Error', e.message),
     });
@@ -88,13 +86,13 @@ export default function LiveWorkoutScreen() {
         <SafeAreaView style={styles.container}>
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
                 <XStack justifyContent='space-between' alignItems='center'>
-                    <H4>Live Feed: {session.name}</H4>
+                    <H4>Live Feed: {session.name || 'Unnamed Workout'}</H4>
                     <Button size="$3" variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
                         Finish Workout
                     </Button>
                 </XStack>
                 <FlatList
-                    data={session.exercises}
+                    data={session.exercises || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => {
                         const exerciseLogs = combinedLogs.filter(log => log.exercise_id === item.id);

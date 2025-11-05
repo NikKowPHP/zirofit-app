@@ -7,7 +7,7 @@ export default function MeasurementsTab() {
   const { id } = useLocalSearchParams();
   const { data: client, isLoading } = useClientDetails(id as string);
 
-  if (isLoading) {
+  if (isLoading || !client) {
     return <View style={styles.container}><ActivityIndicator /></View>
   }
   
@@ -18,9 +18,8 @@ export default function MeasurementsTab() {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
             <View style={styles.item}>
-                <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
-                <Text>Weight: {item.weight} kg</Text>
-                <Text>Body Fat: {item.bodyfat}%</Text>
+                <Text style={styles.date}>{new Date(item.measured_at).toLocaleDateString()}</Text>
+                <Text>{item.measurement_type}: {item.value} {item.unit}</Text>
             </View>
         )}
         ListEmptyComponent={<Text>No measurements logged yet.</Text>}

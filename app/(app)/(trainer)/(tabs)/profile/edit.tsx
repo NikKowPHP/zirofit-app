@@ -28,7 +28,7 @@ export default function EditProfileScreen() {
     // Form states
     const [name, setName] = useState('');
     const [username, setUsername] = useState('');
-    const [certifications, setCertifications] = useState<string[]>([]);
+    const [certifications, setCertifications] = useState('');
     const [phone, setPhone] = useState('');
 
     // Modal states
@@ -44,7 +44,7 @@ export default function EditProfileScreen() {
         if (profile) {
             setName(profile.name || '');
             setUsername(profile.username || '');
-            setCertifications(profile.certifications || '');
+            setCertifications((profile.certifications || []).join(', '));
             setPhone(profile.phone || '');
         }
     }, [profile]);
@@ -61,17 +61,17 @@ export default function EditProfileScreen() {
     
     // Service Mutations
     const addServiceMutation = useMutation({ mutationFn: api.addTrainerService, ...genericMutationOptions('Service') });
-    const updateServiceMutation = useMutation({ mutationFn: (data: Service) => api.updateTrainerService(data.id, data), ...genericMutationOptions('Service') });
+    const updateServiceMutation = useMutation({ mutationFn: (data) => api.updateTrainerService(data.serviceId, data), ...genericMutationOptions('Service') });
     const deleteServiceMutation = useMutation({ mutationFn: api.deleteTrainerService, ...genericMutationOptions('Service') });
 
     // Package Mutations
     const addPackageMutation = useMutation({ mutationFn: api.addTrainerPackage, ...genericMutationOptions('Package') });
-    const updatePackageMutation = useMutation({ mutationFn: (data: Package) => api.updateTrainerPackage(data.id, data), ...genericMutationOptions('Package') });
+    const updatePackageMutation = useMutation({ mutationFn: (data) => api.updateTrainerPackage(data.packageId, data), ...genericMutationOptions('Package') });
     const deletePackageMutation = useMutation({ mutationFn: api.deleteTrainerPackage, ...genericMutationOptions('Package') });
 
     // Testimonial Mutations
     const addTestimonialMutation = useMutation({ mutationFn: api.addTrainerTestimonial, ...genericMutationOptions('Testimonial') });
-    const updateTestimonialMutation = useMutation({ mutationFn: (data: Testimonial) => api.updateTrainerTestimonial(data.id, data), ...genericMutationOptions('Testimonial') });
+    const updateTestimonialMutation = useMutation({ mutationFn: (data) => api.updateTrainerTestimonial(data.testimonialId, data), ...genericMutationOptions('Testimonial') });
     const deleteTestimonialMutation = useMutation({ mutationFn: api.deleteTrainerTestimonial, ...genericMutationOptions('Testimonial') });
 
     // Transformation Mutations
@@ -114,7 +114,7 @@ export default function EditProfileScreen() {
                     <Input placeholder="Username" value={username} onChangeText={setUsername} autoCapitalize="none" />
                     <Input placeholder="Certifications" value={certifications} onChangeText={setCertifications} />
                     <Input placeholder="Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
-                    <Button onPress={() => coreInfoMutation.mutate({ name, username, certifications, phone })} disabled={coreInfoMutation.isPending}>
+                    <Button onPress={() => coreInfoMutation.mutate({ name, username, certifications: certifications.split(',').map(s => s.trim()).filter(s => s), phone })} disabled={coreInfoMutation.isPending}>
                         {coreInfoMutation.isPending ? 'Saving...' : 'Save Core Info'}
                     </Button>
                 </YStack>
@@ -213,21 +213,21 @@ export default function EditProfileScreen() {
             <ServiceFormModal
                 isVisible={isServiceModalVisible}
                 onClose={() => setServiceModalVisible(false)}
-                onSubmit={(data) => { selectedService ? updateServiceMutation.mutate({ ...data, id: selectedService.id }) : addServiceMutation.mutate(data); setServiceModalVisible(false); }}
+                onSubmit={(data) => { selectedService ? updateServiceMutation.mutate({ serviceId: selectedService.id, ...data }) : addServiceMutation.mutate(data); setServiceModalVisible(false); }}
                 initialData={selectedService}
                 isSubmitting={addServiceMutation.isPending || updateServiceMutation.isPending}
             />
             <PackageFormModal
                 isVisible={isPackageModalVisible}
                 onClose={() => setPackageModalVisible(false)}
-                onSubmit={(data) => { selectedPackage ? updatePackageMutation.mutate({ ...data, id: selectedPackage.id }) : addPackageMutation.mutate(data); setPackageModalVisible(false); }}
+                onSubmit={(data) => { selectedPackage ? updatePackageMutation.mutate({ packageId: selectedPackage.id, ...data }) : addPackageMutation.mutate(data); setPackageModalVisible(false); }}
                 initialData={selectedPackage}
                 isSubmitting={addPackageMutation.isPending || updatePackageMutation.isPending}
             />
             <TestimonialFormModal
                 isVisible={isTestimonialModalVisible}
                 onClose={() => setTestimonialModalVisible(false)}
-                onSubmit={(data) => { selectedTestimonial ? updateTestimonialMutation.mutate({ ...data, id: selectedTestimonial.id }) : addTestimonialMutation.mutate(data); setTestimonialModalVisible(false); }}
+                onSubmit={(data) => { selectedTestimonial ? updateTestimonialMutation.mutate({ testimonialId: selectedTestimonial.id, ...data }) : addTestimonialMutation.mutate(data); setTestimonialModalVisible(false); }}
                 initialData={selectedTestimonial}
                 isSubmitting={addTestimonialMutation.isPending || updateTestimonialMutation.isPending}
             />

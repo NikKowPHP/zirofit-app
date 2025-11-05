@@ -17,7 +17,7 @@ export default function SessionDetailScreen() {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
     }
 
-    if (error) {
+    if (error || !session) {
         return <SafeAreaView style={styles.center}><Text>Error fetching session details.</Text></SafeAreaView>
     }
 

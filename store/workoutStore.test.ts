@@ -65,8 +65,20 @@ describe('workoutStore', () => {
             useWorkoutStore.setState({ workoutSession: mockSession });
         });
         
-        const logData = { reps: 10, weight: 50, exercise_id: 'ex1' };
-        const newLogFromApi = { ...logData, id: 'log1', workout_session_id: 'session1' };
+        const logData = { 
+          client_id: 'user1', 
+          exercise_id: 'ex1', 
+          sets: [{ reps: 10, weight: 50 }], 
+          completed_at: new Date().toISOString() 
+        };
+        const newLogFromApi: ClientExerciseLog = { 
+          id: 'log1', 
+          client_id: 'user1', 
+          exercise_id: 'ex1', 
+          workout_session_id: 'session1',
+          sets: [{ reps: 10, weight: 50 }],
+          completed_at: new Date().toISOString()
+        };
         
         mockedApi.logSet.mockResolvedValue(newLogFromApi);
 
@@ -87,7 +99,12 @@ describe('workoutStore', () => {
             useWorkoutStore.setState({ workoutSession: mockSession });
         });
         
-        const logData = { reps: 10, weight: 50, exercise_id: 'ex1' };
+        const logData = { 
+          client_id: 'user1', 
+          exercise_id: 'ex1', 
+          sets: [{ reps: 10, weight: 50 }], 
+          completed_at: new Date().toISOString() 
+        };
         
         mockedApi.logSet.mockRejectedValue(new Error('API failed'));
 
@@ -106,7 +123,7 @@ describe('workoutStore', () => {
             useWorkoutStore.setState({ workoutSession: mockSession });
         });
 
-        mockedApi.finishWorkoutSession.mockResolvedValue(null);
+        mockedApi.finishWorkoutSession.mockResolvedValue(mockSession);
 
         await act(async () => {
             await useWorkoutStore.getState().finishWorkout();

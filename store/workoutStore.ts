@@ -7,10 +7,10 @@ const REST_DURATION = 60; // seconds
 // Define your types. These should match your database schema.
 type ClientExerciseLog = ApiClientExerciseLog;
 type WorkoutExercise = { id: string; name: string; };
-type WorkoutSession = ApiWorkoutSession & { name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
+type StoreWorkoutSession = ApiWorkoutSession & { name: string; exercises: WorkoutExercise[], logs: ClientExerciseLog[] };
 
 type WorkoutState = {
-  workoutSession: WorkoutSession | null;
+  workoutSession: StoreWorkoutSession | null;
   isLoading: boolean;
   error: string | null;
   isResting: boolean;
@@ -33,7 +33,15 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     set({ isLoading: true });
     try {
       const session = await api.getActiveWorkoutSession();
-      set({ workoutSession: session, isLoading: false });
+      set({ 
+        workoutSession: session ? { 
+          ...session, 
+          name: session.name || 'Workout', 
+          exercises: (session.exercises || []) as WorkoutExercise[], 
+          logs: (session.logs || []) as ClientExerciseLog[]
+        } : null, 
+        isLoading: false 
+      });
     } catch (error) {
       // It's okay if there's no active session, so we don't set an error state here
       console.log("No active session found.");
@@ -45,7 +53,15 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     set({ isLoading: true });
     try {
       const session = await api.startWorkoutSession(templateId);
-      set({ workoutSession: session, isLoading: false });
+      set({ 
+        workoutSession: { 
+          ...session, 
+          name: session.name || 'Workout', 
+          exercises: (session.exercises || []) as WorkoutExercise[], 
+          logs: (session.logs || []) as ClientExerciseLog[]
+        }, 
+        isLoading: false 
+      });
     } catch (e: any) {
       set({ error: e.message, isLoading: false });
     }
@@ -67,12 +83,17 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     }));
 
     try {
-      const newLog = await api.logSet({ ...logData, workout_session_id: currentSession.id });
+      const newLog = await api.logSet({ 
+        reps: logData.sets[0].reps, 
+        weight: logData.sets[0].weight, 
+        exercise_id: logData.exercise_id,
+        workout_session_id: currentSession.id 
+      });
       // Replace temp log with real one from API
       set(state => ({
         workoutSession: state.workoutSession ? {
             ...state.workoutSession,
-            logs: state.workoutSession.logs.map(log => log.id === tempLog.id ? newLog : log),
+            logs: state.workoutSession.logs.map(log => log.id === tempLog.id ? newLog : log) as ClientExerciseLog[],
         } : null,
       }));
     } catch (e: any) {
@@ -82,7 +103,7 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
         error: "Failed to save set. Please try again.",
         workoutSession: state.workoutSession ? {
             ...state.workoutSession,
-            logs: state.workoutSession.logs.filter(log => log.id !== tempLog.id),
+            logs: ((state.workoutSession.logs || []) as ClientExerciseLog[]).filter(log => log.id !== tempLog.id),
         } : null,
       }));
     }

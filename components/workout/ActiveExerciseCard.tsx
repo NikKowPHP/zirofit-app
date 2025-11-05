@@ -14,9 +14,10 @@ export default function ActiveExerciseCard({ exercise, loggedSets }: { exercise:
     const handleLogSet = () => {
         if (!reps || !weight || !workoutSession) return;
         logSet({
-            reps: parseInt(reps),
-            weight: parseFloat(weight),
+            client_id: '', // Will be set by API
             exercise_id: exercise.id,
+            sets: [{ reps: parseInt(reps), weight: parseFloat(weight) }],
+            completed_at: new Date().toISOString(),
         });
         setReps('');
         setWeight('');

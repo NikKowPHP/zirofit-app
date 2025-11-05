@@ -10,8 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useLayoutEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-
-type Client = { id: string; name: string; avatar_url: string };
+import type { Client } from '@/lib/api.types';
 
 export default function ClientsScreen() {
     const router = useRouter();
@@ -33,7 +32,7 @@ export default function ClientsScreen() {
             <Card padding="$3" marginVertical="$2">
                 <XStack space="$3" alignItems="center">
                     <Avatar circular size="$4">
-                        <Avatar.Image src={item.avatar_url} />
+                        <Avatar.Image src={item.avatar_url || undefined} />
                         <Avatar.Fallback bc="gray" />
                     </Avatar>
                     <Text style={{fontSize: 16}}>{item.name}</Text>

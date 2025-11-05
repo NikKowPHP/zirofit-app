@@ -12,6 +12,7 @@ export interface AuthResponse {
     id: string;
     email: string;
     name?: string;
+    role: 'client' | 'trainer';
   };
   token: string;
 }
@@ -77,6 +78,9 @@ export interface Client {
   fitness_goals?: string;
   medical_conditions?: string;
   avatar_url?: string;
+  workouts?: WorkoutSession[];
+  measurements?: ClientMeasurement[];
+  photos?: ClientPhoto[];
   created_at: string;
   updated_at: string;
 }
@@ -152,6 +156,10 @@ export interface TrainerProfile {
     youtube?: string;
     twitter?: string;
   };
+  services?: TrainerService[];
+  packages?: TrainerPackage[];
+  testimonials?: TrainerTestimonial[];
+  transformations?: { id: string; photo_url: string; }[];
   created_at: string;
   updated_at: string;
 }

@@ -11,8 +11,10 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
+import type { TrainerProgram } from '@/lib/api.types';
+import type { CreateProgramRequest } from '@/lib/api/types/request';
 
-type Program = { id: string; name: string; description: string, templates: Template[] };
+type Program = TrainerProgram;
 type Template = { id: string, name: string };
 
 export default function ProgramsScreen() {
@@ -51,16 +53,14 @@ export default function ProgramsScreen() {
                     <Accordion.Trigger>
                         <YStack padding="$3" flex={1}>
                             <H5>{item.name}</H5>
-                            <Text>{item.description}</Text>
+                            <Text>{item.description || 'No description'}</Text>
                         </YStack>
                     </Accordion.Trigger>
                     <Accordion.Content>
                         <YStack padding="$3" borderTopWidth={1} borderColor="$borderColor">
                             {item.templates?.map(template => (
                                 <Pressable key={template.id} onPress={() => router.push(`/(app)/(trainer)/(tabs)/programs/${template.id}`)}>
-                                    <Card padding="$3" my="$1" backgroundColor="$backgroundHover">
-                                        <Text>{template.name}</Text>
-                                    </Card>
+                                    <Text style={styles.templateName}>{template.name}</Text>
                                 </Pressable>
                             ))}
                             {/* In a real app, would add a "Create Template" button here */}
@@ -101,7 +101,7 @@ export default function ProgramsScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: { flex: 1, padding: 10 },
+    templateName: { fontSize: 14, color: 'gray' },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' }
 });
-      

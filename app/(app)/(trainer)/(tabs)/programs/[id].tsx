@@ -46,7 +46,7 @@ export default function TemplateEditorScreen() {
 
 
     if (isLoading) return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>;
-    if (error) return <SafeAreaView style={styles.center}><Text>Error fetching template details.</Text></SafeAreaView>;
+    if (error || !template) return <SafeAreaView style={styles.center}><Text>Error fetching template details.</Text></SafeAreaView>;
 
     return (
         <SafeAreaView style={styles.container}>

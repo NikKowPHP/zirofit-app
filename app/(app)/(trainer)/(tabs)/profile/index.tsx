@@ -13,7 +13,7 @@ export default function ProfileScreen() {
     const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
     const router = useRouter();
     
-    if (isLoading) {
+    if (isLoading || !profile) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
     }
 
@@ -28,11 +28,11 @@ export default function ProfileScreen() {
                 <H3>My Profile</H3>
                 <Card padding="$4" alignItems='center' width="100%">
                     <Avatar circular size="$10">
-                        <Avatar.Image src={profile.avatar_url} />
+                        <Avatar.Image src={profile.avatar_url || undefined} />
                         <Avatar.Fallback bc="blue" />
                     </Avatar>
-                    <H3 mt="$2">{profile.name}</H3>
-                    <Text>{profile.email}</Text>
+                    <H3 mt="$2">{profile.name || 'Unnamed'}</H3>
+                    <Text>{profile.email || 'No email'}</Text>
 
                     <Button mt="$4" onPress={() => router.push('/(app)/(trainer)/(tabs)/profile/edit')}>
                         Edit Profile

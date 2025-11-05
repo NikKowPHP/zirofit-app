@@ -30,6 +30,18 @@ export default function CalendarScreen() {
         queryKey: ['calendarEvents', startDate, endDate],
         queryFn: () => getCalendarEvents(startDate, endDate)
     });
+    const markedDates = useMemo(() => {
+        if (!events) return {};
+        const dates: { [key: string]: { dots: { key: string; color: string }[] } } = {};
+        events.forEach(event => {
+            const date = event.start_time.split('T')[0];
+            if (!dates[date]) {
+                dates[date] = { dots: [] };
+            }
+            dates[date].dots.push({ key: event.id, color: 'blue' });
+        });
+        return dates;
+    }, [events]);
     const { data: clients } = useQuery({ queryKey: ['clients'], queryFn: getClients });
     const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
     
@@ -80,7 +92,7 @@ export default function CalendarScreen() {
         <SafeAreaView style={styles.container}>
             <Calendar
                 onDayPress={openModal}
-                markedDates={events}
+                markedDates={markedDates}
                 markingType='multi-dot'
                 onMonthChange={(month) => setCurrentMonth(month.dateString.slice(0, 7))}
             />

@@ -8,7 +8,7 @@ export default function PhotosTab() {
   const { id } = useLocalSearchParams();
   const { data: client, isLoading } = useClientDetails(id as string);
 
-  if (isLoading) {
+  if (isLoading || !client) {
     return <View style={styles.container}><ActivityIndicator /></View>
   }
   
@@ -20,8 +20,8 @@ export default function PhotosTab() {
         numColumns={2}
         renderItem={({ item }) => (
           <YStack style={styles.photoContainer}>
-            <Image source={{ uri: item.url }} style={styles.photo} />
-            <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
+            <Image source={{ uri: item.photo_url }} style={styles.photo} />
+            <Text style={styles.date}>{new Date(item.taken_at).toLocaleDateString()}</Text>
           </YStack>
         )}
         ListEmptyComponent={<Text>No photos uploaded yet.</Text>}

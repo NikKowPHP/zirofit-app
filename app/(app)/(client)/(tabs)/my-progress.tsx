@@ -7,24 +7,26 @@ import { getProgressData, getClientAssessments } from '@/lib/api';
 import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
 import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
-import type { ProgressData } from '@/lib/api/types';
+import type { ProgressData, ClientAssessment } from '@/lib/api/types';
+import useAuthStore from '@/store/authStore';
 
 type Metric = 'weight' | 'bodyfat';
 type ActiveTab = Metric | 'assessments';
 
 export default function MyProgressScreen() {
     const [activeTab, setActiveTab] = useState<ActiveTab>('weight');
+    const { profile } = useAuthStore();
 
-    const { data: progressData, isLoading: isProgressLoading } = useQuery({ 
+    const { data: progressData, isLoading: isProgressLoading } = useQuery<ProgressData>({ 
         queryKey: ['progressData'], 
-        queryFn: getProgressData,
+        queryFn: () => getProgressData(),
         enabled: activeTab === 'weight' || activeTab === 'bodyfat',
     });
 
-    const { data: assessments, isLoading: areAssessmentsLoading } = useQuery({
-        queryKey: ['assessments'],
-        queryFn: getClientAssessments,
-        enabled: activeTab === 'assessments',
+    const { data: assessments, isLoading: areAssessmentsLoading } = useQuery<ClientAssessment[]>({
+        queryKey: ['assessments', profile?.id],
+        queryFn: ({ queryKey }) => getClientAssessments(queryKey[1] as string),
+        enabled: activeTab === 'assessments' && !!profile?.id,
     });
 
     const renderChart = () => {

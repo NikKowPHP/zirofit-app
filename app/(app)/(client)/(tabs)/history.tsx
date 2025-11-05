@@ -7,18 +7,17 @@ import { YStack, H3 } from 'tamagui';
 import { Card } from '@/components/ui/Card';
 import { useRouter } from 'expo-router';
 import { getWorkoutHistory } from '@/lib/api';
-
-type Session = { id: string, name: string, date: string };
+import type { WorkoutSession } from '@/lib/api.types';
 
 export default function HistoryScreen() {
     const router = useRouter();
     const { data, isLoading } = useQuery({ queryKey: ['history'], queryFn: getWorkoutHistory });
 
-    const renderItem = ({ item }: { item: Session }) => (
+    const renderItem = ({ item }: { item: WorkoutSession }) => (
         <Pressable onPress={() => router.push(`/session/${item.id}`)}>
             <Card padding="$4" marginVertical="$2">
-                <Text style={{fontWeight: 'bold'}}>{item.name}</Text>
-                <Text>{new Date(item.date).toDateString()}</Text>
+                <Text style={{fontWeight: 'bold'}}>{item.name || 'Unnamed Workout'}</Text>
+                <Text>{new Date(item.started_at).toDateString()}</Text>
             </Card>
         </Pressable>
     );
