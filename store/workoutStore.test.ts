@@ -80,7 +80,7 @@ describe('workoutStore', () => {
           completed_at: new Date().toISOString()
         };
         
-        mockedApi.logSet.mockResolvedValue(newLogFromApi);
+        mockedApi.logSet.mockResolvedValue(undefined);
 
         await act(async () => {
             await useWorkoutStore.getState().logSet(logData);

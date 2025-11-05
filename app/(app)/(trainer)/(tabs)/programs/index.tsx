@@ -8,11 +8,16 @@ import { FlashList } from '@shopify/flash-list';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import type { TrainerProgram } from '@/lib/api.types';
 import type { CreateProgramRequest } from '@/lib/api/types/request';
+
+// Constants
+const ERROR_MESSAGES = {
+  CREATE_FAILED: 'Failed to create program. Please try again.',
+} as const;
 
 type Program = TrainerProgram;
 type Template = { id: string, name: string };
@@ -35,16 +40,20 @@ export default function ProgramsScreen() {
             setProgramName('');
             setProgramDesc('');
         },
-        onError: (e: any) => Alert.alert('Error', e.message),
+        onError: (e: any) => Alert.alert('Error', e.message || ERROR_MESSAGES.CREATE_FAILED),
     });
 
-    const handleCreateProgram = () => {
-        if (!programName) {
+    const handleCreateProgram = useCallback(() => {
+        if (!programName.trim()) {
             Alert.alert('Error', 'Please enter a program name.');
             return;
         }
-        createProgramMutation.mutate({ name: programName, description: programDesc });
-    }
+        
+        createProgramMutation.mutate({
+            name: programName.trim(),
+            description: programDesc.trim() || undefined,
+        } as any);
+    }, [programName, programDesc, createProgramMutation]);
 
     const renderItem = ({ item }: { item: Program }) => (
         <Card padding="$0" marginVertical="$2">
