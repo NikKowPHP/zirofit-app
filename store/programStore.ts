@@ -1,16 +1,9 @@
 import { create } from 'zustand';
 import { apiFetch } from '@/lib/api';
-
-// Define types based on backend schema
-export type ProgramTemplate = {
-    id: string;
-    name: string;
-    description?: string;
-    // ... other fields
-};
+import type { TrainerProgram } from '@/lib/api/types';
 
 type ProgramState = {
-    programs: ProgramTemplate[];
+    programs: TrainerProgram[];
     isLoading: boolean;
     error: string | null;
     fetchPrograms: () => Promise<void>;

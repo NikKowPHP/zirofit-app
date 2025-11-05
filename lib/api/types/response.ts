@@ -291,6 +291,17 @@ export interface Notification {
 }
 
 // Dashboard Response Types
+export interface DashboardChartData {
+  label: string;
+  value: number;
+}
+
+export interface ActivityFeedItem {
+  id: string;
+  description: string;
+  timestamp: string;
+}
+
 export interface DashboardData {
   upcoming_sessions: CalendarEvent[];
   recent_workouts: WorkoutSession[];
@@ -302,11 +313,11 @@ export interface DashboardData {
     monthly_revenue: number;
   };
   hasTrainer?: boolean;
-  businessPerformance?: any;
-  clientEngagement?: any;
+  businessPerformance?: DashboardChartData[];
+  clientEngagement?: DashboardChartData[];
   upcomingAppointments?: number;
   activeClients?: number;
-  activityFeed?: any[];
+  activityFeed?: ActivityFeedItem[];
 }
 
 // Progress Response Types

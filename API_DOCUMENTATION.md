@@ -1,21 +1,3 @@
-# ZIRO.FIT Mobile API Documentation
-
-This document outlines the API endpoints specifically created or adapted for the React Native mobile application.
-
-## Authentication
-
-All endpoints require authentication. The client must include an `Authorization` header with a valid Supabase JWT token.
-
-**Format:**
-```
-Authorization: Bearer <your_supabase_jwt_token>
-```
-
----
-
-## Shared Endpoints
-
-These endpoints can be accessed by both `client` and `trainer` roles.
 {
   "openapi": "3.1.0",
   "info": {
@@ -26,7 +8,7 @@ These endpoints can be accessed by both `client` and `trainer` roles.
   "servers": [
     {
       "url": "http://localhost:3000",
-      "description": "Local development server."
+      "description": "Configured application URL."
     }
   ],
   "paths": {
@@ -72,12 +54,12 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/dashboard": {
+    "/api/exercises": {
       "get": {
-        "summary": "GET /api/dashboard",
+        "summary": "GET /api/exercises",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
-          "dashboard"
+          "exercises"
         ],
         "responses": {
           "200": {
@@ -86,12 +68,12 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/exercises": {
+    "/api/dashboard": {
       "get": {
-        "summary": "GET /api/exercises",
+        "summary": "GET /api/dashboard",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
-          "exercises"
+          "dashboard"
         ],
         "responses": {
           "200": {
@@ -127,8 +109,8 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       }
     },
     "/api/bookings": {
-      "post": {
-        "summary": "POST /api/bookings",
+      "get": {
+        "summary": "GET /api/bookings",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "bookings"
@@ -138,14 +120,12 @@ These endpoints can be accessed by both `client` and `trainer` roles.
             "description": "Successful response."
           }
         }
-      }
-    },
-    "/api/workout/log": {
+      },
       "post": {
-        "summary": "POST /api/workout/log",
+        "summary": "POST /api/bookings",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
-          "workout"
+          "bookings"
         ],
         "responses": {
           "200": {
@@ -268,6 +248,20 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
+    "/api/workout/log": {
+      "post": {
+        "summary": "POST /api/workout/log",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/webhooks/stripe": {
       "post": {
         "summary": "POST /api/webhooks/stripe",
@@ -306,32 +300,6 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/trainer/programs": {
-      "get": {
-        "summary": "GET /api/trainer/programs",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "post": {
-        "summary": "POST /api/trainer/programs",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/trainer/profile": {
       "get": {
         "summary": "GET /api/trainer/profile",
@@ -361,6 +329,32 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       },
       "post": {
         "summary": "POST /api/trainer/clients",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs": {
+      "get": {
+        "summary": "GET /api/trainer/programs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/trainer/programs",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "trainer"
@@ -456,6 +450,90 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "exercises"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/upcoming-sessions": {
+      "get": {
+        "summary": "GET /api/dashboard/upcoming-sessions",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/service-popularity": {
+      "get": {
+        "summary": "GET /api/dashboard/service-popularity",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/profile-checklist": {
+      "get": {
+        "summary": "GET /api/dashboard/profile-checklist",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/client-engagement": {
+      "get": {
+        "summary": "GET /api/dashboard/client-engagement",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/business-performance": {
+      "get": {
+        "summary": "GET /api/dashboard/business-performance",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/dashboard/activity-feed": {
+      "get": {
+        "summary": "GET /api/dashboard/activity-feed",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "dashboard"
         ],
         "responses": {
           "200": {
@@ -672,20 +750,6 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/workout/session/active": {
-      "get": {
-        "summary": "GET /api/workout/session/active",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "workout"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/workout-sessions/{id}/summary": {
       "get": {
         "summary": "GET /api/workout-sessions/{id}/summary",
@@ -750,6 +814,20 @@ These endpoints can be accessed by both `client` and `trainer` roles.
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/workout/session/active": {
+      "get": {
+        "summary": "GET /api/workout/session/active",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "workout"
         ],
         "responses": {
           "200": {
@@ -830,20 +908,6 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/trainer/programs/templates": {
-      "post": {
-        "summary": "POST /api/trainer/programs/templates",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/trainer/clients/{id}": {
       "get": {
         "summary": "GET /api/trainer/clients/{id}",
@@ -904,6 +968,20 @@ These endpoints can be accessed by both `client` and `trainer` roles.
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs/templates": {
+      "post": {
+        "summary": "POST /api/trainer/programs/templates",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
         ],
         "responses": {
           "200": {
@@ -1256,32 +1334,6 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/profile/me/benefits": {
-      "get": {
-        "summary": "GET /api/profile/me/benefits",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "profile"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "post": {
-        "summary": "POST /api/profile/me/benefits",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "profile"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/profile/me/availability": {
       "get": {
         "summary": "GET /api/profile/me/availability",
@@ -1297,6 +1349,32 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       },
       "put": {
         "summary": "PUT /api/profile/me/availability",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/profile/me/benefits": {
+      "get": {
+        "summary": "GET /api/profile/me/benefits",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/benefits",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "profile"
@@ -1380,30 +1458,6 @@ These endpoints can be accessed by both `client` and `trainer` roles.
         }
       }
     },
-    "/api/clients/{id}/packages": {
-      "get": {
-        "summary": "GET /api/clients/{id}/packages",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "clients"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/clients/{id}/measurements": {
       "get": {
         "summary": "GET /api/clients/{id}/measurements",
@@ -1429,6 +1483,30 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       },
       "post": {
         "summary": "POST /api/clients/{id}/measurements",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/packages": {
+      "get": {
+        "summary": "GET /api/clients/{id}/packages",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "clients"
@@ -2331,12 +2409,12 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       "description": "Notifications endpoints."
     },
     {
-      "name": "dashboard",
-      "description": "Dashboard endpoints."
-    },
-    {
       "name": "exercises",
       "description": "Exercises endpoints."
+    },
+    {
+      "name": "dashboard",
+      "description": "Dashboard endpoints."
     },
     {
       "name": "clients",
@@ -2347,12 +2425,12 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       "description": "Bookings endpoints."
     },
     {
-      "name": "workout",
-      "description": "Workout endpoints."
-    },
-    {
       "name": "workout-sessions",
       "description": "Workout-sessions endpoints."
+    },
+    {
+      "name": "workout",
+      "description": "Workout endpoints."
     },
     {
       "name": "webhooks",
@@ -2383,5 +2461,5 @@ These endpoints can be accessed by both `client` and `trainer` roles.
       "description": "Public endpoints."
     }
   ],
-  "x-generated-at": "2025-11-04T13:27:10.842Z"
+  "x-generated-at": "2025-11-05T13:27:35.445Z"
 }

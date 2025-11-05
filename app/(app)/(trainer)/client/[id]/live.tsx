@@ -1,7 +1,6 @@
 import { View, Text } from '@/components/Themed';
-import { supabase } from '@/lib/supabase';
 import { useLocalSearchParams } from 'expo-router';
-import { useEffect, useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { YStack, H4, H5, XStack } from 'tamagui';
@@ -17,17 +16,26 @@ type WorkoutExercise = { id: string; name: string; };
 export default function LiveWorkoutScreen() {
     const { id: clientId } = useLocalSearchParams();
     const queryClient = useQueryClient();
-    const [liveLogs, setLiveLogs] = useState<ClientExerciseLog[]>([]);
     
     // State for trainer-side logging
     const [reps, setReps] = useState('');
     const [weight, setWeight] = useState('');
 
-    const { data: session, isLoading, error, refetch } = useQuery<WorkoutSession | null>({
+    const { data: session, isLoading, error } = useQuery<WorkoutSession | null>({
         queryKey: ['activeClientSession', clientId],
         queryFn: () => getActiveClientWorkoutSession(clientId as string),
         enabled: !!clientId,
+        // Refetch every 5 seconds as a temporary replacement for real-time updates
+        refetchInterval: 5000, 
     });
+
+    // ARCHITECTURAL NOTE:
+    // The previous implementation used a direct Supabase subscription to listen for database changes.
+    // This creates a tight coupling between the frontend and the database schema, bypassing the API layer.
+    // To align with a proper API-centric architecture, this has been removed.
+    // The correct approach is for the API server to expose a WebSocket or SSE endpoint for real-time updates.
+    // As a temporary workaround, we are using periodic refetching (`refetchInterval`) via React Query.
+    // A future task should be to implement a proper WebSocket connection managed by our API.
 
     const finishWorkoutMutation = useMutation({
         mutationFn: () => finishWorkoutSession({ sessionId: session!.id }),
@@ -48,37 +56,16 @@ export default function LiveWorkoutScreen() {
         onSuccess: () => {
             setReps('');
             setWeight('');
-            refetch();
+            // Invalidate to refetch the session data immediately after logging
+            queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
         },
         onError: (e: any) => Alert.alert('Error', e.message),
     });
-
-    useEffect(() => {
-        if (!clientId) return;
-
-        const channel = supabase
-            .channel(`client-log-stream-${clientId}`)
-            .on<ClientExerciseLog>(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'ClientExerciseLog' /*, filter: `client_id=eq.${clientId}`*/ },
-                (payload) => {
-                    console.log('New log received!', payload.new);
-                    setLiveLogs(currentLogs => [payload.new, ...currentLogs]);
-                }
-            )
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
-    }, [clientId]);
-
-    const combinedLogs = useMemo(() => {
-        const allLogs = [...(session?.logs || []), ...liveLogs];
-        const uniqueLogs = Array.from(new Map(allLogs.map(log => [log.id, log])).values());
-        return uniqueLogs.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    }, [session?.logs, liveLogs]);
     
+    const sortedLogs = useMemo(() => {
+        return (session?.logs || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }, [session?.logs]);
+
     if (isLoading) return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>;
     if (error || !session) return <SafeAreaView style={styles.center}><Text>Client does not have an active workout session.</Text></SafeAreaView>;
 
@@ -95,7 +82,7 @@ export default function LiveWorkoutScreen() {
                     data={session.exercises || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => {
-                        const exerciseLogs = combinedLogs.filter(log => log.exercise_id === item.id);
+                        const exerciseLogs = sortedLogs.filter(log => log.exercise_id === item.id);
                         return (
                             <Card padding="$3" marginVertical="$2">
                                 <H5>{item.name}</H5>

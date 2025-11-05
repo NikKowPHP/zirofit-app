@@ -90,13 +90,13 @@ export default function EditProfileScreen() {
     
     // Service Mutations with proper typing
     const addServiceMutation = useMutation({
-        mutationFn: (data: AddTrainerServiceRequest) => api.addTrainerService(data as any),
+        mutationFn: (data: AddTrainerServiceRequest) => api.addTrainerService(data),
         ...genericMutationOptions('Service')
     });
     
     const updateServiceMutation = useMutation({
-        mutationFn: (data: { serviceId: string; } & AddTrainerServiceRequest) =>
-            api.updateTrainerService(data.serviceId, data as any),
+        mutationFn: (data: UpdateTrainerServiceRequest) =>
+            api.updateTrainerService(data.serviceId, data),
         ...genericMutationOptions('Service')
     });
     
@@ -107,13 +107,13 @@ export default function EditProfileScreen() {
 
     // Package Mutations with proper typing
     const addPackageMutation = useMutation({
-        mutationFn: (data: AddTrainerPackageRequest) => api.addTrainerPackage(data as any),
+        mutationFn: (data: AddTrainerPackageRequest) => api.addTrainerPackage(data),
         ...genericMutationOptions('Package')
     });
     
     const updatePackageMutation = useMutation({
-        mutationFn: (data: { packageId: string; } & AddTrainerPackageRequest) =>
-            api.updateTrainerPackage(data.packageId, data as any),
+        mutationFn: (data: UpdateTrainerPackageRequest) =>
+            api.updateTrainerPackage(data.packageId, data),
         ...genericMutationOptions('Package')
     });
     
@@ -124,13 +124,13 @@ export default function EditProfileScreen() {
 
     // Testimonial Mutations with proper typing
     const addTestimonialMutation = useMutation({
-        mutationFn: (data: AddTrainerTestimonialRequest) => api.addTrainerTestimonial(data as any),
+        mutationFn: (data: AddTrainerTestimonialRequest) => api.addTrainerTestimonial(data),
         ...genericMutationOptions('Testimonial')
     });
     
     const updateTestimonialMutation = useMutation({
-        mutationFn: (data: { testimonialId: string; } & AddTrainerTestimonialRequest) =>
-            api.updateTrainerTestimonial(data.testimonialId, data as any),
+        mutationFn: (data: UpdateTrainerTestimonialRequest) =>
+            api.updateTrainerTestimonial(data.testimonialId, data),
         ...genericMutationOptions('Testimonial')
     });
     
@@ -231,7 +231,7 @@ export default function EditProfileScreen() {
                             username,
                             certifications: certifications.split(',').map(s => s.trim()).filter(s => s),
                             phone
-                        } as any)}
+                        })}
                         disabled={coreInfoMutation.isPending}
                     >
                         {coreInfoMutation.isPending ? 'Saving...' : 'Save Core Info'}

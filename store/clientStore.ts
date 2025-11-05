@@ -1,21 +1,10 @@
 import { create } from 'zustand';
 import { apiFetch } from '@/lib/api';
-
-// Define types based on backend schema
-export type ClientSummary = {
-    id: string;
-    name: string;
-    avatar_url?: string;
-};
-
-export type ClientDetails = ClientSummary & {
-    // ... more detailed fields
-    email: string;
-};
+import type { Client } from '@/lib/api/types';
 
 type ClientState = {
-    clients: ClientSummary[];
-    activeClient: ClientDetails | null;
+    clients: Client[];
+    activeClient: Client | null;
     isLoading: boolean;
     error: string | null;
     fetchClients: () => Promise<void>;
