@@ -12,6 +12,28 @@ import { Input } from '@/components/ui/Input';
 import { YStack, Select, Adapt, Sheet, Label } from 'tamagui';
 import { Check, ChevronDown } from '@tamagui/lucide-icons';
 
+const extractArray = (response: unknown): any[] => {
+    if (Array.isArray(response)) {
+        return response;
+    }
+
+    if (response && typeof response === 'object') {
+        const record = response as Record<string, unknown>;
+
+        const data = record['data'];
+        if (Array.isArray(data)) {
+            return data as any[];
+        }
+
+        const items = record['items'];
+        if (Array.isArray(items)) {
+            return items as any[];
+        }
+    }
+
+    return [];
+};
+
 export default function CalendarScreen() {
     const queryClient = useQueryClient();
     const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
@@ -26,12 +48,13 @@ export default function CalendarScreen() {
         };
     }, [currentMonth]);
 
-    const { data: events } = useQuery({
+    const { data: eventsResponse } = useQuery({
         queryKey: ['calendarEvents', startDate, endDate],
         queryFn: () => getCalendarEvents({ startDate, endDate })
     });
+    const events = useMemo(() => extractArray(eventsResponse), [eventsResponse]);
     const markedDates = useMemo(() => {
-        if (!events) return {};
+        if (!events.length) return {};
         const dates: { [key: string]: { dots: { key: string; color: string }[] } } = {};
         events.forEach((event: any) => {
             const date = event.start_time.split('T')[0];
@@ -42,8 +65,10 @@ export default function CalendarScreen() {
         });
         return dates;
     }, [events]);
-    const { data: clients } = useQuery({ queryKey: ['clients'], queryFn: getClients });
-    const { data: programs } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
+    const { data: clientsResponse } = useQuery({ queryKey: ['clients'], queryFn: getClients });
+    const clients = useMemo(() => extractArray(clientsResponse), [clientsResponse]);
+    const { data: programsResponse } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
+    const programs = useMemo(() => extractArray(programsResponse), [programsResponse]);
     
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
@@ -122,7 +147,7 @@ export default function CalendarScreen() {
                         </Adapt>
                         <Select.Content>
                             <Select.Viewport>
-                                {clients?.map((c: any) => (
+                                {clients.map((c: any) => (
                                     <Select.Item index={c.id} key={c.id} value={c.id}>
                                         <Select.ItemText>{c.name}</Select.ItemText>
                                         <Select.ItemIndicator marginLeft="auto"><Check size={16} /></Select.ItemIndicator>
@@ -147,7 +172,7 @@ export default function CalendarScreen() {
                         </Adapt>
                          <Select.Content>
                             <Select.Viewport>
-                                {programs?.map((p: any) => (
+                                {programs.map((p: any) => (
                                     <Select.Item index={p.id} key={p.id} value={p.id}>
                                         <Select.ItemText>{p.name}</Select.ItemText>
                                         <Select.ItemIndicator marginLeft="auto"><Check size={16} /></Select.ItemIndicator>

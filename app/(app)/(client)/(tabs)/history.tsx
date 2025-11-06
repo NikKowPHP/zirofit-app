@@ -1,7 +1,6 @@
 import { View, Text } from '@/components/Themed';
-import { ActivityIndicator, StyleSheet, Pressable } from 'react-native';
+import { ActivityIndicator, StyleSheet, Pressable, FlatList } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { YStack, H3 } from 'tamagui';
 import { Card } from '@/components/ui/Card';
@@ -29,11 +28,10 @@ export default function HistoryScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
-                <H3>History</H3>
-                <FlashList
-                    data={data}
+                <H3 size="$lg">History</H3>
+                <FlatList
+                    data={data || []}
                     renderItem={renderItem}
-                    estimatedItemSize={75}
                     ListEmptyComponent={<Text>No workouts found.</Text>}
                 />
             </YStack>

@@ -17,7 +17,7 @@ export default function TrainerTabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
-        name="(tabs)/dashboard"
+        name="(tabs)/dashboard/index"
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color }) => <TabBarIcon name="tachometer" color={color} />,
@@ -31,7 +31,7 @@ export default function TrainerTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="(tabs)/calendar"
+        name="(tabs)/calendar/index"
         options={{
           title: 'Calendar',
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,

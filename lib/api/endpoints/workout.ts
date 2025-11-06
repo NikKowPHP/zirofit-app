@@ -133,7 +133,7 @@ export const getAvailableExercises = (): Promise<Exercise[]> =>
  * @returns List of workout templates
  */
 export const getWorkoutTemplates = (): Promise<WorkoutTemplate[]> => 
-  apiFetch('/trainer/templates');
+  apiFetch('/trainer/programs/templates');
 
 /**
  * Get active client workout session

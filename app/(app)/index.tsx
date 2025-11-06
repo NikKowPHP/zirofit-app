@@ -10,7 +10,13 @@ export default function AppIndex() {
 
   useEffect(() => {
     if (authenticationState === 'authenticated' && !profile) {
-      getMe().then((profile) => setProfile(profile.user)).catch(console.error);
+      getMe()
+        .then((profileResponse) => {
+          if (profileResponse) {
+            setProfile(profileResponse);
+          }
+        })
+        .catch(console.error);
     }
   }, [authenticationState, profile]);
 

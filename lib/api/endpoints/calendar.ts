@@ -16,7 +16,7 @@ import type {
  * @param params Calendar parameters
  * @returns List of calendar events
  */
-export const getCalendarEvents = (params?: { startDate?: string; endDate?: string }) =>
+export const getCalendarEvents = (params: { startDate: string; endDate: string }) =>
   apiFetch('/trainer/calendar', {
     params
   });
