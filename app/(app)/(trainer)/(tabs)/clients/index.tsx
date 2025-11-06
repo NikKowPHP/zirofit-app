@@ -1,6 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, FlatList } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { FlashList } from '@shopify/flash-list';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { YStack, H3, XStack, Avatar } from 'tamagui';
 import { getClients } from '@/lib/api';
@@ -47,10 +46,10 @@ export default function ClientsScreen() {
                 {isLoading ? (
                     <View style={styles.center}><ActivityIndicator /></View>
                 ) : (
-                    <FlashList
+                    <FlatList
                         data={data}
                         renderItem={renderItem}
-                        estimatedItemSize={70}
+                        keyExtractor={(item) => item.id}
                     />
                 )}
             </YStack>

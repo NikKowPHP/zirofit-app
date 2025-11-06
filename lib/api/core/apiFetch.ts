@@ -101,7 +101,8 @@ export const apiFetch = async (endpoint: string, options: ApiFetchOptions = {}):
         return null;
     }
 
-    return response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error("Failed to fetch API:", error);
     

@@ -169,6 +169,9 @@ const tokens = {
   size: {
     ...config.tokens.size,
     ...fontSizeScale,
+    3: 24,
+    4: 32,
+    10: 80,
   },
 }
 

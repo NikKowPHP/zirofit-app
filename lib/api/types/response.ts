@@ -58,6 +58,7 @@ export interface Client {
   name: string;
   email: string;
   phone?: string;
+  status: string;
   date_of_birth?: string;
   fitness_goals?: string;
   medical_conditions?: string;
@@ -303,21 +304,56 @@ export interface ActivityFeedItem {
 }
 
 export interface DashboardData {
-  upcoming_sessions: CalendarEvent[];
-  recent_workouts: WorkoutSession[];
-  client_progress: any[];
-  stats: {
-    total_clients: number;
-    active_sessions: number;
-    completed_sessions: number;
-    monthly_revenue: number;
+  activityFeed: Array<{
+    clientName: string;
+    date: string;
+    type: string;
+  }>;
+  businessPerformance: {
+    currentMonth: {
+      completedSessions: number;
+      newClients: number;
+      revenue: number;
+    };
+    previousMonth: {
+      completedSessions: number;
+      newClients: number;
+      revenue: number;
+    };
   };
-  hasTrainer?: boolean;
-  businessPerformance?: DashboardChartData[];
-  clientEngagement?: DashboardChartData[];
-  upcomingAppointments?: number;
-  activeClients?: number;
-  activityFeed?: ActivityFeedItem[];
+  clientEngagement: {
+    active: any[];
+    atRisk: any[];
+    slipping: any[];
+  };
+  clients: Array<{
+    id: string;
+    email: string;
+    name: string;
+    phone?: string;
+    status: string;
+    userId?: string;
+  }>;
+  profileChecklist: {
+    packagesCount: number;
+    profile: any;
+    programsCount: number;
+  };
+  programsAndTemplates: {
+    systemPrograms: any[];
+    systemTemplates: any[];
+    userPrograms: any[];
+    userTemplates: any[];
+  };
+  servicePopularity: {
+    popularPackages: any[];
+    popularTemplates: any[];
+  };
+  upcomingSessions: Array<{
+    id: string;
+    clientName: string;
+    time: string;
+  }>;
 }
 
 // Progress Response Types

@@ -31,14 +31,20 @@ export const getTrainerProfile = (): Promise<TrainerProfile> =>
  * @returns List of trainer's clients
  */
 export const getTrainerClients = (): Promise<any[]> => 
-  apiFetch('/trainer/clients');
+  apiFetch('/trainer/clients').then(res => {
+    console.log('api response for getTrainerClients', JSON.stringify(res.data.clients, null, 2));
+    return res.data.clients;
+  });
 
 /**
  * Get trainer programs
  * @returns List of trainer's programs
  */
 export const getPrograms = (): Promise<TrainerProgram[]> => 
-  apiFetch('/trainer/programs');
+  apiFetch('/trainer/programs').then(res => {
+    console.log('api response for getPrograms', JSON.stringify(res.data, null, 2));
+    return res.data.userPrograms;
+  });
 
 /**
  * Create a new program

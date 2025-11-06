@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { View, Text } from '@/components/Themed';
 import { ActivityIndicator, Alert } from 'react-native';
@@ -5,18 +6,25 @@ import { YStack, H3 } from 'tamagui';
 import { Screen } from '@/components/ui/Screen';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
-import { getDashboard } from '@/lib/api';
+import { getClientDashboard } from '@/lib/api';
 import { router } from 'expo-router';
 import useAuthStore from '@/store/authStore';
 
 export default function DashboardScreen() {
-    const { authenticationState } = useAuthStore();
+    const { authenticationState, profile } = useAuthStore();
     const { data, isLoading, error } = useQuery({
         queryKey: ['dashboard'],
-        queryFn: getDashboard,
-        enabled: authenticationState === 'authenticated',
+        queryFn: getClientDashboard,
+        enabled: authenticationState === 'authenticated' && profile?.role === 'client',
         retry: false
     });
+
+    // Handle redirect for non-client users
+    useEffect(() => {
+        if (authenticationState === 'authenticated' && profile?.role !== 'client') {
+            router.replace('/(app)/(trainer)');
+        }
+    }, [authenticationState, profile?.role]);
 
     if (isLoading) {
         return <Screen center><ActivityIndicator /></Screen>
@@ -37,6 +45,12 @@ export default function DashboardScreen() {
         }
         
         return <Screen center><Text>Error fetching data: {error.message}</Text></Screen>
+    }
+
+    // Check if user is authenticated but not a client - redirect to trainer dashboard
+    if (authenticationState === 'authenticated' && profile?.role !== 'client') {
+        router.replace('/(app)/(trainer)');
+        return <Screen center><ActivityIndicator /></Screen>; // Show loading while redirecting
     }
 
     // If not authenticated, show login prompt

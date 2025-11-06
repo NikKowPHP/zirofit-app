@@ -26,14 +26,20 @@ export const createCheckoutSession = (packageId: string) =>
  * @returns Dashboard data
  */
 export const getDashboard = (): Promise<DashboardData> => 
-  apiFetch('/dashboard');
+  apiFetch('/dashboard').then(res => {
+    console.log('api response for getDashboard', JSON.stringify(res.data, null, 2));
+    return res.data;
+  });
 
 /**
  * Get client dashboard
  * @returns Client dashboard data
  */
 export const getClientDashboard = () => 
-  apiFetch('/client/dashboard');
+  apiFetch('/client/dashboard').then(res => {
+    console.log('api response for getClientDashboard', JSON.stringify(res.data, null, 2));
+    return res.data;
+  });
 
 /**
  * Create booking
