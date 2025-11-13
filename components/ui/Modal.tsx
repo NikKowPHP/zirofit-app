@@ -26,9 +26,9 @@ export function Modal({ children, onClose, title, visible }: ModalProps) {
           onStartShouldSetResponder={() => true} // Prevent closing when tapping content
         >
           {title && <Text style={[styles.title, { color: theme.text }]}>{title}</Text>}
-          <ScrollView style={styles.scrollView}>
+          <View style={styles.scrollView}>
             {children}
-          </ScrollView>
+          </View>
         </View>
       </TouchableOpacity>
     </RNModal>
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: '80%',
+    // maxHeight: '80%',
   },
   title: {
     fontSize: 18,
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   scrollView: {
-    flex: 1,
+    // flex: 1,
   },
 });
       

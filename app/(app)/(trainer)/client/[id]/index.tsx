@@ -1,44 +1,17 @@
 import { View, Text } from '@/components/Themed';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Alert } from 'react-native';
 import { Button } from '@/components/ui/Button';
 import { useClientDetails } from '@/hooks/useClientDetails';
-
-export default function ClientWorkoutsTab() {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
-  const { data: client, isLoading } = useClientDetails(id as string);
-  
-  if (isLoading || !client) {
-    return <View style={styles.center}><ActivityIndicator /></View>
-  }
-
-  return (
-    <View style={styles.container}>
-      <FlatList
-        data={client.workouts}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-            <View style={styles.workoutItem}>
-                <Text style={styles.workoutName}>{item.name}</Text>
-                <Text>{new Date(item.started_at).toLocaleDateString()}</Text>
-            </View>
-        )}
-        ListHeaderComponent={
-          <Button my="$4" onPress={() => router.push(`/client/${id}/live`)}>
-            View Live Workout
-          </Button>
-        }
-        ListEmptyComponent={<Text>No workouts found.</Text>}
-        contentContainerStyle={{ padding: 10 }}
-      />
-    </View>
-  );
-}
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { startWorkoutSession, getWorkoutTemplates } from '@/lib/api';
+import { Modal } from '@/components/ui/Modal';
+import { useState } from 'react';
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
     center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    header: { padding: 10 },
     workoutItem: {
         padding: 15,
         backgroundColor: '#f9f9f9',
@@ -49,4 +22,89 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     }
 });
+
+export default function ClientWorkoutsTab() {
+  const { id } = useLocalSearchParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data: client, isLoading } = useClientDetails(id as string);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  const { data: templates, isLoading: templatesLoading } = useQuery({
+    queryKey: ['workoutTemplates'],
+    queryFn: getWorkoutTemplates,
+  });
+
+  const startWorkoutMutation = useMutation({
+    mutationFn: (templateId: string) => startWorkoutSession({ templateId, clientId: id as string }),
+    onSuccess: () => {
+      Alert.alert('Success', 'Workout session started for client.');
+      setModalVisible(false);
+      queryClient.invalidateQueries({ queryKey: ['activeClientSession', id] });
+      router.push(`/client/${id}/live`);
+    },
+    onError: (error: any) => {
+      Alert.alert('Error', error.message || 'Failed to start workout.');
+    },
+  });
+
+  if (isLoading || !client) {
+    return <View style={styles.center}><ActivityIndicator /></View>
+  }
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={client?.workouts || []}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+            <View style={styles.workoutItem}>
+                <Text style={styles.workoutName}>{item.name}</Text>
+                <Text>{new Date(item.started_at).toLocaleDateString()}</Text>
+            </View>
+        )}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Button onPress={() => setModalVisible(true)} style={{ marginBottom: 10 }}>
+              Start New Workout
+            </Button>
+            <Button onPress={() => router.push(`/client/${id}/live`)} style={{ marginTop: 10 }}>
+              View Live Workout
+            </Button>
+          </View>
+        }
+        ListEmptyComponent={<Text>No workouts found.</Text>}
+        contentContainerStyle={{ padding: 10 }}
+      />
+
+      <Modal visible={modalVisible} onClose={() => setModalVisible(false)} title="Select Workout Template">
+        <View>
+          {templatesLoading ? (
+            <Text>Loading templates...</Text>
+          ) : (
+            <>
+              {(templates || []).map(item => (
+                <Button
+                  key={item.id}
+                  onPress={() => {
+                    setSelectedTemplate(item.id);
+                    startWorkoutMutation.mutate(item.id);
+                  }}
+                  disabled={startWorkoutMutation.isPending}
+                  style={{ marginBottom: 10 }}
+                >
+                  {item.name}
+                </Button>
+              ))}
+              {((templates || []).length === 0) && (
+                <Text>No templates available.</Text>
+              )}
+            </>
+          )}
+        </View>
+      </Modal>
+    </View>
+  );
+}
       

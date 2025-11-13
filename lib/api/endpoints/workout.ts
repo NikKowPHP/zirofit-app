@@ -26,7 +26,7 @@ export const getActiveWorkoutSession = (): Promise<WorkoutSession | null> =>
 
 /**
  * Start a new workout session
- * @param request Session start data
+ * @param request Session start data (includes optional clientId for trainer-initiated)
  * @returns Created workout session
  */
 export const startWorkoutSession = (request: StartWorkoutSessionRequest): Promise<WorkoutSession> => 
@@ -133,7 +133,10 @@ export const getAvailableExercises = (): Promise<Exercise[]> =>
  * @returns List of workout templates
  */
 export const getWorkoutTemplates = (): Promise<WorkoutTemplate[]> => 
-  apiFetch('/trainer/programs/templates');
+  apiFetch('/trainer/programs/templates').then(res => {
+    console.log('Fetched workout templates data:', JSON.stringify(res.data.templates, null, 2));
+    return res.data.templates;
+  });
 
 /**
  * Get active client workout session

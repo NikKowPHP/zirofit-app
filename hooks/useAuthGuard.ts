@@ -8,6 +8,10 @@ export function useAuthGuard() {
     const router = useRouter();
 
     useEffect(() => {
+        if (segments[0] === undefined) {
+            return; // Wait for segments to be available
+        }
+
         const inAuthGroup = segments[0] === '(auth)';
 
         if (authenticationState === 'loading') {

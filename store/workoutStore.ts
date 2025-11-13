@@ -17,6 +17,7 @@ type WorkoutState = {
   restTimerValue: number;
   checkActiveSession: () => Promise<void>;
   startWorkout: (templateId: string) => Promise<void>;
+  addExercise: (exerciseId: string) => Promise<void>;
   logSet: (logData: Omit<ClientExerciseLog, 'id' | 'workout_session_id'>) => Promise<void>;
   stopResting: () => void;
   finishWorkout: () => Promise<void>;
@@ -59,6 +60,27 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
           name: session.name || 'Workout', 
           exercises: (session.exercises || []) as WorkoutExercise[], 
           logs: (session.logs || []) as ClientExerciseLog[]
+        }, 
+        isLoading: false 
+      });
+    } catch (e: any) {
+      set({ error: e.message, isLoading: false });
+    }
+  },
+
+  addExercise: async (exerciseId: string) => {
+    const currentSession = get().workoutSession;
+    if (!currentSession) return;
+
+    set({ isLoading: true });
+    try {
+      const updatedSession = await api.addExerciseToLiveSession(currentSession.id, { exercise_id: exerciseId });
+      set({ 
+        workoutSession: { 
+          ...updatedSession, 
+          name: updatedSession.name || currentSession.name, 
+          exercises: (updatedSession.exercises || []) as WorkoutExercise[], 
+          logs: (updatedSession.logs || []) as ClientExerciseLog[]
         }, 
         isLoading: false 
       });

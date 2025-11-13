@@ -311,3 +311,13 @@ export const updateTemplateExercises = (templateId: string, request: any): Promi
     method: 'PUT',
     body: JSON.stringify(request)
   });
+
+/**
+ * Get all workout templates
+ * @returns List of workout templates
+ */
+export const getTemplates = (): Promise<WorkoutTemplate[]> => 
+  apiFetch('/trainer/programs/templates').then(res => {
+    console.log('api response for getTemplates', JSON.stringify(res.data, null, 2));
+    return res.data;
+  });

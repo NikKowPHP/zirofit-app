@@ -9,7 +9,7 @@ import ActiveExerciseCard from '@/components/workout/ActiveExerciseCard';
 import InlineRestTimer from '@/components/workout/InlineRestTimer';
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getWorkoutTemplates } from '@/lib/api';
+import { getWorkoutTemplates, getAvailableExercises } from '@/lib/api';
 import { Modal } from '@/components/ui/Modal';
 import { Card } from '@/components/ui/Card';
 
@@ -18,6 +18,7 @@ export default function LogWorkoutScreen() {
         workoutSession, 
         startWorkout, 
         finishWorkout, 
+        addExercise,
         isResting, 
         restTimerValue,
         isLoading,
@@ -25,11 +26,18 @@ export default function LogWorkoutScreen() {
         stopResting,
     } = useWorkoutStore();
     const [templateModalVisible, setTemplateModalVisible] = useState(false);
+    const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
 
     const { data: templates, isLoading: templatesLoading } = useQuery({
       queryKey: ['workoutTemplates'],
       queryFn: getWorkoutTemplates,
       enabled: !workoutSession, // Only fetch if no session is active
+    });
+
+    const { data: exercises, isLoading: exercisesLoading } = useQuery({
+      queryKey: ['availableExercises'],
+      queryFn: getAvailableExercises,
+      enabled: !!workoutSession, // Only fetch if there's an active session
     });
 
     useEffect(() => {
@@ -40,6 +48,11 @@ export default function LogWorkoutScreen() {
     const handleSelectTemplate = (templateId: string) => {
         startWorkout(templateId);
         setTemplateModalVisible(false);
+    }
+
+    const handleSelectExercise = (exerciseId: string) => {
+        addExercise(exerciseId);
+        setExerciseModalVisible(false);
     }
 
     if (isLoading) {
@@ -55,6 +68,9 @@ export default function LogWorkoutScreen() {
 
                 {workoutSession ? (
                     <>
+                        <Button onPress={() => setExerciseModalVisible(true)} disabled={exercisesLoading} style={{ marginBottom: 16 }}>
+                            {exercisesLoading ? 'Loading Exercises...' : 'Add Exercise'}
+                        </Button>
                         <FlatList
                             data={workoutSession.exercises || []}
                             renderItem={({ item }) => (
@@ -103,6 +119,25 @@ export default function LogWorkoutScreen() {
                         </Pressable>
                     )}
                     ListEmptyComponent={<Text>No templates found.</Text>}
+                />
+            </Modal>
+
+            <Modal
+                visible={exerciseModalVisible}
+                onClose={() => setExerciseModalVisible(false)}
+                title="Select an Exercise"
+            >
+                <FlatList
+                    data={exercises}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <Pressable onPress={() => handleSelectExercise(item.id)}>
+                            <Card style={{ padding: 12, marginVertical: 8 }}>
+                                <Text>{item.name}</Text>
+                            </Card>
+                        </Pressable>
+                    )}
+                    ListEmptyComponent={<Text>No exercises found.</Text>}
                 />
             </Modal>
         </>
