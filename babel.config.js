@@ -1,5 +1,4 @@
-// This file is needed for Tamagui
-process.env.TAMAGUI_TARGET = "native";
+// This file configures Babel for the project
 
 module.exports = function(api) {
   api.cache(true);
@@ -13,14 +12,6 @@ module.exports = function(api) {
           alias: {
             '@': './',
           },
-        },
-      ],
-      [
-        '@tamagui/babel-plugin',
-        {
-          components: ['tamagui'],
-          config: './tamagui.config.ts',
-          logTimings: true,
         },
       ],
       'react-native-reanimated/plugin',

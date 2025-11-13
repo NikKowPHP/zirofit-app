@@ -2,7 +2,8 @@ import { View, Text } from '@/components/Themed';
 import { ActivityIndicator, StyleSheet, Pressable, FlatList } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { YStack, H3 } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 import { useRouter } from 'expo-router';
 import { getWorkoutHistory } from '@/lib/api';
@@ -14,7 +15,7 @@ export default function HistoryScreen() {
 
     const renderItem = ({ item }: { item: WorkoutSession }) => (
         <Pressable onPress={() => router.push(`/session/${item.id}`)}>
-            <Card padding="$4" marginVertical="$2">
+            <Card style={{ padding: 16, marginVertical: 8 }}>
                 <Text style={{fontWeight: 'bold'}}>{item.name || 'Unnamed Workout'}</Text>
                 <Text>{new Date(item.started_at).toDateString()}</Text>
             </Card>
@@ -27,14 +28,14 @@ export default function HistoryScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" paddingHorizontal="$4" flex={1}>
-                <H3 size="$lg">History</H3>
+            <VStack style={{ paddingHorizontal: 16, gap: 16, flex: 1 }}>
+                <UIText variant="h3">History</UIText>
                 <FlatList
                     data={data || []}
                     renderItem={renderItem}
                     ListEmptyComponent={<Text>No workouts found.</Text>}
                 />
-            </YStack>
+            </VStack>
         </SafeAreaView>
     );
 }

@@ -1,6 +1,8 @@
 import { View, Text } from '@/components/Themed';
 import React, { useEffect, useState } from 'react';
-import { YStack, H6 } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 
 type InlineRestTimerProps = {
     duration: number;
@@ -9,6 +11,7 @@ type InlineRestTimerProps = {
 
 export default function InlineRestTimer({ duration, onFinish }: InlineRestTimerProps) {
   const [timeLeft, setTimeLeft] = useState(duration);
+  const tokens = useTokens();
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -25,10 +28,10 @@ export default function InlineRestTimer({ duration, onFinish }: InlineRestTimerP
 
   return (
     <View style={{ padding: 10, borderRadius: 8, backgroundColor: '#e0e0e0' }}>
-      <YStack alignItems='center' space="$1">
-        <H6>REST</H6>
+      <VStack style={{ alignItems: 'center', gap: tokens.spacing.xs }}>
+        <UIText variant="caption">REST</UIText>
         <Text style={{ fontSize: 24, fontWeight: 'bold' }}>{timeLeft}s</Text>
-      </YStack>
+      </VStack>
     </View>
   );
 }

@@ -1,7 +1,9 @@
 import { View, Text } from '@/components/Themed';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
-import { H3, YStack } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { Section } from '@/components/ui/Section';
@@ -11,6 +13,7 @@ import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 
 export default function TrainerDashboard() {
     const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: getDashboard });
+    const tokens = useTokens();
 
     if (isLoading) {
         return <Screen center><ActivityIndicator /></Screen>
@@ -19,8 +22,8 @@ export default function TrainerDashboard() {
     return (
         <Screen>
             <ScrollView>
-                <YStack space="$4" padding="$4">
-                    <H3>Trainer Dashboard</H3>
+                <VStack style={{ gap: tokens.spacing.lg, padding: tokens.spacing.lg }}>
+                    <UIText variant="h3">Trainer Dashboard</UIText>
 
                     {data?.businessPerformance && (
                         <AnalyticsChart title="Business Performance" data={[
@@ -38,14 +41,14 @@ export default function TrainerDashboard() {
                     )}
 
                     <Section title="Quick Stats">
-                        <Card padding="$4">
+                        <Card>
                             <Text>Active Clients: {data?.clients?.filter((c: {status: string}) => c.status === 'active').length || 0}</Text>
                         </Card>
                     </Section>
 
                     {data?.upcomingSessions && data.upcomingSessions.length > 0 && (
                          <Section title="Upcoming Sessions">
-                             <Card padding="$4">
+                             <Card>
                                  <List>
                                      {data.upcomingSessions.map((s: any) => (
                                          <Text key={s.id}>{s.clientName} - {new Date(s.time).toLocaleString()}</Text>
@@ -59,9 +62,9 @@ export default function TrainerDashboard() {
                         {data?.activityFeed && data.activityFeed.length > 0 ? (
                             <List>
                                 {data.activityFeed.map((item: any, index: number) => (
-                                    <Card key={index} padding="$3">
+                                    <Card key={index}>
                                         <Text>{item.type} - {item.clientName}</Text>
-                                        <Text lightColor="$color.textSecondary" darkColor="$color.textSecondary" style={{ fontSize: 12, marginTop: 4 }}>{new Date(item.date).toLocaleString()}</Text>
+                                        <Text style={{ fontSize: 12, marginTop: 4, color: tokens.colors.light.textSecondary }}>{new Date(item.date).toLocaleString()}</Text>
                                     </Card>
                                 ))}
                             </List>
@@ -69,7 +72,7 @@ export default function TrainerDashboard() {
                             <Text style={{textAlign: 'center', marginTop: 16}}>No recent activity.</Text>
                         )}
                     </Section>
-                </YStack>
+                </VStack>
             </ScrollView>
         </Screen>
     );

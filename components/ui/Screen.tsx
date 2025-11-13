@@ -1,6 +1,6 @@
 import { SafeAreaView, StyleSheet } from 'react-native';
-import { YStack } from 'tamagui';
-import { useTheme } from 'tamagui';
+import { VStack } from './Stack';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -9,24 +9,25 @@ interface ScreenProps {
 
 export function Screen({ children, center = false }: ScreenProps) {
   const theme = useTheme();
+  const tokens = useTokens();
 
-  const containerStyle = [styles.container, { backgroundColor: theme.background.get() }];
+  const containerStyle = [styles.container, { backgroundColor: theme.background }];
 
   if (center) {
     return (
       <SafeAreaView style={[...containerStyle, styles.center]}>
-        <YStack space="$4" padding="$4" alignItems="center" justifyContent="center" flex={1}>
+        <VStack style={{ padding: tokens.spacing.lg, gap: tokens.spacing.lg, alignItems: 'center', justifyContent: 'center', flex: 1 }}>
           {children}
-        </YStack>
+        </VStack>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={containerStyle}>
-      <YStack space="$4" padding="$4" flex={1}>
+      <VStack style={{ padding: tokens.spacing.lg, gap: tokens.spacing.lg, flex: 1 }}>
         {children}
-      </YStack>
+      </VStack>
     </SafeAreaView>
   );
 }

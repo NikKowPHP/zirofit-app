@@ -1,7 +1,8 @@
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { YStack } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { useTokens } from '@/hooks/useTheme';
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 
@@ -26,6 +27,7 @@ export default function ServiceFormModal({ isVisible, onClose, onSubmit, initial
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
     const [duration, setDuration] = useState('');
+    const tokens = useTokens();
 
     useEffect(() => {
         if (isVisible && initialData) {
@@ -69,7 +71,7 @@ export default function ServiceFormModal({ isVisible, onClose, onSubmit, initial
 
     return (
         <Modal visible={isVisible} onClose={onClose} title={initialData ? "Edit Service" : "Add New Service"}>
-            <YStack space="$3">
+            <VStack style={{ gap: tokens.spacing.md }}>
                 <Input placeholder="Service Name (e.g., Personal Training)" value={name} onChangeText={setName} />
                 <Input placeholder="Description (optional)" value={description} onChangeText={setDescription} />
                 <Input placeholder="Price ($)" value={price} onChangeText={setPrice} keyboardType="decimal-pad" />
@@ -77,7 +79,7 @@ export default function ServiceFormModal({ isVisible, onClose, onSubmit, initial
                 <Button onPress={handleSubmit} disabled={isSubmitting}>
                     {isSubmitting ? 'Saving...' : (initialData ? "Save Changes" : "Add Service")}
                 </Button>
-            </YStack>
+            </VStack>
         </Modal>
     );
 }

@@ -1,17 +1,18 @@
 import { Card } from '@/components/ui/Card';
-import { YStack, H5, Text } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text } from '@/components/ui/Text';
 
 type Session = { id: string; time: string; trainer: string };
 
 export default function UpcomingSessions({ sessions }: { sessions: Session[] }) {
     return (
-        <Card padding="$4">
-            <YStack space="$2">
-                <H5>Upcoming Session</H5>
+        <Card>
+            <VStack style={{ gap: 8 }}>
+                <Text variant="h5">Upcoming Session</Text>
                 {sessions.map(s => (
-                    <Text key={s.id}>{s.time} with {s.trainer}</Text>
+                    <Text key={s.id} variant="body">{s.time} with {s.trainer}</Text>
                 ))}
-            </YStack>
+            </VStack>
         </Card>
     );
 }

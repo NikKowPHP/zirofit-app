@@ -1,7 +1,6 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { Text } from '@/components/Themed';
-import { Dialog } from 'tamagui';
+import { Modal as RNModal, StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 
 interface ModalProps {
   children: React.ReactNode;
@@ -11,24 +10,50 @@ interface ModalProps {
 }
 
 export function Modal({ children, onClose, title, visible }: ModalProps) {
+  const theme = useTheme();
+  const tokens = useTokens();
 
   return (
-    <Dialog modal open={visible} onOpenChange={(open) => !open && onClose()}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content>
-          <Dialog.Title>{title}</Dialog.Title>
-          {children}
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+    <RNModal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity style={styles.overlay} onPress={onClose}>
+        <View
+          style={[styles.modalContent, { backgroundColor: theme.background }]}
+          onStartShouldSetResponder={() => true} // Prevent closing when tapping content
+        >
+          {title && <Text style={[styles.title, { color: theme.text }]}>{title}</Text>}
+          <ScrollView style={styles.scrollView}>
+            {children}
+          </ScrollView>
+        </View>
+      </TouchableOpacity>
+    </RNModal>
   );
 }
 
 const styles = StyleSheet.create({
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-})
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  scrollView: {
+    flex: 1,
+  },
+});
       

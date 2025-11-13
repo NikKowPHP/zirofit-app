@@ -8,9 +8,11 @@ export default function AppLayout() {
   useInitializeStores();
 
   // This layout can be used to configure screen options for the protected app routes.
-  return <Stack screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="(client)" />
-    <Stack.Screen name="(trainer)" />
-  </Stack>;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(client)" />
+      <Stack.Screen name="(trainer)" />
+    </Stack>
+  );
 }
       

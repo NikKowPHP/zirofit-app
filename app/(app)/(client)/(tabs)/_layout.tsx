@@ -3,7 +3,8 @@ import { Tabs } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Platform, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useTheme } from 'tamagui';
+import { useColorScheme } from 'react-native';
+import { useTheme } from '@/hooks/useTheme';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
@@ -11,16 +12,17 @@ function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['nam
 
 export default function ClientTabLayout() {
   const theme = useTheme();
+  const colorScheme = useColorScheme();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.primary.get(),
+        tabBarActiveTintColor: theme.primary,
         headerShown: false,
-        tabBarStyle: Platform.OS === 'android' ? { backgroundColor: theme.background.get(), borderTopWidth: 1, borderTopColor: theme.border.get(), elevation: 8 } : { backgroundColor: 'transparent', borderTopWidth: 0, position: 'absolute' },
-        tabBarBackground: () => 
-            Platform.OS === 'ios' ? 
-            <BlurView tint={(theme as any).name} intensity={90} style={StyleSheet.absoluteFill} /> : 
+        tabBarStyle: Platform.OS === 'android' ? { backgroundColor: theme.background, borderTopWidth: 1, borderTopColor: theme.border, elevation: 8 } : { backgroundColor: 'transparent', borderTopWidth: 0, position: 'absolute' },
+        tabBarBackground: () =>
+            Platform.OS === 'ios' ?
+            <BlurView tint={colorScheme === 'dark' ? 'dark' : 'light'} intensity={90} style={StyleSheet.absoluteFill} /> :
             null
       }}>
       <Tabs.Screen

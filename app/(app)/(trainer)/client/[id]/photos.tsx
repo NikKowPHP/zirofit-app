@@ -2,7 +2,7 @@ import { View, Text } from '@/components/Themed';
 import { useClientDetails } from '@/hooks/useClientDetails';
 import { useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, FlatList, StyleSheet, Image } from 'react-native';
-import { YStack } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
 
 export default function PhotosTab() {
   const { id } = useLocalSearchParams();
@@ -19,10 +19,10 @@ export default function PhotosTab() {
         keyExtractor={item => item.id}
         numColumns={2}
         renderItem={({ item }) => (
-          <YStack style={styles.photoContainer}>
+          <VStack style={styles.photoContainer}>
             <Image source={{ uri: item.photo_url }} style={styles.photo} />
             <Text style={styles.date}>{new Date(item.taken_at).toLocaleDateString()}</Text>
-          </YStack>
+          </VStack>
         )}
         ListEmptyComponent={<Text>No photos uploaded yet.</Text>}
         contentContainerStyle={{ padding: 5 }}

@@ -1,5 +1,5 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, Alert } from 'react-native';
+import { StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, DateData } from 'react-native-calendars';
@@ -9,8 +9,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import { YStack, Select, Adapt, Sheet, Label } from 'tamagui';
-import { Check, ChevronDown } from '@tamagui/lucide-icons';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 
 const extractArray = (response: unknown): any[] => {
     if (Array.isArray(response)) {
@@ -42,6 +43,7 @@ const extractArray = (response: unknown): any[] => {
 export default function CalendarScreen() {
     const queryClient = useQueryClient();
     const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
+    const tokens = useTokens();
 
     const { startDate, endDate } = useMemo(() => {
         const date = new Date(currentMonth + '-02T00:00:00Z'); // Use 2nd day to avoid timezone issues
@@ -80,6 +82,8 @@ export default function CalendarScreen() {
     const [sessionNotes, setSessionNotes] = useState('');
     const [selectedClient, setSelectedClient] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('');
+    const [selectModalVisible, setSelectModalVisible] = useState(false);
+    const [selectType, setSelectType] = useState<'client' | 'program'>('client');
 
     const selectedDayEvents = useMemo(() => {
         if (!selectedDate || !events.length) return [];
@@ -108,6 +112,24 @@ export default function CalendarScreen() {
         setSessionNotes('');
         setSelectedClient('');
         setSelectedTemplate('');
+    }
+
+    const openSelectModal = (type: 'client' | 'program') => {
+        setSelectType(type);
+        setSelectModalVisible(true);
+    }
+
+    const closeSelectModal = () => {
+        setSelectModalVisible(false);
+    }
+
+    const selectItem = (id: string) => {
+        if (selectType === 'client') {
+            setSelectedClient(id);
+        } else {
+            setSelectedTemplate(id);
+        }
+        closeSelectModal();
     }
 
     const handlePlanSession = async () => {
@@ -148,66 +170,41 @@ export default function CalendarScreen() {
                 onClose={closeModal}
                 title={`Plan Session for ${selectedDate}`}
             >
-                <YStack space="$3">
+                <VStack style={{ gap: tokens.spacing.md }}>
                     <Input 
                         placeholder="Session Notes (e.g., Check-in)"
                         value={sessionNotes}
                         onChangeText={setSessionNotes}
                     />
-                    <Label>Client</Label>
-                    <Select value={selectedClient} onValueChange={setSelectedClient}>
-                        <Select.Trigger iconAfter={ChevronDown}>
-                            <Select.Value placeholder="Select a client" />
-                        </Select.Trigger>
-                        <Adapt when="sm">
-                            <Sheet modal dismissOnSnapToBottom>
-                                <Sheet.Frame>
-                                    <Sheet.ScrollView><Adapt.Contents /></Sheet.ScrollView>
-                                </Sheet.Frame>
-                                <Sheet.Overlay />
-                            </Sheet>
-                        </Adapt>
-                        <Select.Content>
-                            <Select.Viewport>
-                                {clients.map((c: any) => (
-                                    <Select.Item index={c.id} key={c.id} value={c.id}>
-                                        <Select.ItemText>{c.name}</Select.ItemText>
-                                        <Select.ItemIndicator marginLeft="auto"><Check size={16} /></Select.ItemIndicator>
-                                    </Select.Item>
-                                ))}
-                            </Select.Viewport>
-                        </Select.Content>
-                    </Select>
+                    <UIText variant="body">Client</UIText>
+                    <TouchableOpacity style={styles.selectButton} onPress={() => openSelectModal('client')}>
+                        <UIText variant="body">{selectedClient ? clients.find(c => c.id === selectedClient)?.name : 'Select a client'}</UIText>
+                    </TouchableOpacity>
 
-                    <Label>Program/Template (Optional)</Label>
-                    <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                         <Select.Trigger iconAfter={ChevronDown}>
-                            <Select.Value placeholder="Select a program" />
-                        </Select.Trigger>
-                        <Adapt when="sm">
-                            <Sheet modal dismissOnSnapToBottom>
-                                <Sheet.Frame>
-                                    <Sheet.ScrollView><Adapt.Contents /></Sheet.ScrollView>
-                                </Sheet.Frame>
-                                <Sheet.Overlay />
-                            </Sheet>
-                        </Adapt>
-                         <Select.Content>
-                            <Select.Viewport>
-                                {programs.map((p: any) => (
-                                    <Select.Item index={p.id} key={p.id} value={p.id}>
-                                        <Select.ItemText>{p.name}</Select.ItemText>
-                                        <Select.ItemIndicator marginLeft="auto"><Check size={16} /></Select.ItemIndicator>
-                                    </Select.Item>
-                                ))}
-                            </Select.Viewport>
-                        </Select.Content>
-                    </Select>
+                    <UIText variant="body">Program/Template (Optional)</UIText>
+                    <TouchableOpacity style={styles.selectButton} onPress={() => openSelectModal('program')}>
+                        <UIText variant="body">{selectedTemplate ? programs.find(p => p.id === selectedTemplate)?.name : 'Select a program'}</UIText>
+                    </TouchableOpacity>
 
-                    <Button onPress={handlePlanSession} disabled={planSessionMutation.isPending} mt="$xl">
+                    <Button onPress={handlePlanSession} disabled={planSessionMutation.isPending}>
                         {planSessionMutation.isPending ? 'Saving...' : 'Save Session'}
                     </Button>
-                </YStack>
+                </VStack>
+            </Modal>
+            <Modal
+                visible={selectModalVisible}
+                onClose={closeSelectModal}
+                title={`Select ${selectType === 'client' ? 'Client' : 'Program'}`}
+            >
+                <ScrollView>
+                    <VStack style={{ gap: tokens.spacing.sm }}>
+                        {(selectType === 'client' ? clients : programs).map((item: any) => (
+                            <TouchableOpacity key={item.id} style={styles.selectItem} onPress={() => selectItem(item.id)}>
+                                <UIText variant="body">{item.name}</UIText>
+                            </TouchableOpacity>
+                        ))}
+                    </VStack>
+                </ScrollView>
             </Modal>
         </SafeAreaView>
     );
@@ -240,6 +237,18 @@ const styles = StyleSheet.create({
     eventTitle: {
         fontWeight: 'bold',
         marginBottom: 5,
+    },
+    selectButton: {
+        padding: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        backgroundColor: '#fff',
+    },
+    selectItem: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
     },
 });
       

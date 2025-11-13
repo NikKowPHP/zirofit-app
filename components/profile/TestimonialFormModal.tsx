@@ -1,7 +1,8 @@
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { YStack } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { useTokens } from '@/hooks/useTheme';
 import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 
@@ -22,6 +23,7 @@ type TestimonialFormModalProps = {
 export default function TestimonialFormModal({ isVisible, onClose, onSubmit, initialData, isSubmitting }: TestimonialFormModalProps) {
     const [clientName, setClientName] = useState('');
     const [content, setContent] = useState('');
+    const tokens = useTokens();
 
     useEffect(() => {
         if (isVisible && initialData) {
@@ -46,7 +48,7 @@ export default function TestimonialFormModal({ isVisible, onClose, onSubmit, ini
 
     return (
         <Modal visible={isVisible} onClose={onClose} title={initialData ? "Edit Testimonial" : "Add New Testimonial"}>
-            <YStack space="$3">
+            <VStack style={{ gap: tokens.spacing.md }}>
                 <Input placeholder="Client Name" value={clientName} onChangeText={setClientName} />
                 <Input 
                     placeholder="Testimonial Content..." 
@@ -54,13 +56,13 @@ export default function TestimonialFormModal({ isVisible, onClose, onSubmit, ini
                     onChangeText={setContent} 
                     multiline 
                     numberOfLines={4}
-                    height={100}
+                    style={{ height: 100 }}
                     textAlignVertical="top"
                 />
                 <Button onPress={handleSubmit} disabled={isSubmitting}>
                     {isSubmitting ? 'Saving...' : (initialData ? "Save Changes" : "Add Testimonial")}
                 </Button>
-            </YStack>
+            </VStack>
         </Modal>
     );
 }

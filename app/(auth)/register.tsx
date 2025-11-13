@@ -1,9 +1,11 @@
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, StyleSheet, View as SpacerView } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { YStack, H4, Spacer, Paragraph } from 'tamagui';
 
+import { VStack } from '@/components/ui/Stack';
+import { Text } from '@/components/ui/Text';
 import { View } from '@/components/Themed';
+import { useTokens } from '@/hooks/useTheme';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { RoleSelector } from '@/components/ui/RoleSelector';
@@ -15,6 +17,7 @@ export default function RegisterScreen() {
   const [role, setRole] = useState<'client' | 'trainer'>('client');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const tokens = useTokens();
 
   const handleRegister = async () => {
     setLoading(true);
@@ -47,8 +50,8 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <YStack space="$4" width="80%">
-        <H4 textAlign="center">Create an Account</H4>
+      <VStack style={{ gap: tokens.spacing.lg, width: '80%' }}>
+        <Text variant="h3" style={{ textAlign: 'center' }}>Create an Account</Text>
         <Input
           placeholder="Email"
           value={email}
@@ -63,15 +66,15 @@ export default function RegisterScreen() {
           secureTextEntry
         />
         
-        <Paragraph>I am a:</Paragraph>
+        <Text variant="body">I am a:</Text>
         <RoleSelector value={role} onValueChange={(val) => setRole(val as any)} />
 
-        <Spacer />
+        <SpacerView style={{ flex: 1 }} />
 
         <Button onPress={handleRegister} disabled={loading}>
           {loading ? 'Creating account...' : 'Create Account'}
         </Button>
-      </YStack>
+      </VStack>
     </View>
   );
 }

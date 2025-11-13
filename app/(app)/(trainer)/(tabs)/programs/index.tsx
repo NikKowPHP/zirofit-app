@@ -1,9 +1,11 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator, Pressable, Alert, FlatList } from 'react-native';
+import { StyleSheet, ActivityIndicator, Pressable, Alert, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPrograms, createProgram } from '@/lib/api';
-import { YStack, H3, H5, Accordion } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
@@ -25,10 +27,12 @@ export default function ProgramsScreen() {
     const router = useRouter();
     const queryClient = useQueryClient();
     const { data: programs, isLoading } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
+    const tokens = useTokens();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [programName, setProgramName] = useState('');
     const [programDesc, setProgramDesc] = useState('');
+    const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
 
     const createProgramMutation = useMutation({
         mutationFn: createProgram,
@@ -55,27 +59,23 @@ export default function ProgramsScreen() {
     }, [programName, programDesc, createProgramMutation]);
 
     const renderItem = ({ item }: { item: Program }) => (
-        <Card padding="$0" marginVertical="$2">
-            <Accordion type="single" collapsible>
-                <Accordion.Item value={item.id}>
-                    <Accordion.Trigger>
-                        <YStack padding="$3" flex={1}>
-                            <H5>{item.name}</H5>
-                            <Text>{item.description || 'No description'}</Text>
-                        </YStack>
-                    </Accordion.Trigger>
-                    <Accordion.Content>
-                        <YStack padding="$3" borderTopWidth={1} borderColor="$borderColor">
-                            {item.templates?.map(template => (
-                                <Pressable key={template.id} onPress={() => router.push(`/(app)/(trainer)/(tabs)/programs/${template.id}`)}>
-                                    <Text style={styles.templateName}>{template.name}</Text>
-                                </Pressable>
-                            ))}
-                            {/* In a real app, would add a "Create Template" button here */}
-                        </YStack>
-                    </Accordion.Content>
-                </Accordion.Item>
-            </Accordion>
+        <Card style={{ marginVertical: tokens.spacing.sm }}>
+            <TouchableOpacity onPress={() => setExpandedProgram(expandedProgram === item.id ? null : item.id)}>
+                <VStack style={{ padding: tokens.spacing.md, flex: 1 }}>
+                    <UIText variant="h5">{item.name}</UIText>
+                    <Text>{item.description || 'No description'}</Text>
+                </VStack>
+            </TouchableOpacity>
+            {expandedProgram === item.id && (
+                <VStack style={{ padding: tokens.spacing.md, borderTopWidth: 1, borderTopColor: tokens.colors.light.border }}>
+                    {item.templates?.map(template => (
+                        <Pressable key={template.id} onPress={() => router.push(`/(app)/(trainer)/(tabs)/programs/${template.id}`)}>
+                            <Text style={styles.templateName}>{template.name}</Text>
+                        </Pressable>
+                    ))}
+                    {/* In a real app, would add a "Create Template" button here */}
+                </VStack>
+            )}
         </Card>
     );
 
@@ -85,7 +85,7 @@ export default function ProgramsScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" paddingHorizontal="$4" flex={1}>
+            <VStack style={{ gap: tokens.spacing.lg, paddingHorizontal: tokens.spacing.lg, flex: 1 }}>
                 <Button onPress={() => setModalVisible(true)}>Create New Program</Button>
                 <FlatList
                     data={programs}
@@ -94,16 +94,16 @@ export default function ProgramsScreen() {
                     ListEmptyComponent={<Text>No programs created yet.</Text>}
                     contentContainerStyle={{ paddingBottom: 20 }}
                 />
-            </YStack>
+            </VStack>
 
             <Modal visible={modalVisible} onClose={() => setModalVisible(false)} title="Create Program">
-                <YStack space="$3">
+                <VStack style={{ gap: tokens.spacing.md }}>
                     <Input placeholder="Program Name" value={programName} onChangeText={setProgramName} />
                     <Input placeholder="Description (optional)" value={programDesc} onChangeText={setProgramDesc} />
                     <Button onPress={handleCreateProgram} disabled={createProgramMutation.isPending}>
                         {createProgramMutation.isPending ? 'Creating...' : 'Create Program'}
                     </Button>
-                </YStack>
+                </VStack>
             </Modal>
         </SafeAreaView>
     );

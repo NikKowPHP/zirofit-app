@@ -1,7 +1,7 @@
-import { ActivityIndicator, Pressable, StyleSheet, FlatList } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, FlatList, Image } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { YStack, H3, XStack, Avatar } from 'tamagui';
+import { VStack, HStack } from '@/components/ui/Stack';
 import { getClients } from '@/lib/api';
 import { useRouter, useNavigation } from 'expo-router';
 import { Text, View } from '@/components/Themed';
@@ -10,10 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { useLayoutEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import type { Client } from '@/lib/api.types';
+import { useTokens } from '@/hooks/useTheme';
 
 export default function ClientsScreen() {
     const router = useRouter();
     const navigation = useNavigation();
+    const tokens = useTokens();
     const { data, isLoading } = useQuery({ queryKey: ['clients'], queryFn: getClients });
 
     useLayoutEffect(() => {
@@ -28,21 +30,24 @@ export default function ClientsScreen() {
 
     const renderItem = ({ item }: { item: Client }) => (
         <Pressable onPress={() => router.push(`/client/${item.id}`)}>
-            <Card padding="$3" marginVertical="$2">
-                <XStack space="$3" alignItems="center">
-                    <Avatar circular size="$4">
-                        <Avatar.Image src={item.avatar_url || undefined} />
-                        <Avatar.Fallback bc="gray" />
-                    </Avatar>
+            <Card style={{ padding: tokens.spacing.md, marginVertical: tokens.spacing.sm }}>
+                <HStack style={{ gap: tokens.spacing.md, alignItems: 'center' }}>
+                    <View style={styles.avatarContainer}>
+                        <Image 
+                            source={{ uri: item.avatar_url }} 
+                            style={styles.avatar} 
+                            defaultSource={require('@/assets/images/icon.png')}
+                        />
+                    </View>
                     <Text style={{fontSize: 16}}>{item.name}</Text>
-                </XStack>
+                </HStack>
             </Card>
         </Pressable>
     );
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" paddingHorizontal="$4" flex={1}>
+            <VStack style={{ paddingHorizontal: tokens.spacing.lg, gap: tokens.spacing.lg, flex: 1 }}>
                 {isLoading ? (
                     <View style={styles.center}><ActivityIndicator /></View>
                 ) : (
@@ -52,13 +57,24 @@ export default function ClientsScreen() {
                         keyExtractor={(item) => item.id}
                     />
                 )}
-            </YStack>
+            </VStack>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' }
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    avatarContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        overflow: 'hidden',
+        backgroundColor: '#e0e0e0',
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
+    }
 });
       

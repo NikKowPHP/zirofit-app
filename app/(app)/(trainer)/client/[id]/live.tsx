@@ -3,7 +3,9 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState, useMemo } from 'react';
 import { StyleSheet, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { YStack, H4, H5, XStack } from 'tamagui';
+import { VStack, HStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getActiveClientWorkoutSession, logSet, finishWorkoutSession } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
@@ -16,6 +18,7 @@ type WorkoutExercise = { id: string; name: string; };
 export default function LiveWorkoutScreen() {
     const { id: clientId } = useLocalSearchParams();
     const queryClient = useQueryClient();
+    const tokens = useTokens();
     
     // State for trainer-side logging
     const [reps, setReps] = useState('');
@@ -71,21 +74,21 @@ export default function LiveWorkoutScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" paddingHorizontal="$4" flex={1}>
-                <XStack justifyContent='space-between' alignItems='center'>
-                    <H4>Live Feed: {session.name || 'Unnamed Workout'}</H4>
-                    <Button size="$3" variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
+            <VStack style={{ gap: tokens.spacing.lg, paddingHorizontal: tokens.spacing.lg, flex: 1 }}>
+                <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                    <UIText variant="h4">Live Feed: {session.name || 'Unnamed Workout'}</UIText>
+                    <Button variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
                         Finish Workout
                     </Button>
-                </XStack>
+                </HStack>
                 <FlatList
                     data={session.exercises || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => {
                         const exerciseLogs = sortedLogs.filter(log => log.exercise_id === item.id);
                         return (
-                            <Card padding="$3" marginVertical="$2">
-                                <H5>{item.name}</H5>
+                            <Card style={{ marginVertical: tokens.spacing.sm }}>
+                                <UIText variant="h5">{item.name}</UIText>
                                 {exerciseLogs.length > 0 ? (
                                     exerciseLogs.map((log, index) => (
                                         <Text key={log.id}>Set {exerciseLogs.length - index}: {log.reps} reps @ {log.weight} kg</Text>
@@ -93,17 +96,17 @@ export default function LiveWorkoutScreen() {
                                 ) : (
                                     <Text style={styles.timestamp}>No sets logged yet.</Text>
                                 )}
-                                <XStack space="$2" alignItems="center" mt="$3">
-                                    <Input placeholder="Reps" keyboardType="numeric" value={reps} onChangeText={setReps} flex={1} />
-                                    <Input placeholder="Weight" keyboardType="numeric" value={weight} onChangeText={setWeight} flex={1} />
-                                    <Button flex={1} onPress={() => logSetMutation.mutate({ exercise_id: item.id })} disabled={logSetMutation.isPending}>Log Set</Button>
-                                </XStack>
+                                <HStack style={{ gap: tokens.spacing.sm, alignItems: 'center', marginTop: tokens.spacing.md }}>
+                                    <Input placeholder="Reps" keyboardType="numeric" value={reps} onChangeText={setReps} style={{ flex: 1 }} />
+                                    <Input placeholder="Weight" keyboardType="numeric" value={weight} onChangeText={setWeight} style={{ flex: 1 }} />
+                                    <Button style={{ flex: 1 }} onPress={() => logSetMutation.mutate({ exercise_id: item.id })} disabled={logSetMutation.isPending}>Log Set</Button>
+                                </HStack>
                             </Card>
                         )
                     }}
                     ListEmptyComponent={<Text>Waiting for client to start logging...</Text>}
                 />
-            </YStack>
+            </VStack>
         </SafeAreaView>
     )
 }

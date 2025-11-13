@@ -1,7 +1,8 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { H3, YStack, ToggleGroup, Label, H5, XStack } from 'tamagui';
+import { VStack, HStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
 import { useQuery } from '@tanstack/react-query';
 import { getProgressData, getClientAssessments } from '@/lib/api';
 import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
@@ -9,6 +10,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/Card';
 import type { ProgressData, ClientAssessment } from '@/lib/api/types';
 import useAuthStore from '@/store/authStore';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 
 type Metric = 'weight' | 'bodyfat';
 type ActiveTab = Metric | 'assessments';
@@ -16,6 +18,8 @@ type ActiveTab = Metric | 'assessments';
 export default function MyProgressScreen() {
     const [activeTab, setActiveTab] = useState<ActiveTab>('weight');
     const { profile } = useAuthStore();
+    const theme = useTheme();
+    const tokens = useTokens();
 
     const { data: progressData, isLoading: isProgressLoading } = useQuery<ProgressData>({ 
         queryKey: ['progressData'], 
@@ -58,49 +62,68 @@ export default function MyProgressScreen() {
 
         return (
             <ScrollView style={{width: '100%'}}>
-                <YStack space="$3">
+                <VStack style={{ gap: 12 }}>
                     {(assessments as any[]).map((assessment: any) => (
-                        <Card key={assessment.id} padding="$3">
-                            <H5>{assessment.name}</H5>
+                        <Card key={assessment.id} style={{ padding: 12 }}>
+                            <UIText variant="h5">{assessment.name}</UIText>
                             <Text style={styles.dateText}>{new Date(assessment.date).toDateString()}</Text>
                              {(assessment.metrics as any[]).map((metric: any) => (
-                                <XStack key={metric.id} justifyContent='space-between' my="$1">
+                                <HStack key={metric.id} style={{ justifyContent: 'space-between', marginVertical: 4 }}>
                                     <Text>{metric.name}:</Text>
                                     <Text style={styles.metricValue}>{metric.value} {metric.unit}</Text>
-                                </XStack>
+                                </HStack>
                             ))}
                         </Card>
                     ))}
-                </YStack>
+                </VStack>
             </ScrollView>
         )
     }
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" padding="$4" flex={1}>
-                <H3>My Progress</H3>
-                <ToggleGroup type="single" value={activeTab} onValueChange={(val: ActiveTab) => val && setActiveTab(val)} orientation="horizontal" alignSelf='center'>
-                    <ToggleGroup.Item value="weight">
-                        <Label>Weight</Label>
-                    </ToggleGroup.Item>
-                    <ToggleGroup.Item value="bodyfat">
-                        <Label>Body Fat</Label>
-                    </ToggleGroup.Item>
-                    <ToggleGroup.Item value="assessments">
-                        <Label>Assessments</Label>
-                    </ToggleGroup.Item>
-                </ToggleGroup>
+            <VStack style={{ padding: 16, gap: 16, flex: 1 }}>
+                <UIText variant="h3">My Progress</UIText>
+                <HStack style={{ alignSelf: 'center', gap: 8 }}>
+                    {(['weight', 'bodyfat', 'assessments'] as ActiveTab[]).map((tab) => (
+                        <TouchableOpacity
+                            key={tab}
+                            onPress={() => setActiveTab(tab)}
+                            style={[
+                                styles.tabButton,
+                                activeTab === tab && { backgroundColor: theme.primary }
+                            ]}
+                        >
+                            <Text style={[
+                                styles.tabText,
+                                activeTab === tab && { color: theme.primaryForeground }
+                            ]}>
+                                {tab === 'bodyfat' ? 'Body Fat' : tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </HStack>
                 <View style={styles.contentContainer}>
                     {activeTab === 'assessments' ? renderAssessments() : renderChart()}
                 </View>
-            </YStack>
+            </VStack>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
+    tabButton: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: '#ccc',
+    },
+    tabText: {
+        fontWeight: '600',
+    },
     contentContainer: {
         flex: 1,
         justifyContent: 'center',

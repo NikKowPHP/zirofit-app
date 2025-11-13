@@ -5,7 +5,9 @@ import * as api from '@/lib/api';
 import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { YStack, H3, Separator, XStack } from 'tamagui';
+import { VStack, HStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 import ServiceFormModal from '@/components/profile/ServiceFormModal';
 import PackageFormModal from '@/components/profile/PackageFormModal';
 import TestimonialFormModal from '@/components/profile/TestimonialFormModal';
@@ -40,6 +42,7 @@ const ERROR_MESSAGES = {
 
 export default function EditProfileScreen() {
     const queryClient = useQueryClient();
+    const tokens = useTokens();
     
     const { data: profile, isLoading } = useQuery({
         queryKey: ['trainerProfile'],
@@ -219,8 +222,8 @@ export default function EditProfileScreen() {
         <>
             <ScrollView contentContainerStyle={styles.container}>
                 {/* Core Info */}
-                <YStack space="$4" width="90%" padding="$4">
-                    <H3 textAlign="center">Edit Core Info</H3>
+                <VStack style={{ gap: tokens.spacing.lg, width: '90%', padding: tokens.spacing.lg }}>
+                    <UIText variant="h3" style={{ textAlign: 'center' }}>Edit Core Info</UIText>
                     <Input placeholder="Full Name" value={name} onChangeText={setName} />
                     <Input placeholder="Username" value={username} onChangeText={setUsername} autoCapitalize="none" />
                     <Input placeholder="Certifications" value={certifications} onChangeText={setCertifications} />
@@ -236,102 +239,99 @@ export default function EditProfileScreen() {
                     >
                         {coreInfoMutation.isPending ? 'Saving...' : 'Save Core Info'}
                     </Button>
-                </YStack>
+                </VStack>
 
-                <Separator width="90%" marginVertical="$4" />
+                <View style={{ width: '90%', height: 1, backgroundColor: '#ccc', marginVertical: tokens.spacing.lg }} />
 
                 {/* Services */}
-                <YStack space="$3" width="90%" padding="$4">
-                    <H3 textAlign="center">Manage Services</H3>
+                <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
+                    <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Services</UIText>
                     {profile?.services?.map((s: Service) => (
-                        <Card key={s.id} padding="$3">
-                            <XStack justifyContent="space-between" alignItems="center">
-                                <YStack flex={1} marginRight="$2">
+                        <Card key={s.id}>
+                            <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
                                     <Text style={styles.itemName}>{s.name}</Text>
                                     <Text style={styles.itemDesc}>{s.description}</Text>
                                     <Text style={styles.itemDetails}>${(s.price / 100).toFixed(2)} / {s.duration} min</Text>
-                                </YStack>
-                                <YStack space="$2">
-                                    <Button size="$3" onPress={() => { setSelectedService(s); setServiceModalVisible(true); }}>Edit</Button>
+                                </VStack>
+                                <VStack style={{ gap: tokens.spacing.sm }}>
+                                    <Button onPress={() => { setSelectedService(s); setServiceModalVisible(true); }}>Edit</Button>
                                     <Button
-                                        size="$3"
                                         variant="danger"
                                         onPress={() => confirmDelete(() => deleteServiceMutation.mutate(s.id), 'service')}
                                         disabled={deleteServiceMutation.isPending}
                                     >
                                         {deleteServiceMutation.isPending ? 'Deleting...' : 'Delete'}
                                     </Button>
-                                </YStack>
-                            </XStack>
+                                </VStack>
+                            </HStack>
                         </Card>
                     ))}
-                    <Button onPress={() => { setSelectedService(null); setServiceModalVisible(true); }} marginTop="$3">Add New Service</Button>
-                </YStack>
+                    <Button onPress={() => { setSelectedService(null); setServiceModalVisible(true); }} style={{ marginTop: tokens.spacing.md }}>Add New Service</Button>
+                </VStack>
 
-                <Separator width="90%" marginVertical="$4" />
+                <View style={{ width: '90%', height: 1, backgroundColor: '#ccc', marginVertical: tokens.spacing.lg }} />
                 
                 {/* Packages */}
-                <YStack space="$3" width="90%" padding="$4">
-                    <H3 textAlign="center">Manage Packages</H3>
+                <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
+                    <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Packages</UIText>
                     {profile?.packages?.map((p: Package) => (
-                        <Card key={p.id} padding="$3">
-                            <XStack justifyContent="space-between" alignItems="center">
-                                <YStack flex={1} marginRight="$2">
+                        <Card key={p.id}>
+                            <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
                                     <Text style={styles.itemName}>{p.name}</Text>
                                     <Text style={styles.itemDesc}>{p.description}</Text>
                                     <Text style={styles.itemDetails}>${(p.price / 100).toFixed(2)}</Text>
-                                </YStack>
-                                <YStack space="$2">
-                                    <Button size="$3" onPress={() => { setSelectedPackage(p); setPackageModalVisible(true); }}>Edit</Button>
+                                </VStack>
+                                <VStack style={{ gap: tokens.spacing.sm }}>
+                                    <Button onPress={() => { setSelectedPackage(p); setPackageModalVisible(true); }}>Edit</Button>
                                     <Button
-                                        size="$3"
                                         variant="danger"
                                         onPress={() => confirmDelete(() => deletePackageMutation.mutate(p.id), 'package')}
                                         disabled={deletePackageMutation.isPending}
                                     >
                                         {deletePackageMutation.isPending ? 'Deleting...' : 'Delete'}
                                     </Button>
-                                </YStack>
-                            </XStack>
+                                </VStack>
+                            </HStack>
                         </Card>
                     ))}
-                    <Button onPress={() => { setSelectedPackage(null); setPackageModalVisible(true); }} marginTop="$3">Add New Package</Button>
-                </YStack>
+                    <Button onPress={() => { setSelectedPackage(null); setPackageModalVisible(true); }} style={{ marginTop: tokens.spacing.md }}>Add New Package</Button>
+                </VStack>
 
-                <Separator width="90%" marginVertical="$4" />
+                <View style={{ width: '90%', height: 1, backgroundColor: '#ccc', marginVertical: tokens.spacing.lg }} />
 
                 {/* Testimonials */}
-                 <YStack space="$3" width="90%" padding="$4">
-                    <H3 textAlign="center">Manage Testimonials</H3>
+                 <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
+                    <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Testimonials</UIText>
                     {profile?.testimonials?.map((t: Testimonial) => (
-                         <Card key={t.id} padding="$3">
-                            <XStack justifyContent="space-between" alignItems="center">
-                                <YStack flex={1} marginRight="$2">
+                         <Card key={t.id}>
+                            <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                                <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
                                     <Text style={styles.itemName}>"{t.content}"</Text>
                                     <Text style={styles.itemDetails}>- {t.client_name}</Text>
-                                </YStack>
-                                <YStack space="$2">
-                                    <Button size="$3" onPress={() => { setSelectedTestimonial(t); setTestimonialModalVisible(true); }}>Edit</Button>
+                                </VStack>
+                                <VStack style={{ gap: tokens.spacing.sm }}>
+                                    <Button onPress={() => { setSelectedTestimonial(t); setTestimonialModalVisible(true); }}>Edit</Button>
                                     <Button
-                                        size="$3"
                                         variant="danger"
                                         onPress={() => confirmDelete(() => deleteTestimonialMutation.mutate(t.id), 'testimonial')}
                                         disabled={deleteTestimonialMutation.isPending}
                                     >
                                         {deleteTestimonialMutation.isPending ? 'Deleting...' : 'Delete'}
                                     </Button>
-                                </YStack>
-                            </XStack>
+                                </VStack>
+                            </HStack>
                         </Card>
                     ))}
-                    <Button onPress={() => { setSelectedTestimonial(null); setTestimonialModalVisible(true); }} marginTop="$3">Add New Testimonial</Button>
-                </YStack>
+                    <Button onPress={() => { setSelectedTestimonial(null); setTestimonialModalVisible(true); }} style={{ marginTop: tokens.spacing.md }}>Add New Testimonial</Button>
+                </VStack>
 
-                <Separator width="90%" marginVertical="$4" />
+                <View style={{ width: '90%', height: 1, backgroundColor: '#ccc', marginVertical: tokens.spacing.lg }} />
 
                  {/* Transformations */}
-                <YStack space="$3" width="90%" padding="$4">
-                    <H3 textAlign="center">Manage Transformation Photos</H3>
+                <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
+                    <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Transformation Photos</UIText>
                     <View style={styles.photoGrid}>
                         {profile?.transformations?.map((photo: Transformation) => (
                             <View key={photo.id} style={styles.photoContainer}>
@@ -348,12 +348,12 @@ export default function EditProfileScreen() {
                     </View>
                     <Button
                         onPress={handlePickImage}
-                        marginTop="$3"
+                        style={{ marginTop: tokens.spacing.md }}
                         disabled={uploadPhotoMutation.isPending}
                     >
                         {uploadPhotoMutation.isPending ? "Uploading..." : "Upload Photo"}
                     </Button>
-                </YStack>
+                </VStack>
 
             </ScrollView>
             

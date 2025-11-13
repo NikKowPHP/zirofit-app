@@ -1,9 +1,11 @@
-import { Alert, StyleSheet } from 'react-native';
+import { Alert, StyleSheet, View as SpacerView } from 'react-native';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { YStack, H4, Spacer, Paragraph } from 'tamagui';
 
-import { Text, View } from '@/components/Themed';
+import { VStack } from '@/components/ui/Stack';
+import { Text } from '@/components/ui/Text';
+import { Text as ThemedText, View } from '@/components/Themed';
+import { useTokens } from '@/hooks/useTheme';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { supabase } from '@/lib/supabase';
@@ -16,6 +18,7 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { setProfile } = useAuthStore();
+  const tokens = useTokens();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -43,8 +46,8 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <YStack space="$4" width="80%">
-        <H4 textAlign="center">Welcome Back</H4>
+      <VStack style={{ gap: tokens.spacing.lg, width: '80%' }}>
+        <Text variant="h3" style={{ textAlign: 'center' }}>Welcome Back</Text>
         <Input
           placeholder="Email"
           value={email}
@@ -61,11 +64,11 @@ export default function LoginScreen() {
         <Button onPress={handleLogin} disabled={loading}>
           {loading ? 'Signing in...' : 'Sign In'}
         </Button>
-        <Spacer />
-        <Paragraph textAlign="center" onPress={() => router.push('/register')}>
-          Don't have an account? <Text style={styles.link}>Sign up</Text>
-        </Paragraph>
-      </YStack>
+        <SpacerView style={{ flex: 1 }} />
+        <Text variant="body" style={{ textAlign: 'center' }} onPress={() => router.push('/register')}>
+          Don't have an account? <ThemedText style={styles.link}>Sign up</ThemedText>
+        </Text>
+      </VStack>
     </View>
   );
 }

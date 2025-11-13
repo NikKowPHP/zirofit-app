@@ -1,6 +1,7 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, ActivityIndicator, FlatList, Pressable } from 'react-native';
-import { YStack, H3, H5 } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
 import { Screen } from '@/components/ui/Screen';
 import useWorkoutStore from '@/store/workoutStore';
 import { Button } from '@/components/ui/Button';
@@ -48,7 +49,7 @@ export default function LogWorkoutScreen() {
     return (
         <>
             <Screen>
-                <H3>{workoutSession?.name || 'Log Workout'}</H3>
+                <UIText variant="h3">{workoutSession?.name || 'Log Workout'}</UIText>
 
                 {isResting && <InlineRestTimer duration={restTimerValue} onFinish={stopResting} />}
 
@@ -67,20 +68,20 @@ export default function LogWorkoutScreen() {
                             ItemSeparatorComponent={() => <View style={{height: 10}} />}
                         />
                         <View style={{flex: 1}} />
-                        <Button mt="$4" variant="danger" onPress={finishWorkout}>
+                        <Button style={{ marginTop: 16 }} variant="danger" onPress={finishWorkout}>
                             Finish Workout
                         </Button>
                     </>
                 ) : (
                     <View style={styles.center}>
-                        <Card padding="$4">
-                            <YStack space="$3">
-                                <H5>No active workout session.</H5>
+                        <Card style={{ padding: 16 }}>
+                            <VStack style={{ gap: 12 }}>
+                                <UIText variant="h5">No active workout session.</UIText>
                                 <Button onPress={() => startWorkout('blank')}>Start Blank Workout</Button>
                                 <Button onPress={() => setTemplateModalVisible(true)} disabled={templatesLoading}>
                                     {templatesLoading ? 'Loading Templates...' : 'Start from Template'}
                                 </Button>
-                            </YStack>
+                            </VStack>
                         </Card>
                     </View>
                 )}
@@ -96,7 +97,7 @@ export default function LogWorkoutScreen() {
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <Pressable onPress={() => handleSelectTemplate(item.id)}>
-                            <Card padding="$3" marginVertical="$2">
+                            <Card style={{ padding: 12, marginVertical: 8 }}>
                                 <Text>{item.name}</Text>
                             </Card>
                         </Pressable>

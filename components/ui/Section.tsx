@@ -1,4 +1,6 @@
-import { YStack, H5 } from 'tamagui';
+import { VStack } from './Stack';
+import { Text } from './Text';
+import { useTokens } from '@/hooks/useTheme';
 import { ReactNode } from 'react';
 
 interface SectionProps {
@@ -7,10 +9,12 @@ interface SectionProps {
 }
 
 export function Section({ title, children }: SectionProps) {
+  const tokens = useTokens();
+
   return (
-    <YStack space="$3">
-      {title && <H5>{title}</H5>}
+    <VStack style={{ gap: tokens.spacing.md }}>
+      {title && <Text variant="h5">{title}</Text>}
       {children}
-    </YStack>
+    </VStack>
   );
 }

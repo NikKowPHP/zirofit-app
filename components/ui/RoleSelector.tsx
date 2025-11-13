@@ -1,5 +1,7 @@
-import { Platform } from 'react-native';
-import { Label, RadioGroup, ToggleGroup, XStack, YStack } from 'tamagui';
+import { Platform, TouchableOpacity, StyleSheet, Text } from 'react-native';
+import { HStack, VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTheme } from '@/hooks/useTheme';
 
 type RoleSelectorProps = {
   value: 'client' | 'trainer';
@@ -7,36 +9,59 @@ type RoleSelectorProps = {
 };
 
 export function RoleSelector({ value, onValueChange }: RoleSelectorProps) {
+  const theme = useTheme();
+
   if (Platform.OS === 'ios') {
     // Segmented Control for iOS
     return (
-      <ToggleGroup type="single" value={value} onValueChange={onValueChange} orientation="horizontal" width="100%">
-        <ToggleGroup.Item value="client" flex={1}>
-          <Label>Client</Label>
-        </ToggleGroup.Item>
-        <ToggleGroup.Item value="trainer" flex={1}>
-          <Label>Trainer</Label>
-        </ToggleGroup.Item>
-      </ToggleGroup>
+      <HStack style={{ width: '100%', borderRadius: 8, overflow: 'hidden', borderWidth: 1, borderColor: theme.border }}>
+        <TouchableOpacity
+          style={[styles.segment, value === 'client' ? { backgroundColor: theme.primary } : { backgroundColor: theme.background }]}
+          onPress={() => onValueChange('client')}
+        >
+          <UIText variant="body" style={{ color: value === 'client' ? theme.primaryForeground : theme.text }}>Client</UIText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.segment, value === 'trainer' ? { backgroundColor: theme.primary } : { backgroundColor: theme.background }]}
+          onPress={() => onValueChange('trainer')}
+        >
+          <UIText variant="body" style={{ color: value === 'trainer' ? theme.primaryForeground : theme.text }}>Trainer</UIText>
+        </TouchableOpacity>
+      </HStack>
     );
   }
 
   // Radio Buttons for Android
   return (
-    <RadioGroup value={value} onValueChange={onValueChange} space="$2">
-        <XStack alignItems="center" space="$2">
-            <RadioGroup.Item value="client" id="client">
-            <RadioGroup.Indicator />
-            </RadioGroup.Item>
-            <Label htmlFor="client">Client</Label>
-        </XStack>
-        <XStack alignItems="center" space="$2">
-            <RadioGroup.Item value="trainer" id="trainer">
-            <RadioGroup.Indicator />
-            </RadioGroup.Item>
-            <Label htmlFor="trainer">Trainer</Label>
-        </XStack>
-    </RadioGroup>
+    <VStack style={{ gap: 8 }}>
+        <TouchableOpacity style={styles.radioRow} onPress={() => onValueChange('client')}>
+            <Text style={[styles.radio, { borderColor: theme.border, backgroundColor: value === 'client' ? theme.primary : theme.background }]} />
+            <UIText variant="body">Client</UIText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.radioRow} onPress={() => onValueChange('trainer')}>
+            <Text style={[styles.radio, { borderColor: theme.border, backgroundColor: value === 'trainer' ? theme.primary : theme.background }]} />
+            <UIText variant="body">Trainer</UIText>
+        </TouchableOpacity>
+    </VStack>
   );
 }
+
+const styles = StyleSheet.create({
+  segment: {
+    flex: 1,
+    paddingVertical: 8,
+    alignItems: 'center',
+  },
+  radioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+  },
+});
       

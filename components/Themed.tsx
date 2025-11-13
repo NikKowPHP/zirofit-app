@@ -4,8 +4,7 @@
  */
 
 import { Text as DefaultText, View as DefaultView } from 'react-native';
-import { Text as TamaguiText } from 'tamagui';
-import { useTheme } from 'tamagui';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 
 type ThemeProps = {
   lightColor?: string;
@@ -17,15 +16,15 @@ export type ViewProps = ThemeProps & DefaultView['props'];
 
 export function useThemeColor(
   props: { light?: string; dark?: string },
-  colorName: 'text' | 'background' | 'textSecondary' | 'surface' | 'border'
+  colorName: 'text' | 'background' | 'textSecondary' | 'surface' | 'border' | 'primary' | 'danger'
 ) {
   const theme = useTheme();
-  const colorFromProps = props[(theme as any).name as 'light' | 'dark'];
+  const colorFromProps = props.light || props.dark; // Simplified, assuming we handle light/dark elsewhere
 
   if (colorFromProps) {
     return colorFromProps;
   } else {
-    return (theme as any)[colorName]?.get() || theme.color.get();
+    return theme[colorName];
   }
 }
 
@@ -38,9 +37,10 @@ export function Text(props: TextProps) {
 
 export function BodyText(props: TextProps) {
   const { style, lightColor, darkColor, ...otherProps } = props;
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
+  const theme = useTheme();
+  const tokens = useTokens();
 
-  return <TamaguiText fontSize="$md" color={color} fontFamily="$body" style={style} {...otherProps} />;
+  return <DefaultText style={[{ color: theme.text, fontSize: tokens.fontSizes.md }, style]} {...otherProps} />;
 }
 
 export function View(props: ViewProps) {

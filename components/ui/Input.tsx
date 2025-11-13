@@ -1,21 +1,32 @@
-import { Input as TamaguiInput, InputProps, styled } from 'tamagui';
+import { TextInput, StyleSheet, TextInputProps } from 'react-native';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 
-const StyledInput = styled(TamaguiInput, {
-  backgroundColor: '$color.surface',
-  borderColor: '$color.border',
-  borderWidth: 1,
-  borderRadius: '$3',
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  fontSize: '$md',
-  color: '$color.text',
-  placeholderTextColor: '$color.textSecondary',
-  focusStyle: {
-    borderColor: '$color.primary',
+export function Input(props: TextInputProps) {
+  const theme = useTheme();
+  const tokens = useTokens();
+
+  const inputStyle = {
+    backgroundColor: theme.surface,
+    borderColor: theme.border,
+    borderRadius: tokens.radii.sm,
+    paddingHorizontal: tokens.spacing.md,
+    paddingVertical: tokens.spacing.sm,
+    fontSize: tokens.fontSizes.md,
+    color: theme.text,
+  };
+
+  return (
+    <TextInput
+      {...props}
+      style={[styles.input, inputStyle, props.style]}
+      placeholderTextColor={theme.textSecondary}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  input: {
+    borderWidth: 1,
   },
 });
-
-export function Input(props: InputProps) {
-  return <StyledInput {...props} />;
-}
       

@@ -1,7 +1,8 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Alert, ActivityIndicator, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { H3, YStack, Avatar, H4, Paragraph } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import * as WebBrowser from 'expo-web-browser';
@@ -10,9 +11,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
 import { supabase } from '@/lib/supabase';
+import { useTokens } from '@/hooks/useTheme';
 
 export default function MyTrainerScreen() {
     const [loadingPackageId, setLoadingPackageId] = useState<string | null>(null);
+    const tokens = useTokens();
     
     const { data: trainer, isLoading: isTrainerLoading } = useQuery({ 
         queryKey: ['myTrainer'], 
@@ -54,32 +57,35 @@ export default function MyTrainerScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" padding="$4" alignItems='center'>
-                <H3>My Trainer</H3>
+            <VStack style={{ padding: tokens.spacing.lg, gap: tokens.spacing.lg, alignItems: 'center' }}>
+                <UIText variant="h3">My Trainer</UIText>
                 
                 {trainer ? (
                     <>
-                        <Card padding="$4" alignItems='center' width="100%">
-                            <Avatar circular size="$10">
-                                <Avatar.Image src={trainer.avatar_url} />
-                                <Avatar.Fallback bc="blue" />
-                            </Avatar>
-                            <H3 mt="$2">{trainer.name}</H3>
+                        <Card style={{ padding: tokens.spacing.lg, alignItems: 'center', width: '100%' }}>
+                            <View style={styles.avatarContainer}>
+                                <Image 
+                                    source={{ uri: trainer.avatar_url }} 
+                                    style={styles.avatar} 
+                                    defaultSource={require('@/assets/images/icon.png')}
+                                />
+                            </View>
+                            <UIText variant="h3" style={{ marginTop: tokens.spacing.sm }}>{trainer.name}</UIText>
                             <Text>Certified Personal Trainer</Text>
-                            <Button mt="$4">Send Message</Button>
+                            <Button style={{ marginTop: tokens.spacing.lg }}>Send Message</Button>
                         </Card>
 
-                        <Card padding="$4" width="100%">
-                            <H3 textAlign='center'>Training Packages</H3>
+                        <Card style={{ padding: tokens.spacing.lg, width: '100%' }}>
+                            <UIText variant="h3" style={{ textAlign: 'center' }}>Training Packages</UIText>
                             {arePackagesLoading ? <ActivityIndicator style={{marginTop: 20}} /> : (
-                                <YStack space="$3" mt="$3">
+                                <VStack style={{ gap: tokens.spacing.md, marginTop: tokens.spacing.md }}>
                                     {packages && packages.length > 0 ? packages.map((pkg: any) => (
-                                        <Card key={pkg.id} padding="$3" backgroundColor="$backgroundHover">
-                                            <H4>{pkg.name}</H4>
-                                            <Paragraph>{pkg.description}</Paragraph>
+                                        <Card key={pkg.id} style={{ padding: tokens.spacing.md, backgroundColor: '#f5f5f5' }}>
+                                            <UIText variant="h4">{pkg.name}</UIText>
+                                            <Text>{pkg.description}</Text>
                                             <Text style={styles.price}>${(pkg.price / 100).toFixed(2)}</Text>
                                             <Button 
-                                                mt="$3"
+                                                style={{ marginTop: tokens.spacing.md }}
                                                 variant="primary" 
                                                 onPress={() => handleBuyPackage(pkg.id)} 
                                                 disabled={!!loadingPackageId}
@@ -90,7 +96,7 @@ export default function MyTrainerScreen() {
                                     )) : (
                                         <Text style={styles.noPackagesText}>This trainer has not set up any packages yet.</Text>
                                     )}
-                                </YStack>
+                                </VStack>
                             )}
                         </Card>
                     </>
@@ -98,10 +104,10 @@ export default function MyTrainerScreen() {
                     <FindTrainerPrompt />
                 )}
 
-                <Button variant="danger" onPress={handleLogout} width="100%" marginTop="$4">
+                <Button variant="danger" onPress={handleLogout} style={{ width: '100%', marginTop: tokens.spacing.lg }}>
                     Logout
                 </Button>
-            </YStack>
+            </VStack>
         </SafeAreaView>
     );
 }
@@ -112,6 +118,17 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    avatarContainer: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        overflow: 'hidden',
+        backgroundColor: '#e0e0e0',
+    },
+    avatar: {
+        width: '100%',
+        height: '100%',
     },
     price: {
         fontSize: 18,

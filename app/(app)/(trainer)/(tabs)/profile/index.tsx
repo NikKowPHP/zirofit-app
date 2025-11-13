@@ -3,7 +3,9 @@ import { StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery } from '@tanstack/react-query';
 import { getTrainerProfile } from '@/lib/api';
-import { YStack, H3, Avatar } from 'tamagui';
+import { VStack } from '@/components/ui/Stack';
+import { Text as UIText } from '@/components/ui/Text';
+import { useTokens } from '@/hooks/useTheme';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
@@ -12,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 export default function ProfileScreen() {
     const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
     const router = useRouter();
+    const tokens = useTokens();
     
     if (isLoading || !profile) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
@@ -24,30 +27,39 @@ export default function ProfileScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <YStack space="$4" padding="$4" alignItems='center'>
-                <H3>My Profile</H3>
-                <Card padding="$4" alignItems='center' width="100%">
-                    <Avatar circular size="$10">
-                        <Avatar.Image src={profile.avatar_url || undefined} />
-                        <Avatar.Fallback bc="blue" />
-                    </Avatar>
-                    <H3 mt="$2">{profile.name || 'Unnamed'}</H3>
+            <VStack style={{ gap: tokens.spacing.lg, padding: tokens.spacing.lg, alignItems: 'center' }}>
+                <UIText variant="h3">My Profile</UIText>
+                <Card style={{ alignItems: 'center', width: '100%' }}>
+                    <View style={styles.avatar}>
+                        <View style={[styles.avatarFallback, { backgroundColor: 'blue' }]} />
+                    </View>
+                    <UIText variant="h3" style={{ marginTop: tokens.spacing.sm }}>{profile.name || 'Unnamed'}</UIText>
                     <Text>{profile.email || 'No email'}</Text>
 
-                    <Button mt="$4" onPress={() => router.push('/(app)/(trainer)/(tabs)/profile/edit')}>
+                    <Button style={{ marginTop: tokens.spacing.lg }} onPress={() => router.push('/(app)/(trainer)/(tabs)/profile/edit')}>
                         Edit Profile
                     </Button>
-                    <Button mt="$2" variant="danger" onPress={handleLogout}>
+                    <Button style={{ marginTop: tokens.spacing.sm }} variant="danger" onPress={handleLogout}>
                         Logout
                     </Button>
                 </Card>
-            </YStack>
+            </VStack>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center' }
+    center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+    avatar: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        overflow: 'hidden',
+    },
+    avatarFallback: {
+        width: '100%',
+        height: '100%',
+    },
 });
       

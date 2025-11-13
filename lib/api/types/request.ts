@@ -44,6 +44,8 @@ export interface EndRestTimerRequest {
 // Client Request Types
 export interface CreateClientRequest {
   email: string;
+  name: string;
+  phone: string;
 }
 
 export interface RequestClientLinkRequest {}

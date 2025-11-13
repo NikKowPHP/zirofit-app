@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ActivityIndicator, FlatList, StyleSheet, Alert, Pressable } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as api from '@/lib/api';
-import { H3, YStack, XStack } from 'tamagui';
+import { VStack, HStack } from '@/components/ui/Stack';
+import { useTokens } from '@/hooks/useTheme';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
@@ -18,6 +19,7 @@ export default function TemplateEditorScreen() {
     const { id } = useLocalSearchParams();
     const templateId = id as string;
     const queryClient = useQueryClient();
+    const tokens = useTokens();
 
     const { data: template, isLoading, error } = useQuery({
         queryKey: ['template', templateId],
@@ -51,24 +53,24 @@ export default function TemplateEditorScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <Stack.Screen options={{ title: template?.name || `Template ${id}` }} />
-            <YStack space="$4" padding="$4" flex={1}>
+            <VStack style={{ gap: tokens.spacing.lg, padding: tokens.spacing.lg, flex: 1 }}>
                 <FlatList
                     data={template.exercises}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
-                        <Card padding="$3" marginVertical="$2">
-                            <XStack justifyContent='space-between' alignItems='center'>
+                        <Card style={{ marginVertical: tokens.spacing.sm }}>
+                            <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Text style={styles.exerciseName}>{item.name}</Text>
                                 <Pressable onPress={() => removeExerciseMutation.mutate(item.id)}>
                                     <FontAwesome name="trash" size={20} color="red" />
                                 </Pressable>
-                            </XStack>
+                            </HStack>
                         </Card>
                     )}
                     ListHeaderComponent={<Button onPress={() => setAddExerciseModalVisible(true)}>Add Exercise</Button>}
                     ListEmptyComponent={<Text style={{textAlign: 'center', marginTop: 20}}>No exercises added yet.</Text>}
                 />
-            </YStack>
+            </VStack>
 
             <Modal visible={isAddExerciseModalVisible} onClose={() => setAddExerciseModalVisible(false)} title="Add Exercise">
                 <FlatList
@@ -79,7 +81,7 @@ export default function TemplateEditorScreen() {
                             addExerciseMutation.mutate(item.id);
                             setAddExerciseModalVisible(false);
                         }}>
-                             <Card padding="$3" marginVertical="$2">
+                             <Card style={{ marginVertical: tokens.spacing.sm }}>
                                 <Text>{item.name}</Text>
                             </Card>
                         </Pressable>

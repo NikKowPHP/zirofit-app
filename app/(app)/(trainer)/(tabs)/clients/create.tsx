@@ -1,15 +1,17 @@
 import { View, Text } from '@/components/Themed';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { VStack } from '@/components/ui/Stack';
 import { createClient } from '@/lib/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
-import { YStack } from 'tamagui';
 
 export default function CreateClientScreen() {
     const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
     const router = useRouter();
     const queryClient = useQueryClient();
 
@@ -26,16 +28,16 @@ export default function CreateClientScreen() {
     });
 
     const handleInvite = () => {
-        if (!email) {
-            Alert.alert('Error', 'Please enter an email address.');
+        if (!email || !name || !phone) {
+            Alert.alert('Error', 'Please fill in all fields.');
             return;
         }
-        mutation.mutate({ email });
+        mutation.mutate({ email, name, phone });
     };
 
     return (
         <View style={styles.container}>
-            <YStack space="$4" width="90%">
+            <VStack style={{ gap: 16, width: '90%' }}>
                 <Text>Enter the email address of the client you want to invite. They will receive an email to sign up and connect with you.</Text>
                 <Input
                     placeholder="client@example.com"
@@ -47,7 +49,7 @@ export default function CreateClientScreen() {
                 <Button onPress={handleInvite} disabled={mutation.isPending}>
                     {mutation.isPending ? 'Sending Invitation...' : 'Invite Client'}
                 </Button>
-            </YStack>
+            </VStack>
         </View>
     );
 }
