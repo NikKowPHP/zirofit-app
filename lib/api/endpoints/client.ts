@@ -21,7 +21,7 @@ import type {
  */
 export const getClients = (): Promise<Client[]> => 
   apiFetch('/clients').then(res => {
-    console.log('api response for getClients', JSON.stringify(res.data.clients, null, 2));
+    // console.log('api response for getClients', JSON.stringify(res.data.clients, null, 2));
     return res.data.clients;
   });
 

@@ -16,10 +16,15 @@ import type {
  * @param params Calendar parameters
  * @returns List of calendar events
  */
-export const getCalendarEvents = (params: { startDate: string; endDate: string }) =>
-  apiFetch('/trainer/calendar', {
+export const getCalendarEvents = async (params: { startDate: string; endDate: string }) => {
+  console.log('getCalendarEvents called with params:', params);
+  const result = await apiFetch('/trainer/calendar', {
+    method: 'GET',
     params
   });
+  console.log('getCalendarEvents response:', JSON.stringify(result.data, null, 2));
+  return result;
+};
 /**
  * Plan a new session
  * @param request Session planning data

@@ -1,10 +1,9 @@
 import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator, Pressable, Alert } from 'react-native';
+import { StyleSheet, ActivityIndicator, Pressable, Alert, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPrograms, createProgram } from '@/lib/api';
 import { YStack, H3, H5, Accordion } from 'tamagui';
-import { FlashList } from '@shopify/flash-list';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
@@ -88,11 +87,12 @@ export default function ProgramsScreen() {
         <SafeAreaView style={styles.container}>
             <YStack space="$4" paddingHorizontal="$4" flex={1}>
                 <Button onPress={() => setModalVisible(true)}>Create New Program</Button>
-                <FlashList
+                <FlatList
                     data={programs}
                     renderItem={renderItem}
-                    estimatedItemSize={100}
+                    keyExtractor={(item) => item.id}
                     ListEmptyComponent={<Text>No programs created yet.</Text>}
+                    contentContainerStyle={{ paddingBottom: 20 }}
                 />
             </YStack>
 

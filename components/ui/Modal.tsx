@@ -1,65 +1,34 @@
 import React from 'react';
-import { Modal as RNModal, ModalProps as RNModalProps, Platform, Pressable, StyleSheet } from 'react-native';
-import { View, Text } from '@/components/Themed';
-import { Button } from './Button';
-import { useTheme } from 'tamagui';
+import { StyleSheet } from 'react-native';
+import { Text } from '@/components/Themed';
+import { Dialog } from 'tamagui';
 
-interface ModalProps extends Omit<RNModalProps, 'presentationStyle'> {
+interface ModalProps {
   children: React.ReactNode;
   onClose: () => void;
   title?: string;
+  visible: boolean;
 }
 
-export function Modal({ children, onClose, title, ...props }: ModalProps) {
-  const theme = useTheme();
-  const presentationStyle = Platform.select({
-    ios: 'pageSheet', // Presents as a dismissible sheet on iOS
-    android: undefined, // Standard modal on Android
-  }) as RNModalProps['presentationStyle'];
+export function Modal({ children, onClose, title, visible }: ModalProps) {
 
   return (
-    <RNModal
-      animationType="slide"
-      presentationStyle={presentationStyle}
-      onRequestClose={onClose}
-      {...props}>
-      <View style={[styles.container, { backgroundColor: theme.background.get() }]}>
-        <View style={[styles.header, { borderBottomColor: theme.border.get() }]}>
-            {title && <Text style={styles.title}>{title}</Text>}
-            <Pressable onPress={onClose} style={styles.closeButton}>
-                <Text>Close</Text>
-            </Pressable>
-        </View>
-        <View style={styles.content}>
+    <Dialog modal open={visible} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content>
+          <Dialog.Title>{title}</Dialog.Title>
           {children}
-        </View>
-      </View>
-    </RNModal>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        marginTop: Platform.OS === 'ios' ? 40 : 20,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: 15,
-        borderBottomWidth: 1,
-    },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
     },
-    closeButton: {
-        padding: 8,
-    },
-    content: {
-        flex: 1,
-        padding: 15,
-    }
 })
       

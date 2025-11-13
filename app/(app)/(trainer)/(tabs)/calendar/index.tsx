@@ -29,6 +29,11 @@ const extractArray = (response: unknown): any[] => {
         if (Array.isArray(items)) {
             return items as any[];
         }
+
+        const events = record['events'];
+        if (Array.isArray(events)) {
+            return events as any[];
+        }
     }
 
     return [];
@@ -57,7 +62,7 @@ export default function CalendarScreen() {
         if (!events.length) return {};
         const dates: { [key: string]: { dots: { key: string; color: string }[] } } = {};
         events.forEach((event: any) => {
-            const date = event.start_time.split('T')[0];
+            const date = event.start.split('T')[0];
             if (!dates[date]) {
                 dates[date] = { dots: [] };
             }
@@ -75,6 +80,11 @@ export default function CalendarScreen() {
     const [sessionNotes, setSessionNotes] = useState('');
     const [selectedClient, setSelectedClient] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState('');
+
+    const selectedDayEvents = useMemo(() => {
+        if (!selectedDate || !events.length) return [];
+        return events.filter((event: any) => event.start.split('T')[0] === selectedDate);
+    }, [selectedDate, events]);
 
     const planSessionMutation = useMutation({
         mutationFn: planSession,
@@ -121,6 +131,18 @@ export default function CalendarScreen() {
                 markingType='multi-dot'
                 onMonthChange={(month) => setCurrentMonth(month.dateString.slice(0, 7))}
             />
+            {selectedDayEvents.length > 0 && (
+                <View style={styles.eventsContainer}>
+                    <Text style={styles.eventsTitle}>Events for {selectedDate}</Text>
+                    {selectedDayEvents.map((event: any) => (
+                        <View key={event.id} style={styles.eventItem}>
+                            <Text style={styles.eventTitle}>{event.title}</Text>
+                            <Text>{new Date(event.start).toLocaleTimeString()} - {new Date(event.end).toLocaleTimeString()}</Text>
+                            <Text>{event.notes}</Text>
+                        </View>
+                    ))}
+                </View>
+            )}
             <Modal
                 visible={modalVisible}
                 onClose={closeModal}
@@ -137,7 +159,7 @@ export default function CalendarScreen() {
                         <Select.Trigger iconAfter={ChevronDown}>
                             <Select.Value placeholder="Select a client" />
                         </Select.Trigger>
-                        <Adapt when="sm" platform="native">
+                        <Adapt when="sm">
                             <Sheet modal dismissOnSnapToBottom>
                                 <Sheet.Frame>
                                     <Sheet.ScrollView><Adapt.Contents /></Sheet.ScrollView>
@@ -162,7 +184,7 @@ export default function CalendarScreen() {
                          <Select.Trigger iconAfter={ChevronDown}>
                             <Select.Value placeholder="Select a program" />
                         </Select.Trigger>
-                        <Adapt when="sm" platform="native">
+                        <Adapt when="sm">
                             <Sheet modal dismissOnSnapToBottom>
                                 <Sheet.Frame>
                                     <Sheet.ScrollView><Adapt.Contents /></Sheet.ScrollView>
@@ -182,7 +204,7 @@ export default function CalendarScreen() {
                         </Select.Content>
                     </Select>
 
-                    <Button onPress={handlePlanSession} disabled={planSessionMutation.isPending} mt="$4">
+                    <Button onPress={handlePlanSession} disabled={planSessionMutation.isPending} mt="$xl">
                         {planSessionMutation.isPending ? 'Saving...' : 'Save Session'}
                     </Button>
                 </YStack>
@@ -192,6 +214,32 @@ export default function CalendarScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1 },
+    container: { flex: 1, padding: 10 },
+    eventsContainer: {
+        marginTop: 20,
+        padding: 10,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 5,
+    },
+    eventsTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    eventItem: {
+        marginBottom: 10,
+        padding: 10,
+        backgroundColor: '#fff',
+        borderRadius: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 1,
+        elevation: 1,
+    },
+    eventTitle: {
+        fontWeight: 'bold',
+        marginBottom: 5,
+    },
 });
       

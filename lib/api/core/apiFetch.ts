@@ -28,6 +28,8 @@ export const apiFetch = async (endpoint: string, options: ApiFetchOptions = {}):
       
     console.log('api request with endpoint', API_URL, endpoint);
 
+    console.log('method:', options.method, 'params:', options.params);
+
     // Handle query parameters for GET requests
     let url = `${API_URL}/api${endpoint}`;
     if (options.method === 'GET' && options.params) {
@@ -46,6 +48,8 @@ export const apiFetch = async (endpoint: string, options: ApiFetchOptions = {}):
       const { params: _, ...restOptions } = options;
       options = restOptions;
     }
+
+    console.log('final url:', url);
 
     const response = await fetch(url, {
       ...options,

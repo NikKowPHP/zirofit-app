@@ -32,7 +32,7 @@ export const getTrainerProfile = (): Promise<TrainerProfile> =>
  */
 export const getTrainerClients = (): Promise<any[]> => 
   apiFetch('/trainer/clients').then(res => {
-    console.log('api response for getTrainerClients', JSON.stringify(res.data.clients, null, 2));
+    // console.log('api response for getTrainerClients', JSON.stringify(res.data.clients, null, 2));
     return res.data.clients;
   });
 
@@ -42,7 +42,6 @@ export const getTrainerClients = (): Promise<any[]> =>
  */
 export const getPrograms = (): Promise<TrainerProgram[]> => 
   apiFetch('/trainer/programs').then(res => {
-    console.log('api response for getPrograms', JSON.stringify(res.data, null, 2));
     return res.data.userPrograms;
   });
 
@@ -111,10 +110,20 @@ export const removeExerciseFromTemplate = (templateId: string, exerciseId: strin
  * @param params Calendar parameters
  * @returns List of calendar events
  */
-export const getCalendarEvents = (params?: { startDate?: string; endDate?: string }) => 
-  apiFetch('/trainer/calendar', {
-    params
+export const getCalendarEvents = (params?: { startDate?: string; endDate?: string }) => {
+  const defaultParams = params || {};
+  if (!defaultParams.startDate || !defaultParams.endDate) {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    defaultParams.startDate = startOfMonth.toISOString().split('T')[0];
+    defaultParams.endDate = endOfMonth.toISOString().split('T')[0];
+  }
+  return apiFetch('/trainer/calendar', {
+    method: 'GET',
+    params: defaultParams
   });
+};
 
 /**
  * Plan a new session

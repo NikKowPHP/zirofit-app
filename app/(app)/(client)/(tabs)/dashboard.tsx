@@ -47,12 +47,6 @@ export default function DashboardScreen() {
         return <Screen center><Text>Error fetching data: {error.message}</Text></Screen>
     }
 
-    // Check if user is authenticated but not a client - redirect to trainer dashboard
-    if (authenticationState === 'authenticated' && profile?.role !== 'client') {
-        router.replace('/(app)/(trainer)');
-        return <Screen center><ActivityIndicator /></Screen>; // Show loading while redirecting
-    }
-
     // If not authenticated, show login prompt
     if (authenticationState === 'unauthenticated') {
         return (

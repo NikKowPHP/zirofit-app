@@ -27,7 +27,7 @@ export const createCheckoutSession = (packageId: string) =>
  */
 export const getDashboard = (): Promise<DashboardData> => 
   apiFetch('/dashboard').then(res => {
-    console.log('api response for getDashboard', JSON.stringify(res.data, null, 2));
+    // console.log('api response for getDashboard', JSON.stringify(res.data, null, 2));
     return res.data;
   });
 
