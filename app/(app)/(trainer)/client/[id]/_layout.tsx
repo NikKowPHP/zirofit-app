@@ -37,6 +37,7 @@ export default function ClientDetailLayout() {
         }}
       >
         <MaterialTopTabs.Screen name="index" options={{ title: 'Workouts' }} />
+        <MaterialTopTabs.Screen name="live" options={{ title: 'Live' }} />
         <MaterialTopTabs.Screen name="measurements" options={{ title: 'Measurements' }} />
         <MaterialTopTabs.Screen name="photos" options={{ title: 'Photos' }} />
       </MaterialTopTabs>

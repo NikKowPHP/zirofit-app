@@ -8,6 +8,7 @@ import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getActiveClientWorkoutSession, logSet, finishWorkoutSession, getAvailableExercises, addExerciseToLiveSession } from '@/lib/api';
+import { useClientDetails } from '@/hooks/useClientDetails';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -38,6 +39,13 @@ export default function LiveWorkoutScreen() {
         // Refetch every 5 seconds as a temporary replacement for real-time updates
         refetchInterval: 5000, 
     });
+
+    const { data: client, isLoading: clientLoading, error: clientError } = useClientDetails(clientId as string);
+
+    // Check if clientId is available after all hooks
+    if (!clientId) {
+        return <SafeAreaView style={styles.center}><Text>Client ID not found.</Text></SafeAreaView>;
+    }
 
     // ARCHITECTURAL NOTE:
     // The previous implementation used a direct Supabase subscription to listen for database changes.
@@ -79,7 +87,7 @@ export default function LiveWorkoutScreen() {
 
     console.log('=== TRAINER LIVE SCREEN DEBUG ===');
     console.log('Exercises query loading:', exercisesLoading);
-    console.log('Exercises data:', exercises);
+    // console.log('Exercises data:', exercises);
     console.log('Exercises count:', exercises?.length || 0);
     console.log('=================================');
 
@@ -123,7 +131,7 @@ export default function LiveWorkoutScreen() {
         <SafeAreaView style={styles.container}>
             <VStack style={{ gap: tokens.spacing.lg, paddingHorizontal: tokens.spacing.lg, flex: 1 }}>
                 <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                    <UIText variant="h4">Live Feed: {session.name || 'Unnamed Workout'}</UIText>
+                    <UIText variant="h4">Live Feed: {client?.name || (clientError ? 'Client not found' : 'Loading...')}</UIText>
                     <HStack style={{ gap: tokens.spacing.sm }}>
                         <Button onPress={() => {
                             console.log('Add Exercise button pressed');

@@ -93,7 +93,7 @@ export default function LogWorkoutScreen() {
                         <Card style={{ padding: 16 }}>
                             <VStack style={{ gap: 12 }}>
                                 <UIText variant="h5">No active workout session.</UIText>
-                                <Button onPress={() => startWorkout('blank')}>Start Blank Workout</Button>
+                                <Button onPress={() => startWorkout()}>Start Blank Workout</Button>
                                 <Button onPress={() => setTemplateModalVisible(true)} disabled={templatesLoading}>
                                     {templatesLoading ? 'Loading Templates...' : 'Start from Template'}
                                 </Button>

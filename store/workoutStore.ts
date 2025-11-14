@@ -16,7 +16,7 @@ type WorkoutState = {
   isResting: boolean;
   restTimerValue: number;
   checkActiveSession: () => Promise<void>;
-  startWorkout: (templateId: string) => Promise<void>;
+  startWorkout: (templateId?: string, clientId?: string) => Promise<void>;
   addExercise: (exerciseId: string) => Promise<void>;
   logSet: (logData: Omit<ClientExerciseLog, 'id' | 'workout_session_id'>) => Promise<void>;
   stopResting: () => void;
@@ -50,14 +50,14 @@ const useWorkoutStore = create<WorkoutState>((set, get) => ({
     }
   },
 
-  startWorkout: async (templateId: string) => {
+  startWorkout: async (templateId?: string, clientId?: string) => {
     set({ isLoading: true });
     try {
-      const session = await api.startWorkoutSession({ templateId });
+      const session = await api.startWorkoutSession({ templateId, clientId });
       set({ 
         workoutSession: { 
           ...session, 
-          name: session.name || 'Workout', 
+          name: session.name || 'Free Workout', 
           exercises: (session.exercises || []) as WorkoutExercise[], 
           logs: (session.logs || []) as ClientExerciseLog[]
         }, 

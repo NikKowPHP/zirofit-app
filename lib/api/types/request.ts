@@ -17,7 +17,7 @@ export interface LogSetRequest {
 }
 
 export interface StartWorkoutSessionRequest {
-  templateId: string;
+  templateId?: string;
   clientId?: string; // Optional for trainer-initiated sessions
 }
 

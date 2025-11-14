@@ -37,7 +37,7 @@ export default function ClientWorkoutsTab() {
   });
 
   const startWorkoutMutation = useMutation({
-    mutationFn: (templateId: string) => startWorkoutSession({ templateId, clientId: id as string }),
+    mutationFn: (templateId: string | undefined) => startWorkoutSession({ templateId, clientId: id as string }),
     onSuccess: () => {
       Alert.alert('Success', 'Workout session started for client.');
       setModalVisible(false);
@@ -80,6 +80,16 @@ export default function ClientWorkoutsTab() {
 
       <Modal visible={modalVisible} onClose={() => setModalVisible(false)} title="Select Workout Template">
         <View>
+          <Button
+            onPress={() => {
+              startWorkoutMutation.mutate(undefined);
+            }}
+            disabled={startWorkoutMutation.isPending}
+            style={{ marginBottom: 16 }}
+          >
+            Start Free Workout
+          </Button>
+          <Text style={{textAlign: 'center', marginBottom: 8}}>Or select a template</Text>
           {templatesLoading ? (
             <Text>Loading templates...</Text>
           ) : (

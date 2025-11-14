@@ -154,7 +154,7 @@ export const getAvailableExercises = (): Promise<Exercise[]> => {
  */
 export const getWorkoutTemplates = (): Promise<WorkoutTemplate[]> => 
   apiFetch('/trainer/programs/templates').then(res => {
-    console.log('Fetched workout templates data:', JSON.stringify(res.data.templates, null, 2));
+    console.log('Fetched workout templates data:', JSON.stringify(res.data.templates.length, null, 2));
     return res.data.templates;
   });
 
