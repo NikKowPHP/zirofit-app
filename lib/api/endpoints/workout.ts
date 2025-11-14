@@ -195,11 +195,27 @@ export const getActiveClientWorkoutSession = async (clientId: string): Promise<W
   }
 
   const payload = res.data ?? res;
-  const session = (payload.session ?? payload) as WorkoutSession | null;
+  const session = (payload.session ?? payload) as any | null; // Use `any` for easier manipulation
 
   if (!session) {
     console.log('getActiveClientWorkoutSession response payload missing session data.');
     return null;
+  }
+
+  // Normalize response to include exercises at the top level from the workout template
+  if (session.workoutTemplate && Array.isArray(session.workoutTemplate.exercises)) {
+    session.exercises = session.workoutTemplate.exercises
+      .filter((item: any) => item.type === 'EXERCISE' && item.exercise)
+      .map((item: any) => ({
+        ...item.exercise,
+        template_exercise_id: item.id,
+        notes: item.notes,
+        targetReps: item.targetReps,
+        targetSets: item.targetSets,
+      }));
+  } else {
+    // Ensure exercises is always an array, even if it's not in the response
+    session.exercises = session.exercises || [];
   }
 
   console.log('getActiveClientWorkoutSession response:', JSON.stringify(session, null, 2));
@@ -234,14 +250,14 @@ export const addExerciseToLiveSession = async (sessionId: string, request: { exe
   console.log('Request:', request);
   console.log('Adding exercise ID:', request.exercise_id, 'to session');
 
-  const res = await apiFetch(`/workout-sessions/${sessionId}/add-exercise`, {
+  const res = await apiFetch(`/workout/session/${sessionId}/add-exercise`, {
     method: 'POST',
     body: JSON.stringify(request)
   });
 
   if (!res) {
     console.log('addExerciseToLiveSession response: null (likely 404). Throwing error.');
-    throw new Error('Active session not found.');
+    throw new Error('Active session not found or could not add exercise.');
   }
 
   const payload = res.data ?? res;

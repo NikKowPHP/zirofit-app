@@ -198,7 +198,7 @@ export default function LiveWorkoutScreen() {
 
                 <FlatList
                     data={session.exercises || []}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item, index) => `${item.id}-${index}`}
                     renderItem={({ item }) => {
                         const exerciseLogs = sortedLogs.filter(log => log.exercise_id === item.id);
                         const isSelected = selectedExerciseId === item.id;
