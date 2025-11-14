@@ -64,7 +64,15 @@ export interface Client {
   medical_conditions?: string;
   created_at: string;
   updated_at: string;
-  workouts?: any[];
+  goals?: string;
+  healthNotes?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  trainerId?: string;
+  // Updated field name to match API response
+  workoutSessions?: WorkoutSession[];
+  // Legacy field for backward compatibility
+  workouts?: WorkoutSession[];
   measurements?: any[];
   photos?: any[];
 }

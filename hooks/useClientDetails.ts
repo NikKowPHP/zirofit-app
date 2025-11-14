@@ -6,6 +6,8 @@ export function useClientDetails(clientId: string) {
         queryKey: ['client', clientId],
         queryFn: () => getClientDetails(clientId),
         enabled: !!clientId,
+        staleTime: 0, // Always consider data stale
+        gcTime: 0, // Don't cache the data
     });
 
     return { data, isLoading, error };

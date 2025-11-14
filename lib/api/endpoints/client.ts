@@ -42,7 +42,12 @@ export const createClient = (request: CreateClientRequest): Promise<Client> =>
  * @returns Client details
  */
 export const getClientDetails = (clientId: string): Promise<Client> => 
-  apiFetch(`/clients/${clientId}`);
+  apiFetch(`/clients/${clientId}`).then(res => {
+    console.log('getClientDetails raw response:', JSON.stringify(res, null, 2));
+    const client = res.data.client;
+    console.log('getClientDetails extracted client:', JSON.stringify(client, null, 2));
+    return client;
+  });
 
 /**
  * Update client details

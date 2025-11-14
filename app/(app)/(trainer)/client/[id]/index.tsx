@@ -31,6 +31,11 @@ export default function ClientWorkoutsTab() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
+  console.log('=== CLIENT WORKOUTS TAB DEBUG ===');
+  console.log('Client ID from params:', id);
+  console.log('Client ID type:', typeof id);
+  console.log('Client data:', client);
+
   const { data: templates, isLoading: templatesLoading } = useQuery({
     queryKey: ['workoutTemplates'],
     queryFn: getWorkoutTemplates,
@@ -42,6 +47,7 @@ export default function ClientWorkoutsTab() {
       Alert.alert('Success', 'Workout session started for client.');
       setModalVisible(false);
       queryClient.invalidateQueries({ queryKey: ['activeClientSession', id] });
+      queryClient.invalidateQueries({ queryKey: ['client', id] });
       router.push(`/client/${id}/live`);
     },
     onError: (error: any) => {
@@ -56,7 +62,7 @@ export default function ClientWorkoutsTab() {
   return (
     <View style={styles.container}>
       <FlatList
-        data={client?.workouts || []}
+        data={client?.workoutSessions || client?.workouts || []}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
             <View style={styles.workoutItem}>
@@ -69,7 +75,14 @@ export default function ClientWorkoutsTab() {
             <Button onPress={() => setModalVisible(true)} style={{ marginBottom: 10 }}>
               Start New Workout
             </Button>
-            <Button onPress={() => router.push(`/client/${id}/live`)} style={{ marginTop: 10 }}>
+            <Button onPress={() => {
+              console.log('=== NAVIGATING TO LIVE WORKOUT ===');
+              console.log('Client ID:', id);
+              router.push({
+                pathname: '/(app)/(trainer)/client/[id]/live',
+                params: { id: id as string },
+              });
+            }} style={{ marginTop: 10 }}>
               View Live Workout
             </Button>
           </View>

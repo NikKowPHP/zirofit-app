@@ -17,6 +17,13 @@ export default function TrainerTabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
+        name="index"
+        options={{
+          // Hidden redirect route
+          href: null,
+        }}
+      />
+      <Tabs.Screen
         name="(tabs)/dashboard/index"
         options={{
           title: 'Dashboard',

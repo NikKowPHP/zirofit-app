@@ -125,27 +125,47 @@ export const endRestTimer = (request: EndRestTimerRequest) =>
  * Get available exercises
  * @returns List of exercises
  */
-export const getAvailableExercises = (): Promise<Exercise[]> => {
+export const getAvailableExercises = async (): Promise<Exercise[]> => {
   console.log('=== getAvailableExercises CALLED ===');
-  return apiFetch('/exercises').then(res => {
-    console.log('Fetched available exercises data:', JSON.stringify(res.data, null, 2));
-    
-    // The API returns { exercises: [...] }, so we need to access res.data.exercises
-    const exercises = res.data?.exercises || [];
-    if (exercises.length === 0) {
+  const res = await apiFetch('/exercises');
+
+  if (!res) {
+    console.log('getAvailableExercises response: null (likely 404). Returning empty list.');
+    return [];
+  }
+
+  const payload = res.data ?? res;
+  const exercises = (Array.isArray(payload) ? payload : payload?.exercises) ?? [];
+
+  console.log('Fetched available exercises data:', JSON.stringify(payload, null, 2));
+
+  if (exercises.length === 0) {
       console.log('No exercises from API, using mock data for testing');
-      return [
-        { id: '1', name: 'Bench Press', description: 'Chest exercise', muscleGroup: 'chest', equipment: 'barbell' },
-        { id: '2', name: 'Squats', description: 'Leg exercise', muscleGroup: 'legs', equipment: 'barbell' },
-        { id: '3', name: 'Deadlift', description: 'Back exercise', muscleGroup: 'back', equipment: 'barbell' },
-        { id: '4', name: 'Overhead Press', description: 'Shoulder exercise', muscleGroup: 'shoulders', equipment: 'dumbbells' },
-        { id: '5', name: 'Pull-ups', description: 'Back exercise', muscleGroup: 'back', equipment: 'bodyweight' },
-        { id: '6', name: 'Bicep Curls', description: 'Arm exercise', muscleGroup: 'biceps', equipment: 'dumbbells' },
+      const mockExercises: Exercise[] = [
+        { id: '1', name: 'Bench Press', description: 'Chest exercise', muscle_group: 'chest', equipment: 'barbell' },
+        { id: '2', name: 'Squats', description: 'Leg exercise', muscle_group: 'legs', equipment: 'barbell' },
+        { id: '3', name: 'Deadlift', description: 'Back exercise', muscle_group: 'back', equipment: 'barbell' },
+        { id: '4', name: 'Overhead Press', description: 'Shoulder exercise', muscle_group: 'shoulders', equipment: 'dumbbells' },
+        { id: '5', name: 'Pull-ups', description: 'Back exercise', muscle_group: 'back', equipment: 'bodyweight' },
+        { id: '6', name: 'Bicep Curls', description: 'Arm exercise', muscle_group: 'biceps', equipment: 'dumbbells' },
       ];
-    }
-    
-    return exercises;
-  });
+      console.log('Using mock exercises:', mockExercises.length);
+      return mockExercises;
+    } else {
+      console.log('=== AVAILABLE EXERCISES FETCHED ===');
+      console.log('Total available exercises:', exercises.length);
+      exercises.forEach((exercise: any, index: number) => {
+        console.log(`Exercise ${index + 1}:`, {
+          id: exercise.id,
+          name: exercise.name,
+          muscleGroup: exercise.muscle_group || exercise.muscleGroup,
+          equipment: exercise.equipment
+        });
+      });
+      console.log('=== END AVAILABLE EXERCISES ===');
+  }
+  
+  return exercises;
 };
 
 /**
@@ -163,13 +183,43 @@ export const getWorkoutTemplates = (): Promise<WorkoutTemplate[]> =>
  * @param clientId Client ID
  * @returns Active workout session or null
  */
-export const getActiveClientWorkoutSession = (clientId: string): Promise<WorkoutSession | null> => {
+export const getActiveClientWorkoutSession = async (clientId: string): Promise<WorkoutSession | null> => {
   console.log('=== getActiveClientWorkoutSession API CALL ===');
   console.log('Client ID:', clientId);
-  return apiFetch(`/clients/${clientId}/session/active`).then(res => {
-    console.log('getActiveClientWorkoutSession response:', JSON.stringify(res.data, null, 2));
-    return res.data;
-  });
+
+  const res = await apiFetch(`/clients/${clientId}/session/active`);
+
+  if (!res) {
+    console.log('getActiveClientWorkoutSession response: null (likely 404). Returning null session.');
+    return null;
+  }
+
+  const payload = res.data ?? res;
+  const session = (payload.session ?? payload) as WorkoutSession | null;
+
+  if (!session) {
+    console.log('getActiveClientWorkoutSession response payload missing session data.');
+    return null;
+  }
+
+  console.log('getActiveClientWorkoutSession response:', JSON.stringify(session, null, 2));
+
+  if (session.exercises) {
+      console.log('=== ACTIVE EXERCISES FETCHED ===');
+      console.log('Total exercises in session:', session.exercises.length);
+      session.exercises.forEach((exercise: any, index: number) => {
+        console.log(`Exercise ${index + 1}:`, {
+          id: exercise.id,
+          name: exercise.name,
+          muscleGroup: exercise.muscle_group || exercise.muscleGroup
+        });
+      });
+      console.log('=== END ACTIVE EXERCISES ===');
+  } else {
+    console.log('No active exercises found in session');
+  }
+
+  return session;
 };
 
 /**
@@ -178,15 +228,45 @@ export const getActiveClientWorkoutSession = (clientId: string): Promise<Workout
  * @param request Exercise data
  * @returns Updated workout session
  */
-export const addExerciseToLiveSession = (sessionId: string, request: { exercise_id: string }): Promise<WorkoutSession> => {
+export const addExerciseToLiveSession = async (sessionId: string, request: { exercise_id: string }): Promise<WorkoutSession> => {
   console.log('=== addExerciseToLiveSession API CALL ===');
   console.log('Session ID:', sessionId);
   console.log('Request:', request);
-  return apiFetch(`/workout-sessions/${sessionId}/add-exercise`, {
+  console.log('Adding exercise ID:', request.exercise_id, 'to session');
+
+  const res = await apiFetch(`/workout-sessions/${sessionId}/add-exercise`, {
     method: 'POST',
     body: JSON.stringify(request)
-  }).then(res => {
-    console.log('addExerciseToLiveSession response:', JSON.stringify(res.data, null, 2));
-    return res.data;
   });
+
+  if (!res) {
+    console.log('addExerciseToLiveSession response: null (likely 404). Throwing error.');
+    throw new Error('Active session not found.');
+  }
+
+  const payload = res.data ?? res;
+  const updatedSession = (payload.session ?? payload) as WorkoutSession | null;
+
+  if (!updatedSession) {
+    console.log('addExerciseToLiveSession payload missing session data.');
+    throw new Error('Failed to retrieve updated session.');
+  }
+
+  console.log('addExerciseToLiveSession response:', JSON.stringify(updatedSession, null, 2));
+
+  if (updatedSession.exercises) {
+    console.log('=== UPDATED SESSION EXERCISES ===');
+    console.log('Total exercises after addition:', updatedSession.exercises.length);
+    const addedExercise = updatedSession.exercises.find((ex: any) => ex.id === request.exercise_id);
+    if (addedExercise) {
+      console.log('Successfully added exercise:', {
+        id: addedExercise.id,
+        name: addedExercise.name,
+        muscleGroup: addedExercise.muscle_group || addedExercise.muscleGroup
+      });
+    }
+    console.log('=== END UPDATED SESSION EXERCISES ===');
+  }
+
+  return updatedSession;
 };

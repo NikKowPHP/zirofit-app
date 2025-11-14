@@ -17,11 +17,31 @@ import type { WorkoutSession, ClientExerciseLog } from '@/lib/api.types';
 
 type WorkoutExercise = { id: string; name: string; };
 
+type LiveRouteParams = { id?: string | string[] };
+
 export default function LiveWorkoutScreen() {
-    const { id: clientId } = useLocalSearchParams();
+    const params = useLocalSearchParams<LiveRouteParams>();
+    const rawClientId = params.id;
+    const clientId = Array.isArray(rawClientId) ? rawClientId[0] : rawClientId;
     const queryClient = useQueryClient();
     const tokens = useTokens();
     
+    console.log('=== LIVE WORKOUT SCREEN DEBUG ===');
+    console.log('Raw search params:', params);
+    console.log('Extracted clientId:', clientId);
+    console.log('Client ID type:', typeof clientId);
+    console.log('Client ID truthy:', Boolean(clientId));
+
+    // If clientId is not available, show an error
+    if (!clientId || clientId === 'undefined' || clientId === 'null') {
+        console.error('Client ID is not available:', clientId);
+        return <SafeAreaView style={styles.center}>
+            <Text style={{ color: 'red', textAlign: 'center' }}>
+                Error: Client ID not found. Please navigate to this screen from the client's workout page.
+            </Text>
+        </SafeAreaView>;
+    }
+
     // State for trainer-side logging
     const [reps, setReps] = useState('');
     const [weight, setWeight] = useState('');
@@ -33,21 +53,14 @@ export default function LiveWorkoutScreen() {
         queryFn: () => {
             console.log('=== FETCHING ACTIVE CLIENT SESSION ===');
             console.log('Client ID:', clientId);
-            return getActiveClientWorkoutSession(clientId as string);
+            return getActiveClientWorkoutSession(clientId);
         },
         enabled: !!clientId,
         // Refetch every 5 seconds as a temporary replacement for real-time updates
         refetchInterval: 5000, 
     });
 
-    const { data: client, isLoading: clientLoading, error: clientError } = useClientDetails(clientId as string);
-
-    // Check if clientId is available after all hooks
-    if (!clientId) {
-        return <SafeAreaView style={styles.center}><Text>Client ID not found.</Text></SafeAreaView>;
-    }
-
-    // ARCHITECTURAL NOTE:
+    const { data: client, isLoading: clientLoading, error: clientError } = useClientDetails(clientId || '');
     // The previous implementation used a direct Supabase subscription to listen for database changes.
     // This creates a tight coupling between the frontend and the database schema, bypassing the API layer.
     // To align with a proper API-centric architecture, this has been removed.
@@ -56,7 +69,12 @@ export default function LiveWorkoutScreen() {
     // A future task should be to implement a proper WebSocket connection managed by our API.
 
     const finishWorkoutMutation = useMutation({
-        mutationFn: () => finishWorkoutSession({ sessionId: session!.id }),
+        mutationFn: () => {
+            if (!session || !session.id) {
+                throw new Error('Session not loaded yet. Please wait for the session to load.');
+            }
+            return finishWorkoutSession({ sessionId: session.id });
+        },
         onSuccess: () => {
             Alert.alert("Success", "Client's workout has been finished.");
             queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
@@ -65,12 +83,17 @@ export default function LiveWorkoutScreen() {
     });
 
     const logSetMutation = useMutation({
-        mutationFn: (data: { exercise_id: string }) => logSet({ 
-            reps: parseInt(reps), 
-            weight: parseFloat(weight),
-            exercise_id: data.exercise_id,
-            workout_session_id: session!.id,
-        }),
+        mutationFn: (data: { exercise_id: string }) => {
+            if (!session || !session.id) {
+                throw new Error('Session not loaded yet. Please wait for the session to load.');
+            }
+            return logSet({ 
+                reps: parseInt(reps), 
+                weight: parseFloat(weight),
+                exercise_id: data.exercise_id,
+                workout_session_id: session.id,
+            });
+        },
         onSuccess: () => {
             setReps('');
             setWeight('');
@@ -85,25 +108,15 @@ export default function LiveWorkoutScreen() {
         queryFn: getAvailableExercises,
     });
 
-    console.log('=== TRAINER LIVE SCREEN DEBUG ===');
-    console.log('Exercises query loading:', exercisesLoading);
-    // console.log('Exercises data:', exercises);
-    console.log('Exercises count:', exercises?.length || 0);
-    console.log('=================================');
-
-    // Log modal rendering when modal is visible
-    if (exerciseModalVisible) {
-        console.log('=== RENDERING EXERCISE MODAL ===');
-        console.log('Modal visible:', exerciseModalVisible);
-        console.log('Exercises in modal:', exercises);
-    }
-
     const addExerciseMutation = useMutation({
         mutationFn: (exerciseId: string) => {
+            if (!session || !session.id) {
+                throw new Error('Session not loaded yet. Please wait for the session to load.');
+            }
             console.log('=== ADD EXERCISE MUTATION STARTED ===');
             console.log('Adding exercise ID:', exerciseId);
-            console.log('Session ID:', session!.id);
-            return addExerciseToLiveSession(session!.id, { exercise_id: exerciseId });
+            console.log('Session ID:', session.id);
+            return addExerciseToLiveSession(session.id, { exercise_id: exerciseId });
         },
         onSuccess: (data) => {
             console.log('=== ADD EXERCISE MUTATION SUCCESS ===');
@@ -121,7 +134,7 @@ export default function LiveWorkoutScreen() {
     });
     
     const sortedLogs = useMemo(() => {
-        return (session?.logs || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return (session?.logs || []).sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }, [session?.logs]);
 
     if (isLoading) return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>;
@@ -133,10 +146,7 @@ export default function LiveWorkoutScreen() {
                 <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                     <UIText variant="h4">Live Feed: {client?.name || (clientError ? 'Client not found' : 'Loading...')}</UIText>
                     <HStack style={{ gap: tokens.spacing.sm }}>
-                        <Button onPress={() => {
-                            console.log('Add Exercise button pressed');
-                            setExerciseModalVisible(true);
-                        }}>
+                        <Button onPress={() => setExerciseModalVisible(true)}>
                             Add Exercise
                         </Button>
                         <Button variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
@@ -168,7 +178,7 @@ export default function LiveWorkoutScreen() {
                         {selectedExerciseId && (
                             <HStack style={{ gap: tokens.spacing.sm, alignItems: 'center' }}>
                                 <Text style={{ flex: 1 }}>
-                                    Selected: {session.exercises?.find(ex => ex.id === selectedExerciseId)?.name}
+                        {session.exercises?.find((ex: any) => ex.id === selectedExerciseId)?.name}
                                 </Text>
                                 <Button 
                                     onPress={() => {
@@ -196,7 +206,7 @@ export default function LiveWorkoutScreen() {
                             <Card style={{ marginVertical: tokens.spacing.sm, borderWidth: isSelected ? 2 : 0, borderColor: isSelected ? '#007AFF' : 'transparent' }}>
                                 <UIText variant="h5">{item.name}</UIText>
                                 {exerciseLogs.length > 0 ? (
-                                    exerciseLogs.map((log, index) => (
+                                    exerciseLogs.map((log: any, index: number) => (
                                         <Text key={log.id}>Set {exerciseLogs.length - index}: {log.reps} reps @ {log.weight} kg</Text>
                                     ))
                                 ) : (
@@ -218,10 +228,7 @@ export default function LiveWorkoutScreen() {
 
             <Modal
                 visible={exerciseModalVisible}
-                onClose={() => {
-                    console.log('Exercise modal closed');
-                    setExerciseModalVisible(false);
-                }}
+                onClose={() => setExerciseModalVisible(false)}
                 title="Add Exercise to Workout"
             >
                 <FlatList
@@ -230,10 +237,7 @@ export default function LiveWorkoutScreen() {
                     renderItem={({ item }) => (
                         <Button
                             key={item.id}
-                            onPress={() => {
-                                console.log('Exercise selected:', item.name, item.id);
-                                addExerciseMutation.mutate(item.id);
-                            }}
+                            onPress={() => addExerciseMutation.mutate(item.id)}
                             disabled={addExerciseMutation.isPending}
                             style={{ marginBottom: tokens.spacing.sm }}
                         >

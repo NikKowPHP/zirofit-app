@@ -70,7 +70,7 @@ export interface WorkoutTemplate {
 // Client Types
 export interface Client {
   id: string;
-  user_id: string;
+  user_id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -78,9 +78,23 @@ export interface Client {
   fitness_goals?: string;
   medical_conditions?: string;
   avatar_url?: string;
+  goals?: string;
+  healthNotes?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  status?: string;
+  trainerId?: string;
+  // Updated field name to match API response
+  workoutSessions?: WorkoutSession[];
+  // Legacy field for backward compatibility
   workouts?: WorkoutSession[];
   measurements?: ClientMeasurement[];
   photos?: ClientPhoto[];
+  progressPhotos?: ClientPhoto[];
+  assessmentResults?: any[];
+  assessments?: ClientAssessment[];
+  clientPackages?: any[];
+  templates?: WorkoutTemplate[];
   created_at: string;
   updated_at: string;
 }

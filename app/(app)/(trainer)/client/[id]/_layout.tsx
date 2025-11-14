@@ -13,9 +13,29 @@ function ClientHeader() {
   const { data: client } = useClientDetails(id as string);
   const theme = useTheme();
 
+  console.log('ClientHeader - Client ID:', id);
+  console.log('ClientHeader - Client data:', client);
+  console.log('ClientHeader - Client name:', client?.name);
+
   return (
     <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
       <Text style={[styles.headerTitle, { color: theme.text }]}>Client: {client?.name || 'Loading...'}</Text>
+      {client ? (
+        <View style={styles.clientDetails}>
+          {client?.goals ? (
+            <Text style={[styles.clientDetail, { color: theme.text }]}>🎯 Goals: {client.goals}</Text>
+          ) : null}
+          {client?.status ? (
+            <Text style={[styles.clientDetail, { color: theme.text }]}>
+              📊 Status: {client.status}
+            </Text>
+          ) : null}
+        </View>
+      ) : (
+        <View style={styles.clientDetails}>
+          <Text style={[styles.clientDetail, { color: theme.textSecondary }]}>Loading client details…</Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -23,6 +43,7 @@ function ClientHeader() {
 export const MaterialTopTabs = withLayoutContext(Navigator);
 
 export default function ClientDetailLayout() {
+  const { id } = useLocalSearchParams();
   const theme = useTheme();
 
   return (
@@ -36,10 +57,10 @@ export default function ClientDetailLayout() {
           tabBarIndicatorStyle: { backgroundColor: theme.primary },
         }}
       >
-        <MaterialTopTabs.Screen name="index" options={{ title: 'Workouts' }} />
-        <MaterialTopTabs.Screen name="live" options={{ title: 'Live' }} />
-        <MaterialTopTabs.Screen name="measurements" options={{ title: 'Measurements' }} />
-        <MaterialTopTabs.Screen name="photos" options={{ title: 'Photos' }} />
+        <MaterialTopTabs.Screen name="index" options={{ title: 'Workouts' }} initialParams={{ id }} />
+        <MaterialTopTabs.Screen name="live" options={{ title: 'Live' }} initialParams={{ id }} />
+        <MaterialTopTabs.Screen name="measurements" options={{ title: 'Measurements' }} initialParams={{ id }} />
+        <MaterialTopTabs.Screen name="photos" options={{ title: 'Photos' }} initialParams={{ id }} />
       </MaterialTopTabs>
     </>
   );
@@ -55,6 +76,14 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  clientDetails: {
+    marginTop: 8,
+    gap: 4,
+  },
+  clientDetail: {
+    fontSize: 14,
+    opacity: 0.8,
   },
 });
       
