@@ -42,6 +42,8 @@ export const clientRepository = {
         client.emergencyContactPhone = data.emergencyContactPhone
         client.status = data.status
         client.trainerId = data.trainerId
+        // Mark as needing sync to server
+        ;(client as any).syncStatus = 'created'
       })
     })
   },
@@ -65,6 +67,10 @@ export const clientRepository = {
       const client = await clientsCollection.find(id)
       await client.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -74,6 +80,8 @@ export const clientRepository = {
       const client = await clientsCollection.find(id)
       await client.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

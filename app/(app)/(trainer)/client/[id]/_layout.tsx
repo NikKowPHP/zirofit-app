@@ -5,29 +5,40 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useClientDetails } from '@/hooks/useClientDetails';
 import { useTheme } from '@/hooks/useTheme';
+import type { Client } from '@/lib/api/types';
 
 const { Navigator } = createMaterialTopTabNavigator();
 
 function ClientHeader() {
   const { id } = useLocalSearchParams();
-  const { data: client } = useClientDetails(id as string);
+  const { data: client, isOffline } = useClientDetails(id as string);
   const theme = useTheme();
 
   console.log('ClientHeader - Client ID:', id);
   console.log('ClientHeader - Client data:', client);
   console.log('ClientHeader - Client name:', client?.name);
+  console.log('ClientHeader - Is offline mode:', isOffline);
 
   return (
     <View style={[styles.header, { backgroundColor: theme.background, borderBottomColor: theme.border }]}>
-      <Text style={[styles.headerTitle, { color: theme.text }]}>Client: {client?.name || 'Loading...'}</Text>
+      <View style={styles.titleRow}>
+        <Text style={[styles.headerTitle, { color: theme.text }]}>
+          Client: {(client as Client)?.name || 'Loading...'}
+        </Text>
+        {isOffline && (
+          <Text style={[styles.offlineBadge, { color: theme.primary }]}>
+            📱 Offline
+          </Text>
+        )}
+      </View>
       {client ? (
         <View style={styles.clientDetails}>
-          {client?.goals ? (
-            <Text style={[styles.clientDetail, { color: theme.text }]}>🎯 Goals: {client.goals}</Text>
+          {(client as Client)?.goals ? (
+            <Text style={[styles.clientDetail, { color: theme.text }]}>🎯 Goals: {(client as Client).goals}</Text>
           ) : null}
-          {client?.status ? (
+          {(client as Client)?.status ? (
             <Text style={[styles.clientDetail, { color: theme.text }]}>
-              📊 Status: {client.status}
+              📊 Status: {(client as Client).status}
             </Text>
           ) : null}
         </View>
@@ -73,9 +84,19 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     borderBottomWidth: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
+  },
+  offlineBadge: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    opacity: 0.8,
   },
   clientDetails: {
     marginTop: 8,

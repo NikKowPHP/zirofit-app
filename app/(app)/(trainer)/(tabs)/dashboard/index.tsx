@@ -1,5 +1,5 @@
 import { View, Text } from '@/components/Themed';
-import { ActivityIndicator, ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
@@ -10,6 +10,9 @@ import { List } from '@/components/ui/List';
 import AnalyticsChart from '@/components/dashboard/AnalyticsChart';
 import { dashboardRepository } from '@/lib/repositories/dashboardRepository';
 import withObservables from '@nozbe/with-observables';
+import { debugDatabase } from '@/lib/db';
+import { syncService } from '@/lib/sync/syncService';
+import { clientRepository } from '@/lib/repositories/clientRepository';
 
 function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
     const tokens = useTokens();
@@ -19,6 +22,58 @@ function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
             <ScrollView>
                 <VStack style={{ gap: tokens.spacing.lg, padding: tokens.spacing.lg }}>
                     <UIText variant="h3">Trainer Dashboard</UIText>
+
+                    {/* Debug and Test Buttons */}
+                    <VStack style={{ gap: tokens.spacing.sm }}>
+                        <TouchableOpacity
+                            onPress={() => debugDatabase()}
+                            style={{
+                                backgroundColor: tokens.colors.light.primary,
+                                padding: tokens.spacing.sm,
+                                borderRadius: 4,
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>🔍 Debug Database</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                const testClientId = `test-client-${Date.now()}`
+                                await clientRepository.createClient({
+                                    name: 'Test Client',
+                                    email: `test${Date.now()}@example.com`,
+                                    status: 'active',
+                                    goals: 'Get fit and healthy'
+                                })
+                                console.log('Created test client:', testClientId)
+                            }}
+                            style={{
+                                backgroundColor: '#28a745',
+                                padding: tokens.spacing.sm,
+                                borderRadius: 4,
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>➕ Create Test Client</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                await syncService.resetSyncTimestamp()
+                                // Trigger a new sync
+                                await syncService.pullChanges()
+                            }}
+                            style={{
+                                backgroundColor: '#ff6b6b',
+                                padding: tokens.spacing.sm,
+                                borderRadius: 4,
+                                alignItems: 'center'
+                            }}
+                        >
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>🔄 Reset Sync</Text>
+                        </TouchableOpacity>
+                    </VStack>
 
                     {dashboardData?.businessPerformance && (
                         <AnalyticsChart title="Business Performance" data={[

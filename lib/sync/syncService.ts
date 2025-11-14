@@ -49,6 +49,7 @@ export class SyncService {
       })
 
       if (data) {
+        console.log('Sync pull response:', JSON.stringify(data, null, 2))
         const { changes, timestamp } = data.data || data
 
         if (!changes) {
@@ -58,12 +59,23 @@ export class SyncService {
           return
         }
 
+        console.log('Processing changes:', Object.keys(changes))
+
         await database.write(async () => {
-          // Process each table's changes
+          console.log('Starting to process table changes...')
+
           await this.processChanges('clients', changes.clients)
+          console.log('Processed clients')
+
           await this.processChanges('trainer_profiles', changes.trainer_profiles)
+          console.log('Processed trainer_profiles')
+
           await this.processChanges('workout_sessions', changes.workout_sessions)
+          console.log('Processed workout_sessions')
+
           await this.processChanges('exercises', changes.exercises)
+          console.log('Processed exercises')
+
           await this.processChanges('workout_templates', changes.workout_templates)
           await this.processChanges('client_assessments', changes.client_assessments)
           await this.processChanges('client_measurements', changes.client_measurements)
@@ -103,7 +115,10 @@ export class SyncService {
       // Get all changed records
       const changes = await this.collectChanges()
 
+      console.log('Changes to push:', changes)
+
       if (Object.keys(changes).length === 0) {
+        console.log('No changes to push')
         useSyncStore.getState().setStatus('idle')
         return // Nothing to push
       }
@@ -130,52 +145,92 @@ export class SyncService {
     }
   }
 
+  async resetSyncTimestamp(): Promise<void> {
+    console.log('Resetting sync timestamp...')
+    await AsyncStorage.removeItem(LAST_PULLED_AT_KEY)
+    console.log('Sync timestamp reset - next sync will pull all data')
+  }
+
   private async processChanges(tableName: string, changes: any): Promise<void> {
-    if (!changes) return
+    if (!changes) {
+      console.log(`No changes for table: ${tableName}`)
+      return
+    }
+
+    console.log(`Processing ${tableName} changes:`, {
+      created: changes.created?.length || 0,
+      updated: changes.updated?.length || 0,
+      deleted: changes.deleted?.length || 0
+    })
 
     const collection = database.collections.get(tableName)
 
     // Handle created records
     if (changes.created) {
+      console.log(`Creating ${changes.created.length} records in ${tableName}`)
       for (const record of changes.created) {
-        const transformed = this.transformRecordForDB(record)
-        await collection.create(model => {
-          // Set properties individually, excluding read-only properties
-          Object.keys(transformed).forEach(key => {
-            if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
-              ;(model as any)[key] = transformed[key]
-            }
-          })
-          ;(model as any).sync_status = 'synced' // Mark as already synced
-        })
-      }
-    }
-
-    // Handle updated records
-    if (changes.updated) {
-      for (const record of changes.updated) {
-        const existing = await collection.find(record.id).catch(() => null)
-        if (existing) {
+        try {
           const transformed = this.transformRecordForDB(record)
-          await existing.update(model => {
+          console.log(`Creating ${tableName} record:`, { id: record.id, transformedKeys: Object.keys(transformed) })
+          await collection.create(model => {
             // Set properties individually, excluding read-only properties
             Object.keys(transformed).forEach(key => {
               if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
                 ;(model as any)[key] = transformed[key]
               }
             })
-            ;(model as any).sync_status = 'synced' // Mark as already synced
+            ;(model as any).syncStatus = 'synced' // Mark as already synced
           })
+          console.log(`Successfully created ${tableName} record: ${record.id}`)
+        } catch (error) {
+          console.error(`Error creating ${tableName} record ${record.id}:`, error)
+        }
+      }
+    }
+
+    // Handle updated records
+    if (changes.updated) {
+      console.log(`Updating ${changes.updated.length} records in ${tableName}`)
+      for (const record of changes.updated) {
+        try {
+          const existing = await collection.find(record.id).catch(() => null)
+          if (existing) {
+            const transformed = this.transformRecordForDB(record)
+            console.log(`Updating ${tableName} record:`, { id: record.id })
+            await existing.update(model => {
+              // Set properties individually, excluding read-only properties
+              Object.keys(transformed).forEach(key => {
+                if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
+                  ;(model as any)[key] = transformed[key]
+                }
+              })
+              ;(model as any).syncStatus = 'synced' // Mark as already synced
+            })
+            console.log(`Successfully updated ${tableName} record: ${record.id}`)
+          } else {
+            console.warn(`Could not find ${tableName} record with id: ${record.id} to update`)
+          }
+        } catch (error) {
+          console.error(`Error updating ${tableName} record ${record.id}:`, error)
         }
       }
     }
 
     // Handle deleted records
     if (changes.deleted) {
+      console.log(`Deleting ${changes.deleted.length} records from ${tableName}`)
       for (const id of changes.deleted) {
-        const record = await collection.find(id).catch(() => null)
-        if (record) {
-          await record.destroyPermanently()
+        try {
+          const record = await collection.find(id).catch(() => null)
+          if (record) {
+            console.log(`Deleting ${tableName} record:`, { id })
+            await record.destroyPermanently()
+            console.log(`Successfully deleted ${tableName} record: ${id}`)
+          } else {
+            console.warn(`Could not find ${tableName} record with id: ${id} to delete`)
+          }
+        } catch (error) {
+          console.error(`Error deleting ${tableName} record ${id}:`, error)
         }
       }
     }
@@ -211,9 +266,9 @@ export class SyncService {
       ).fetch()
 
       if (changedRecords.length > 0) {
-        const created = changedRecords.filter(r => (r as any).sync_status === 'created').map(r => this.transformRecordForAPI(r))
-        const updated = changedRecords.filter(r => (r as any).sync_status === 'updated').map(r => this.transformRecordForAPI(r))
-        const deleted = changedRecords.filter(r => (r as any).sync_status === 'deleted').map(r => r.id)
+        const created = changedRecords.filter(r => (r as any).syncStatus === 'created').map(r => this.transformRecordForAPI(r))
+        const updated = changedRecords.filter(r => (r as any).syncStatus === 'updated').map(r => this.transformRecordForAPI(r))
+        const deleted = changedRecords.filter(r => (r as any).syncStatus === 'deleted').map(r => r.id)
 
         changes[tableName] = { created, updated, deleted }
       }
@@ -233,7 +288,7 @@ export class SyncService {
           try {
             const record = await collection.find(recordData.id)
             await record.update((r: any) => {
-              r.sync_status = 'synced'
+              r.syncStatus = 'synced'
             })
           } catch (error) {
             console.warn(`Could not find record ${recordData.id} in ${tableName} to mark as synced`)
