@@ -7,10 +7,11 @@ import { VStack, HStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getActiveClientWorkoutSession, logSet, finishWorkoutSession } from '@/lib/api';
+import { getActiveClientWorkoutSession, logSet, finishWorkoutSession, getAvailableExercises, addExerciseToLiveSession } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
 import type { WorkoutSession, ClientExerciseLog } from '@/lib/api.types';
 
 type WorkoutExercise = { id: string; name: string; };
@@ -23,10 +24,16 @@ export default function LiveWorkoutScreen() {
     // State for trainer-side logging
     const [reps, setReps] = useState('');
     const [weight, setWeight] = useState('');
+    const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
+    const [selectedExerciseId, setSelectedExerciseId] = useState<string | null>(null);
 
     const { data: session, isLoading, error } = useQuery<WorkoutSession | null>({
         queryKey: ['activeClientSession', clientId],
-        queryFn: () => getActiveClientWorkoutSession(clientId as string),
+        queryFn: () => {
+            console.log('=== FETCHING ACTIVE CLIENT SESSION ===');
+            console.log('Client ID:', clientId);
+            return getActiveClientWorkoutSession(clientId as string);
+        },
         enabled: !!clientId,
         // Refetch every 5 seconds as a temporary replacement for real-time updates
         refetchInterval: 5000, 
@@ -65,6 +72,46 @@ export default function LiveWorkoutScreen() {
         onError: (e: any) => Alert.alert('Error', e.message),
     });
     
+    const { data: exercises, isLoading: exercisesLoading } = useQuery({
+        queryKey: ['availableExercises'],
+        queryFn: getAvailableExercises,
+    });
+
+    console.log('=== TRAINER LIVE SCREEN DEBUG ===');
+    console.log('Exercises query loading:', exercisesLoading);
+    console.log('Exercises data:', exercises);
+    console.log('Exercises count:', exercises?.length || 0);
+    console.log('=================================');
+
+    // Log modal rendering when modal is visible
+    if (exerciseModalVisible) {
+        console.log('=== RENDERING EXERCISE MODAL ===');
+        console.log('Modal visible:', exerciseModalVisible);
+        console.log('Exercises in modal:', exercises);
+    }
+
+    const addExerciseMutation = useMutation({
+        mutationFn: (exerciseId: string) => {
+            console.log('=== ADD EXERCISE MUTATION STARTED ===');
+            console.log('Adding exercise ID:', exerciseId);
+            console.log('Session ID:', session!.id);
+            return addExerciseToLiveSession(session!.id, { exercise_id: exerciseId });
+        },
+        onSuccess: (data) => {
+            console.log('=== ADD EXERCISE MUTATION SUCCESS ===');
+            console.log('Response data:', data);
+            Alert.alert('Success', 'Exercise added to workout.');
+            setExerciseModalVisible(false);
+            console.log('Invalidating query key:', ['activeClientSession', clientId]);
+            queryClient.invalidateQueries({ queryKey: ['activeClientSession', clientId] });
+        },
+        onError: (error: any) => {
+            console.log('=== ADD EXERCISE MUTATION ERROR ===');
+            console.log('Error:', error);
+            Alert.alert('Error', error.message || 'Failed to add exercise.');
+        },
+    });
+    
     const sortedLogs = useMemo(() => {
         return (session?.logs || []).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     }, [session?.logs]);
@@ -77,17 +124,68 @@ export default function LiveWorkoutScreen() {
             <VStack style={{ gap: tokens.spacing.lg, paddingHorizontal: tokens.spacing.lg, flex: 1 }}>
                 <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                     <UIText variant="h4">Live Feed: {session.name || 'Unnamed Workout'}</UIText>
-                    <Button variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
-                        Finish Workout
-                    </Button>
+                    <HStack style={{ gap: tokens.spacing.sm }}>
+                        <Button onPress={() => {
+                            console.log('Add Exercise button pressed');
+                            setExerciseModalVisible(true);
+                        }}>
+                            Add Exercise
+                        </Button>
+                        <Button variant="danger" onPress={() => finishWorkoutMutation.mutate()} disabled={finishWorkoutMutation.isPending}>
+                            Finish Workout
+                        </Button>
+                    </HStack>
                 </HStack>
+
+                {/* Logging Interface */}
+                <Card style={{ padding: tokens.spacing.md }}>
+                    <UIText variant="h5" style={{ marginBottom: tokens.spacing.md }}>Log Set</UIText>
+                    <VStack style={{ gap: tokens.spacing.sm }}>
+                        <HStack style={{ gap: tokens.spacing.sm, alignItems: 'center' }}>
+                            <Input 
+                                placeholder="Reps" 
+                                keyboardType="numeric" 
+                                value={reps} 
+                                onChangeText={setReps} 
+                                style={{ flex: 1 }} 
+                            />
+                            <Input 
+                                placeholder="Weight" 
+                                keyboardType="numeric" 
+                                value={weight} 
+                                onChangeText={setWeight} 
+                                style={{ flex: 1 }} 
+                            />
+                        </HStack>
+                        {selectedExerciseId && (
+                            <HStack style={{ gap: tokens.spacing.sm, alignItems: 'center' }}>
+                                <Text style={{ flex: 1 }}>
+                                    Selected: {session.exercises?.find(ex => ex.id === selectedExerciseId)?.name}
+                                </Text>
+                                <Button 
+                                    onPress={() => {
+                                        if (selectedExerciseId) {
+                                            logSetMutation.mutate({ exercise_id: selectedExerciseId });
+                                        }
+                                    }} 
+                                    disabled={logSetMutation.isPending || !reps || !weight}
+                                    style={{ flex: 1 }}
+                                >
+                                    Log Set
+                                </Button>
+                            </HStack>
+                        )}
+                    </VStack>
+                </Card>
+
                 <FlatList
                     data={session.exercises || []}
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => {
                         const exerciseLogs = sortedLogs.filter(log => log.exercise_id === item.id);
+                        const isSelected = selectedExerciseId === item.id;
                         return (
-                            <Card style={{ marginVertical: tokens.spacing.sm }}>
+                            <Card style={{ marginVertical: tokens.spacing.sm, borderWidth: isSelected ? 2 : 0, borderColor: isSelected ? '#007AFF' : 'transparent' }}>
                                 <UIText variant="h5">{item.name}</UIText>
                                 {exerciseLogs.length > 0 ? (
                                     exerciseLogs.map((log, index) => (
@@ -96,17 +194,48 @@ export default function LiveWorkoutScreen() {
                                 ) : (
                                     <Text style={styles.timestamp}>No sets logged yet.</Text>
                                 )}
-                                <HStack style={{ gap: tokens.spacing.sm, alignItems: 'center', marginTop: tokens.spacing.md }}>
-                                    <Input placeholder="Reps" keyboardType="numeric" value={reps} onChangeText={setReps} style={{ flex: 1 }} />
-                                    <Input placeholder="Weight" keyboardType="numeric" value={weight} onChangeText={setWeight} style={{ flex: 1 }} />
-                                    <Button style={{ flex: 1 }} onPress={() => logSetMutation.mutate({ exercise_id: item.id })} disabled={logSetMutation.isPending}>Log Set</Button>
-                                </HStack>
+                                <Button 
+                                    onPress={() => setSelectedExerciseId(item.id)} 
+                                    variant={isSelected ? "primary" : "outline"}
+                                    style={{ marginTop: tokens.spacing.sm }}
+                                >
+                                    {isSelected ? "Selected for Logging" : "Select for Logging"}
+                                </Button>
                             </Card>
                         )
                     }}
                     ListEmptyComponent={<Text>Waiting for client to start logging...</Text>}
                 />
             </VStack>
+
+            <Modal
+                visible={exerciseModalVisible}
+                onClose={() => {
+                    console.log('Exercise modal closed');
+                    setExerciseModalVisible(false);
+                }}
+                title="Add Exercise to Workout"
+            >
+                <FlatList
+                    data={exercises}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item }) => (
+                        <Button
+                            key={item.id}
+                            onPress={() => {
+                                console.log('Exercise selected:', item.name, item.id);
+                                addExerciseMutation.mutate(item.id);
+                            }}
+                            disabled={addExerciseMutation.isPending}
+                            style={{ marginBottom: tokens.spacing.sm }}
+                        >
+                            {item.name}
+                        </Button>
+                    )}
+                    ListEmptyComponent={<Text>No exercises available.</Text>}
+                    contentContainerStyle={{ paddingVertical: tokens.spacing.md }}
+                />
+            </Modal>
         </SafeAreaView>
     )
 }
