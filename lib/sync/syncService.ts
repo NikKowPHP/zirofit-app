@@ -49,7 +49,14 @@ export class SyncService {
       })
 
       if (data) {
-        const { changes, timestamp } = data
+        const { changes, timestamp } = data.data || data
+
+        if (!changes) {
+          console.warn('No changes object in sync response')
+          useSyncStore.getState().setLastSyncedAt(new Date())
+          useSyncStore.getState().setStatus('idle')
+          return
+        }
 
         await database.write(async () => {
           // Process each table's changes
@@ -75,6 +82,12 @@ export class SyncService {
         await AsyncStorage.setItem(LAST_PULLED_AT_KEY, timestamp.toString())
         useSyncStore.getState().setLastSyncedAt(new Date())
         useSyncStore.getState().setStatus('idle')
+
+        // Debug: Log what we just synced
+        console.log('=== SYNC COMPLETED ===')
+        console.log('Trainer profiles count:', (await database.collections.get('trainer_profiles').query().fetch()).length)
+        console.log('Exercises count:', (await database.collections.get('exercises').query().fetch()).length)
+        console.log('Clients count:', (await database.collections.get('clients').query().fetch()).length)
       }
     } catch (error) {
       console.error('Error pulling changes:', error)
@@ -125,8 +138,14 @@ export class SyncService {
     // Handle created records
     if (changes.created) {
       for (const record of changes.created) {
+        const transformed = this.transformRecordForDB(record)
         await collection.create(model => {
-          Object.assign(model, this.transformRecordForDB(record))
+          // Set properties individually, excluding read-only properties
+          Object.keys(transformed).forEach(key => {
+            if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
+              ;(model as any)[key] = transformed[key]
+            }
+          })
           ;(model as any).sync_status = 'synced' // Mark as already synced
         })
       }
@@ -137,8 +156,14 @@ export class SyncService {
       for (const record of changes.updated) {
         const existing = await collection.find(record.id).catch(() => null)
         if (existing) {
+          const transformed = this.transformRecordForDB(record)
           await existing.update(model => {
-            Object.assign(model, this.transformRecordForDB(record))
+            // Set properties individually, excluding read-only properties
+            Object.keys(transformed).forEach(key => {
+              if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
+                ;(model as any)[key] = transformed[key]
+              }
+            })
             ;(model as any).sync_status = 'synced' // Mark as already synced
           })
         }
@@ -223,6 +248,9 @@ export class SyncService {
   private transformRecordForDB(record: any): any {
     // Transform API record to DB format
     const transformed: any = { ...record }
+
+    // Remove id since it's auto-generated for new records
+    delete transformed.id
 
     // Convert timestamps
     if (record.created_at) transformed.createdAt = new Date(record.created_at)
