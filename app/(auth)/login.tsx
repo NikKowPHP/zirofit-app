@@ -5,10 +5,12 @@ import { useRouter } from 'expo-router';
 import { VStack } from '@/components/ui/Stack';
 import { Text } from '@/components/ui/Text';
 import { Text as ThemedText, View } from '@/components/Themed';
-import { useTokens } from '@/hooks/useTheme';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { GoogleAuthButton } from '@/components/ui/GoogleAuthButton';
+import { useTokens } from '@/hooks/useTheme';
 import { supabase } from '@/lib/supabase';
+import { signInWithGoogle } from '@/lib/auth/googleAuth';
 import { getMe } from '@/lib/api';
 import useAuthStore from '@/store/authStore';
 
@@ -16,9 +18,25 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const { setProfile } = useAuthStore();
   const tokens = useTokens();
+
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await signInWithGoogle();
+      if (!result.success) {
+        Alert.alert('Google Sign In Error', result.error);
+      }
+      // Note: Session handling is managed by the auth listener in the main layout
+    } catch (error: any) {
+      Alert.alert('Google Sign In Error', error.message || 'An unexpected error occurred');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -61,8 +79,17 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           secureTextEntry
         />
-        <Button onPress={handleLogin} disabled={loading}>
-          {loading ? 'Signing in...' : 'Sign In'}
+        <GoogleAuthButton
+          onPress={handleGoogleSignIn}
+          loading={googleLoading}
+          variant="signin"
+          disabled={loading}
+        />
+        <Text variant="body" style={{ textAlign: 'center', marginVertical: tokens.spacing.sm }}>
+          or
+        </Text>
+        <Button onPress={handleLogin} disabled={loading || googleLoading}>
+          {loading ? 'Signing in...' : 'Sign In with Email'}
         </Button>
         <SpacerView style={{ flex: 1 }} />
         <Text variant="body" style={{ textAlign: 'center' }} onPress={() => router.push('/register')}>

@@ -5,11 +5,13 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { VStack, HStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
-import { useTokens } from '@/hooks/useTheme';
+import { useTheme, useTokens } from '@/hooks/useTheme';
 import ServiceFormModal from '@/components/profile/ServiceFormModal';
 import PackageFormModal from '@/components/profile/PackageFormModal';
 import TestimonialFormModal from '@/components/profile/TestimonialFormModal';
 import { Card } from '@/components/ui/Card';
+import { useAssetUploadQueue } from '@/hooks/useAssetUploadQueue';
+import AssetUploadQueue from '@/components/ui/AssetUploadQueue';
 import * as ImagePicker from 'expo-image-picker';
 import { withObservables } from '@nozbe/watermelondb/react';
 import { trainerProfileRepository, trainerServiceRepository, trainerPackageRepository, trainerTestimonialRepository } from '@/lib/repositories';
@@ -40,7 +42,9 @@ const ERROR_MESSAGES = {
 } as const;
 
 function EditProfileScreen({ profile, services, packages, testimonials }: EditProfileScreenProps) {
+    const theme = useTheme();
     const tokens = useTokens();
+    const { addAsset } = useAssetUploadQueue();
 
     const profileData = profile.length > 0 ? profile[0] : null;
 
@@ -229,13 +233,28 @@ function EditProfileScreen({ profile, services, packages, testimonials }: EditPr
             });
 
             if (!result.canceled && result.assets[0]) {
-                // For now, just show that photo upload is not implemented offline
-                Alert.alert('Info', 'Photo upload will be implemented when backend sync is available.');
+                const asset = result.assets[0];
+                const fileName = `transformation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+                const uploadPath = `transformations/${fileName}`;
+
+                await addAsset({
+                    fileUri: asset.uri,
+                    fileName,
+                    mimeType: 'image/jpeg',
+                    size: asset.fileSize || 0,
+                    uploadPath,
+                    metadata: {
+                        userId: profileData?.id || 'unknown',
+                        type: 'transformation',
+                    },
+                });
+
+                Alert.alert('Success', 'Photo added to upload queue. It will be uploaded when you\'re online.');
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to pick image. Please try again.');
         }
-    }, []);
+    }, [addAsset, profileData]);
 
     if (!profileData) {
         return (
@@ -351,17 +370,22 @@ function EditProfileScreen({ profile, services, packages, testimonials }: EditPr
                  {/* Transformations */}
                 <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
                     <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Transformation Photos</UIText>
+                    
+                    {/* Upload Queue */}
+                    <AssetUploadQueue />
+
                     <View style={styles.photoGrid}>
-                        {/* Transformation photos would be implemented when backend sync is available */}
-                        <Text style={{ textAlign: 'center', padding: tokens.spacing.lg }}>
-                            Photo management will be available when backend sync is implemented.
+                        {/* Transformation photos would be shown here when implemented */}
+                        <Text style={{ textAlign: 'center', padding: tokens.spacing.lg, color: theme.textSecondary }}>
+                            Transformation photos will be displayed here once uploaded.
                         </Text>
                     </View>
+                    
                     <Button
                         onPress={handlePickImage}
                         style={{ marginTop: tokens.spacing.md }}
                     >
-                        Upload Photo (Coming Soon)
+                        Upload Transformation Photo
                     </Button>
                 </VStack>
 

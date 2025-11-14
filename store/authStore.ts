@@ -7,6 +7,13 @@ export type UserProfile = {
   // This should match your backend's profile structure
   id: string;
   role: 'client' | 'trainer';
+  is_google_user?: boolean;
+  google_user_data?: {
+    id: string;
+    email: string;
+    name: string;
+    picture?: string;
+  };
   [key: string]: any; // Allow other properties
 };
 

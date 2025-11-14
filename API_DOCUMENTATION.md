@@ -8,7 +8,7 @@
   "servers": [
     {
       "url": "http://localhost:3000",
-      "description": "Configured application URL."
+      "description": "Local development server."
     }
   ],
   "paths": {
@@ -74,6 +74,20 @@
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "dashboard"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "POST /api/contact",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "contact"
         ],
         "responses": {
           "200": {
@@ -248,6 +262,20 @@
         }
       }
     },
+    "/api/webhooks/stripe": {
+      "post": {
+        "summary": "POST /api/webhooks/stripe",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "webhooks"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/workout/log": {
       "post": {
         "summary": "POST /api/workout/log",
@@ -262,12 +290,12 @@
         }
       }
     },
-    "/api/webhooks/stripe": {
-      "post": {
-        "summary": "POST /api/webhooks/stripe",
+    "/api/trainers/specialties": {
+      "get": {
+        "summary": "GET /api/trainers/specialties",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
-          "webhooks"
+          "trainers"
         ],
         "responses": {
           "200": {
@@ -292,6 +320,32 @@
               "type": "string"
             }
           }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/trainer/programs": {
+      "get": {
+        "summary": "GET /api/trainer/programs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/trainer/programs",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
         ],
         "responses": {
           "200": {
@@ -340,32 +394,6 @@
         }
       }
     },
-    "/api/trainer/programs": {
-      "get": {
-        "summary": "GET /api/trainer/programs",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "post": {
-        "summary": "POST /api/trainer/programs",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
     "/api/trainer/calendar": {
       "get": {
         "summary": "GET /api/trainer/calendar",
@@ -398,6 +426,34 @@
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/sync/push": {
+      "post": {
+        "summary": "POST /api/sync/push",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "sync"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/sync/pull": {
+      "get": {
+        "summary": "GET /api/sync/pull",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "sync"
         ],
         "responses": {
           "200": {
@@ -908,6 +964,32 @@
         }
       }
     },
+    "/api/trainer/programs/templates": {
+      "post": {
+        "summary": "POST /api/trainer/programs/templates",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "get": {
+        "summary": "GET /api/trainer/programs/templates",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/trainer/clients/{id}": {
       "get": {
         "summary": "GET /api/trainer/clients/{id}",
@@ -968,20 +1050,6 @@
               "type": "string"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
-    "/api/trainer/programs/templates": {
-      "post": {
-        "summary": "POST /api/trainer/programs/templates",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "trainer"
         ],
         "responses": {
           "200": {
@@ -1308,6 +1376,32 @@
         }
       }
     },
+    "/api/profile/me/branding": {
+      "get": {
+        "summary": "GET /api/profile/me/branding",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/profile/me/branding",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/profile/me/billing": {
       "get": {
         "summary": "GET /api/profile/me/billing",
@@ -1323,32 +1417,6 @@
       },
       "post": {
         "summary": "POST /api/profile/me/billing",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "profile"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
-    "/api/profile/me/availability": {
-      "get": {
-        "summary": "GET /api/profile/me/availability",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "profile"
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "put": {
-        "summary": "PUT /api/profile/me/availability",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "profile"
@@ -1386,6 +1454,32 @@
         }
       }
     },
+    "/api/profile/me/availability": {
+      "get": {
+        "summary": "GET /api/profile/me/availability",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "put": {
+        "summary": "PUT /api/profile/me/availability",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/profile/me/assessments": {
       "get": {
         "summary": "GET /api/profile/me/assessments",
@@ -1404,6 +1498,30 @@
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "profile"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/sessions": {
+      "get": {
+        "summary": "GET /api/clients/{id}/sessions",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -1437,52 +1555,6 @@
       },
       "post": {
         "summary": "POST /api/clients/{id}/photos",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "clients"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
-    "/api/clients/{id}/measurements": {
-      "get": {
-        "summary": "GET /api/clients/{id}/measurements",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "clients"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "post": {
-        "summary": "POST /api/clients/{id}/measurements",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "clients"
@@ -1577,6 +1649,52 @@
       },
       "post": {
         "summary": "POST /api/clients/{id}/assessments",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
+    "/api/clients/{id}/measurements": {
+      "get": {
+        "summary": "GET /api/clients/{id}/measurements",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "post": {
+        "summary": "POST /api/clients/{id}/measurements",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "clients"
@@ -2142,6 +2260,30 @@
         }
       }
     },
+    "/api/clients/{id}/session/active": {
+      "get": {
+        "summary": "GET /api/clients/{id}/session/active",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/clients/{id}/photos/{photoId}": {
       "delete": {
         "summary": "DELETE /api/clients/{id}/photos/{photoId}",
@@ -2160,68 +2302,6 @@
           },
           {
             "name": "photoId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      }
-    },
-    "/api/clients/{id}/measurements/{measurementId}": {
-      "put": {
-        "summary": "PUT /api/clients/{id}/measurements/{measurementId}",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "clients"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "measurementId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response."
-          }
-        }
-      },
-      "delete": {
-        "summary": "DELETE /api/clients/{id}/measurements/{measurementId}",
-        "description": "Auto-generated from Next.js route handler.",
-        "tags": [
-          "clients"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "measurementId",
             "in": "path",
             "required": true,
             "schema": {
@@ -2298,9 +2378,71 @@
         }
       }
     },
+    "/api/clients/{id}/measurements/{measurementId}": {
+      "put": {
+        "summary": "PUT /api/clients/{id}/measurements/{measurementId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "measurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      },
+      "delete": {
+        "summary": "DELETE /api/clients/{id}/measurements/{measurementId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "clients"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "measurementId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
+    },
     "/api/trainer/programs/templates/{templateId}/rest": {
-      "get": {
-        "summary": "GET /api/trainer/programs/templates/{templateId}/rest",
+      "post": {
+        "summary": "POST /api/trainer/programs/templates/{templateId}/rest",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "trainer"
@@ -2323,8 +2465,8 @@
       }
     },
     "/api/trainer/programs/templates/{templateId}/exercises": {
-      "put": {
-        "summary": "PUT /api/trainer/programs/templates/{templateId}/exercises",
+      "post": {
+        "summary": "POST /api/trainer/programs/templates/{templateId}/exercises",
         "description": "Auto-generated from Next.js route handler.",
         "tags": [
           "trainer"
@@ -2393,6 +2535,38 @@
           }
         }
       }
+    },
+    "/api/trainer/programs/templates/{templateId}/exercises/{exerciseStepId}": {
+      "delete": {
+        "summary": "DELETE /api/trainer/programs/templates/{templateId}/exercises/{exerciseStepId}",
+        "description": "Auto-generated from Next.js route handler.",
+        "tags": [
+          "trainer"
+        ],
+        "parameters": [
+          {
+            "name": "templateId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "exerciseStepId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response."
+          }
+        }
+      }
     }
   },
   "tags": [
@@ -2417,6 +2591,10 @@
       "description": "Dashboard endpoints."
     },
     {
+      "name": "contact",
+      "description": "Contact endpoints."
+    },
+    {
       "name": "clients",
       "description": "Clients endpoints."
     },
@@ -2429,16 +2607,20 @@
       "description": "Workout-sessions endpoints."
     },
     {
-      "name": "workout",
-      "description": "Workout endpoints."
-    },
-    {
       "name": "webhooks",
       "description": "Webhooks endpoints."
     },
     {
+      "name": "workout",
+      "description": "Workout endpoints."
+    },
+    {
       "name": "trainer",
       "description": "Trainer endpoints."
+    },
+    {
+      "name": "sync",
+      "description": "Sync endpoints."
     },
     {
       "name": "profile",
@@ -2461,5 +2643,5 @@
       "description": "Public endpoints."
     }
   ],
-  "x-generated-at": "2025-11-05T13:27:35.445Z"
+  "x-generated-at": "2025-11-14T09:57:49.527Z"
 }

@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { database } from '@/lib/db'
 import { supabase } from '@/lib/supabase'
+import { apiFetch } from '@/lib/api/core/apiFetch'
 import Client from '@/lib/db/models/Client'
 import TrainerProfile from '@/lib/db/models/TrainerProfile'
 import WorkoutSession from '@/lib/db/models/WorkoutSession'
@@ -36,11 +37,16 @@ export class SyncService {
     try {
       useSyncStore.getState().setStatus('syncing')
       const lastPulledAt = await AsyncStorage.getItem(LAST_PULLED_AT_KEY)
-      // Placeholder: replace with actual sync endpoint
-      const { data, error } = await supabase.functions.invoke('sync-pull', {
-        body: { last_pulled_at: lastPulledAt || 0 }
+
+      const params: Record<string, any> = {}
+      if (lastPulledAt) {
+        params.last_pulled_at = lastPulledAt
+      }
+
+      const data = await apiFetch('/sync/pull', {
+        method: 'GET',
+        params
       })
-      if (error) throw error
 
       if (data) {
         const { changes, timestamp } = data
@@ -88,10 +94,10 @@ export class SyncService {
         return // Nothing to push
       }
 
-      const { data, error } = await supabase.functions.invoke('sync-push', {
-        body: { changes }
+      const data = await apiFetch('/sync/push', {
+        method: 'POST',
+        body: JSON.stringify({ changes })
       })
-      if (error) throw error
 
       if (data) {
         // Mark pushed records as synced

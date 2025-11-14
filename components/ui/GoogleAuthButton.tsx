@@ -42,8 +42,8 @@ export function GoogleAuthButton({
       return [
         styles.button,
         {
-          backgroundColor: theme.muted,
-          borderColor: theme.muted,
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
         }
       ];
     }
@@ -60,9 +60,9 @@ export function GoogleAuthButton({
 
   const getTextStyle = () => {
     if (disabled || loading) {
-      return { color: theme.mutedForeground };
+      return { color: theme.textSecondary };
     }
-    return { color: theme.foreground };
+    return { color: theme.text };
   };
 
   return (
@@ -76,7 +76,7 @@ export function GoogleAuthButton({
         {/* Google G Logo */}
         <View style={[
           styles.googleLogo,
-          { backgroundColor: loading ? theme.muted : '#4285F4' }
+          { backgroundColor: loading ? theme.surfaceHover : '#4285F4' }
         ]}>
           <Text style={styles.logoText}>G</Text>
         </View>

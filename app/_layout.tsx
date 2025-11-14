@@ -4,6 +4,7 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import 'react-native-reanimated';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -12,13 +13,20 @@ import useAuthStore from '@/store/authStore';
 import { supabase } from '@/lib/supabase';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { AppThemeProvider } from '@/hooks/useTheme';
+import { handleGoogleOAuthCallback } from '@/lib/auth/googleAuth';
+import AppErrorBoundary from '@/components/ui/ErrorBoundary';
+import { assetQueue } from '@/lib/services/assetUploadQueue';
 
 const queryClient = new QueryClient();
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+// Custom Error Boundary for better offline error handling
+function AppLayoutErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <AppErrorBoundary>
+      {children}
+    </AppErrorBoundary>
+  );
+}
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -58,11 +66,28 @@ function RootLayoutNav() {
   const [mounted, setMounted] = useState(false);
   
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session) {
+        // Handle Google OAuth callback if this is a Google user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.identities?.some(identity => identity.provider === 'google')) {
+          await handleGoogleOAuthCallback();
+        }
+      }
       setSession(session);
+
+      // Initialize asset upload queue
+      assetQueue.cleanup();
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        // Handle Google OAuth callback if this is a Google user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.identities?.some(identity => identity.provider === 'google')) {
+          await handleGoogleOAuthCallback();
+        }
+      }
       setSession(session);
     });
 
@@ -76,16 +101,18 @@ function RootLayoutNav() {
   useAuthGuard();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppThemeProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(app)" options={{ headerShown: false }} />
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-          </Stack>
-        </ThemeProvider>
-      </AppThemeProvider>
-    </QueryClientProvider>
+    <AppLayoutErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AppThemeProvider>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(app)" options={{ headerShown: false }} />
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            </Stack>
+          </ThemeProvider>
+        </AppThemeProvider>
+      </QueryClientProvider>
+    </AppLayoutErrorBoundary>
   );
 }

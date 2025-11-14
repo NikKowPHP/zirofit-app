@@ -8,16 +8,34 @@ import { View } from '@/components/Themed';
 import { useTokens } from '@/hooks/useTheme';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { GoogleAuthButton } from '@/components/ui/GoogleAuthButton';
 import { RoleSelector } from '@/components/ui/RoleSelector';
 import { supabase } from '@/lib/supabase';
+import { signUpWithGoogle } from '@/lib/auth/googleAuth';
 
 export default function RegisterScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'client' | 'trainer'>('client');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const router = useRouter();
   const tokens = useTokens();
+
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await signUpWithGoogle(role);
+      if (!result.success) {
+        Alert.alert('Google Sign Up Error', result.error);
+      }
+      // Note: Session handling is managed by the auth listener in the main layout
+    } catch (error: any) {
+      Alert.alert('Google Sign Up Error', error.message || 'An unexpected error occurred');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   const handleRegister = async () => {
     setLoading(true);
@@ -66,13 +84,22 @@ export default function RegisterScreen() {
           secureTextEntry
         />
         
+        <GoogleAuthButton
+          onPress={handleGoogleSignUp}
+          loading={googleLoading}
+          variant="signup"
+          disabled={loading}
+        />
+        <Text variant="body" style={{ textAlign: 'center', marginVertical: tokens.spacing.sm }}>
+          or
+        </Text>
         <Text variant="body">I am a:</Text>
         <RoleSelector value={role} onValueChange={(val) => setRole(val as any)} />
 
         <SpacerView style={{ flex: 1 }} />
 
-        <Button onPress={handleRegister} disabled={loading}>
-          {loading ? 'Creating account...' : 'Create Account'}
+        <Button onPress={handleRegister} disabled={loading || googleLoading}>
+          {loading ? 'Creating account...' : 'Create Account with Email'}
         </Button>
       </VStack>
     </View>
