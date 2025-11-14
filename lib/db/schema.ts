@@ -21,7 +21,7 @@ export const mySchema = appSchema({
         { name: 'emergency_contact_phone', type: 'string', isOptional: true },
         { name: 'status', type: 'string', isOptional: true },
         { name: 'trainer_id', type: 'string', isOptional: true },
-        { name: '_status', type: 'string', isOptional: true }, // sync status
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -74,6 +74,18 @@ export const mySchema = appSchema({
         { name: 'equipment', type: 'string', isOptional: true },
         { name: 'instructions', type: 'string', isOptional: true },
         { name: 'media_url', type: 'string', isOptional: true },
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+        { name: 'deleted_at', type: 'number', isOptional: true },
+      ],
+    }),
+    // Workout Templates table
+    tableSchema({
+      name: 'workout_templates',
+      columns: [
+        { name: 'name', type: 'string' },
+        { name: 'description', type: 'string', isOptional: true },
+        { name: 'trainer_id', type: 'string', isOptional: true },
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },

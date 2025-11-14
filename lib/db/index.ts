@@ -1,5 +1,5 @@
 import { Database } from '@nozbe/watermelondb'
-import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
+import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
 
 import { mySchema } from './schema'
 import Client from './models/Client'
@@ -21,11 +21,11 @@ import Booking from './models/Booking'
 import TemplateExercise from './models/TemplateExercise'
 
 // First, create the adapter to the underlying database:
-const adapter = new SQLiteAdapter({
+const adapter = new LokiJSAdapter({
   schema: mySchema,
-  // (You might want to comment it out for development)
-  // dbName: 'myapp',
-  // jsi: true, // Enable JSI for better performance
+  useWebWorker: false, // optional
+  useIncrementalIndexedDB: true, // optional
+  // dbName: 'myapp', // optional
 })
 
 // Then, make a Watermelon database from it!

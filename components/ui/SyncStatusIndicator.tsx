@@ -3,7 +3,7 @@ import { useSyncStore } from '@/store/syncStore'
 import { StyleSheet } from 'react-native'
 
 export function SyncStatusIndicator() {
-  const { status, lastSyncedAt } = useSyncStore()
+  const { status, lastSyncedAt, lastError } = useSyncStore()
 
   const getStatusText = () => {
     switch (status) {
@@ -12,7 +12,9 @@ export function SyncStatusIndicator() {
       case 'offline':
         return 'Offline'
       case 'error':
-        return 'Sync Error'
+        return lastError || 'Sync Error'
+      case 'never_synced':
+        return 'Never synced'
       default:
         if (lastSyncedAt) {
           const now = new Date()
@@ -32,8 +34,8 @@ export function SyncStatusIndicator() {
       case 'syncing':
         return '#ffa500'
       case 'offline':
-        return '#ff0000'
       case 'error':
+      case 'never_synced':
         return '#ff0000'
       default:
         return '#00ff00'

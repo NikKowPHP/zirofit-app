@@ -25,7 +25,7 @@ interface TemplateEditorScreenProps {
 
 function TemplateEditorScreen({ template, templateExercises, allExercises }: TemplateEditorScreenProps) {
     const tokens = useTokens();
-
+    const { id } = useLocalSearchParams();
     const [isAddExerciseModalVisible, setAddExerciseModalVisible] = useState(false);
 
     const handleAddExercise = async (exerciseId: string) => {

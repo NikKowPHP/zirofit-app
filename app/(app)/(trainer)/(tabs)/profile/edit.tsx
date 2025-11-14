@@ -448,18 +448,11 @@ const styles = StyleSheet.create({
   deleteIcon: { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, width: 24, height: 24, justifyContent: 'center', alignItems: 'center' }
 });
 
-// Wrap component with withObservables for reactive data
-const enhance = (WrappedComponent: React.ComponentType<any>) => {
-    return (props: any) => {
-        const EnhancedComponent = withObservables([], () => ({
-            profile: trainerProfileRepository.observeTrainerProfiles(),
-            services: trainerServiceRepository.observeTrainerServices(),
-            packages: trainerPackageRepository.observeTrainerPackages(),
-            testimonials: trainerTestimonialRepository.observeTrainerTestimonials(),
-        }))(WrappedComponent);
-
-        return <EnhancedComponent {...props} />;
-    };
-};
+const enhance = withObservables([], () => ({
+    profile: trainerProfileRepository.observeTrainerProfiles(),
+    services: trainerServiceRepository.observeTrainerServices(),
+    packages: trainerPackageRepository.observeTrainerPackages(),
+    testimonials: trainerTestimonialRepository.observeTrainerTestimonials(),
+}));
 
 export default enhance(EditProfileScreen);

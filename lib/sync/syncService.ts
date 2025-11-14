@@ -78,7 +78,8 @@ export class SyncService {
       }
     } catch (error) {
       console.error('Error pulling changes:', error)
-      useSyncStore.getState().setStatus('error')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown sync error'
+      useSyncStore.getState().setError(errorMessage)
       throw error
     }
   }
@@ -105,12 +106,13 @@ export class SyncService {
         useSyncStore.getState().setLastSyncedAt(new Date())
         useSyncStore.getState().setStatus('idle')
       } else {
-        useSyncStore.getState().setStatus('error')
+        useSyncStore.getState().setError('Push failed - no response')
         throw new Error('Push failed')
       }
     } catch (error) {
       console.error('Error pushing changes:', error)
-      useSyncStore.getState().setStatus('error')
+      const errorMessage = error instanceof Error ? error.message : 'Unknown push error'
+      useSyncStore.getState().setError(errorMessage)
       throw error
     }
   }
@@ -125,7 +127,7 @@ export class SyncService {
       for (const record of changes.created) {
         await collection.create(model => {
           Object.assign(model, this.transformRecordForDB(record))
-          ;(model as any)._status = 'synced' // Mark as already synced
+          ;(model as any).sync_status = 'synced' // Mark as already synced
         })
       }
     }
@@ -137,7 +139,7 @@ export class SyncService {
         if (existing) {
           await existing.update(model => {
             Object.assign(model, this.transformRecordForDB(record))
-            ;(model as any)._status = 'synced' // Mark as already synced
+            ;(model as any).sync_status = 'synced' // Mark as already synced
           })
         }
       }
@@ -157,7 +159,7 @@ export class SyncService {
   private async collectChanges(): Promise<any> {
     const changes: any = {}
 
-    // Query for records that need to be pushed (_status is not 'synced')
+    // Query for records that need to be pushed (sync_status is not 'synced')
     const tables = [
       'clients',
       'trainer_profiles',
@@ -180,13 +182,13 @@ export class SyncService {
     for (const tableName of tables) {
       const collection = database.collections.get(tableName)
       const changedRecords = await collection.query(
-        Q.where('_status', Q.notEq('synced'))
+        Q.where('sync_status', Q.notEq('synced'))
       ).fetch()
 
       if (changedRecords.length > 0) {
-        const created = changedRecords.filter(r => (r as any)._status === 'created').map(r => this.transformRecordForAPI(r))
-        const updated = changedRecords.filter(r => (r as any)._status === 'updated').map(r => this.transformRecordForAPI(r))
-        const deleted = changedRecords.filter(r => (r as any)._status === 'deleted').map(r => r.id)
+        const created = changedRecords.filter(r => (r as any).sync_status === 'created').map(r => this.transformRecordForAPI(r))
+        const updated = changedRecords.filter(r => (r as any).sync_status === 'updated').map(r => this.transformRecordForAPI(r))
+        const deleted = changedRecords.filter(r => (r as any).sync_status === 'deleted').map(r => r.id)
 
         changes[tableName] = { created, updated, deleted }
       }
@@ -206,7 +208,7 @@ export class SyncService {
           try {
             const record = await collection.find(recordData.id)
             await record.update((r: any) => {
-              r._status = 'synced'
+              r.sync_status = 'synced'
             })
           } catch (error) {
             console.warn(`Could not find record ${recordData.id} in ${tableName} to mark as synced`)
