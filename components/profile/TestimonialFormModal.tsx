@@ -8,14 +8,14 @@ import { Alert } from 'react-native';
 
 type Testimonial = {
     id: string;
-    client_name: string;
+    clientName: string;
     content: string;
 }
 
 type TestimonialFormModalProps = {
     isVisible: boolean;
     onClose: () => void;
-    onSubmit: (data: { client_name: string, content: string }) => void;
+    onSubmit: (data: { clientName: string, content: string }) => void;
     initialData?: Testimonial | null;
     isSubmitting: boolean;
 }
@@ -27,7 +27,7 @@ export default function TestimonialFormModal({ isVisible, onClose, onSubmit, ini
 
     useEffect(() => {
         if (isVisible && initialData) {
-            setClientName(initialData.client_name || '');
+            setClientName(initialData.clientName || '');
             setContent(initialData.content || '');
         } else if (isVisible && !initialData) {
             setClientName('');
@@ -41,7 +41,7 @@ export default function TestimonialFormModal({ isVisible, onClose, onSubmit, ini
             return;
         }
         onSubmit({
-            client_name: clientName,
+            clientName: clientName,
             content,
         });
     }

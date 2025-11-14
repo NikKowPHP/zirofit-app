@@ -1,8 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, FlatList, Image } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack, HStack } from '@/components/ui/Stack';
-import { getClients } from '@/lib/api';
 import { useRouter, useNavigation } from 'expo-router';
 import { Text, View } from '@/components/Themed';
 import { Card } from '@/components/ui/Card';
@@ -11,12 +9,41 @@ import { useLayoutEffect } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import type { Client } from '@/lib/api.types';
 import { useTokens } from '@/hooks/useTheme';
+import { clientRepository } from '@/lib/repositories/clientRepository';
+import withObservables from '@nozbe/with-observables';
 
-export default function ClientsScreen() {
+function ClientsScreen({ clients }: { clients: any[] }) {
     const router = useRouter();
     const navigation = useNavigation();
     const tokens = useTokens();
-    const { data, isLoading } = useQuery({ queryKey: ['clients'], queryFn: getClients });
+
+    // Transform DB records to Client type
+    const transformedClients: Client[] = clients.map(client => ({
+      id: client.id,
+      user_id: client.userId,
+      name: client.name,
+      email: client.email,
+      phone: client.phone,
+      date_of_birth: client.dateOfBirth,
+      fitness_goals: client.fitnessGoals,
+      medical_conditions: client.medicalConditions,
+      avatar_url: client.avatarUrl,
+      goals: client.goals,
+      healthNotes: client.healthNotes,
+      emergencyContactName: client.emergencyContactName,
+      emergencyContactPhone: client.emergencyContactPhone,
+      status: client.status,
+      trainerId: client.trainerId,
+      workoutSessions: [], // Will be populated if needed
+      assessments: [],
+      measurements: [],
+      photos: [],
+      progressPhotos: [],
+      clientPackages: [],
+      templates: [],
+      created_at: client.createdAt,
+      updated_at: client.updatedAt,
+    }));
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -48,19 +75,19 @@ export default function ClientsScreen() {
     return (
         <SafeAreaView style={styles.container}>
             <VStack style={{ paddingHorizontal: tokens.spacing.lg, gap: tokens.spacing.lg, flex: 1 }}>
-                {isLoading ? (
-                    <View style={styles.center}><ActivityIndicator /></View>
-                ) : (
-                    <FlatList
-                        data={data}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.id}
-                    />
-                )}
+                <FlatList
+                    data={transformedClients}
+                    renderItem={renderItem}
+                    keyExtractor={(item) => item.id}
+                />
             </VStack>
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  clients: clientRepository.observeClients(),
+}));
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
@@ -77,4 +104,5 @@ const styles = StyleSheet.create({
         height: '100%',
     }
 });
-      
+
+export default enhance(ClientsScreen);

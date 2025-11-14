@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useMemo } from 'react';
 import { View, Text } from '@/components/Themed';
 import { ActivityIndicator, Alert } from 'react-native';
 import { VStack } from '@/components/ui/Stack';
@@ -7,18 +6,13 @@ import { Text as UIText } from '@/components/ui/Text';
 import { Screen } from '@/components/ui/Screen';
 import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
-import { getClientDashboard } from '@/lib/api';
 import { router } from 'expo-router';
 import useAuthStore from '@/store/authStore';
+import { clientDashboardRepository } from '@/lib/repositories/clientDashboardRepository';
+import withObservables from '@nozbe/with-observables';
 
-export default function DashboardScreen() {
-    const { authenticationState, profile } = useAuthStore();
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['dashboard'],
-        queryFn: getClientDashboard,
-        enabled: authenticationState === 'authenticated' && profile?.role === 'client',
-        retry: false
-    });
+function DashboardScreen({ dashboardData }: { dashboardData: any }) {
+    const { authenticationState, profile, user } = useAuthStore();
 
     // Handle redirect for non-client users
     useEffect(() => {
@@ -26,27 +20,6 @@ export default function DashboardScreen() {
             router.replace('/(app)/(trainer)');
         }
     }, [authenticationState, profile?.role]);
-
-    if (isLoading) {
-        return <Screen center><ActivityIndicator /></Screen>
-    }
-
-    if (error) {
-        // Handle authentication errors specifically
-        if (error.message?.includes('Missing or invalid Authorization header') ||
-            error.message?.includes('401')) {
-            Alert.alert(
-                'Authentication Required',
-                'Please log in to view your dashboard',
-                [
-                    { text: 'OK', onPress: () => router.replace('/(auth)/login') }
-                ]
-            );
-            return <Screen center><Text>Redirecting to login...</Text></Screen>
-        }
-        
-        return <Screen center><Text>Error fetching data: {error.message}</Text></Screen>
-    }
 
     // If not authenticated, show login prompt
     if (authenticationState === 'unauthenticated') {
@@ -63,14 +36,37 @@ export default function DashboardScreen() {
         );
     }
 
+    // Don't show data until we have a user ID
+    if (!user?.id) {
+        return <Screen center><ActivityIndicator /></Screen>
+    }
+
     return (
         <Screen>
             <UIText variant="h3">Dashboard</UIText>
-            {/* TODO: Transform CalendarEvent[] to Session[] for UpcomingSessions component */}
-            {/* {data?.upcomingSessions && data.upcomingSessions.length > 0 && <UpcomingSessions sessions={data.upcomingSessions} />} */}
-            {/* {data?.upcoming_sessions && data.upcoming_sessions.length > 0 && <UpcomingSessions sessions={data.upcoming_sessions} />} */}
-            {!data?.hasTrainer && <FindTrainerPrompt />}
+            {dashboardData?.upcomingSessions && dashboardData.upcomingSessions.length > 0 && (
+                <UpcomingSessions sessions={dashboardData.upcomingSessions} />
+            )}
+            {!dashboardData?.hasTrainer && <FindTrainerPrompt />}
         </Screen>
     )
+}
+
+// Create enhanced component with observable data
+const enhance = withObservables([], ({ userId }: { userId: string }) => ({
+  dashboardData: clientDashboardRepository.observeClientDashboard(userId),
+}));
+
+// Wrapper component to get user ID
+export default function DashboardScreenWrapper() {
+    const { user } = useAuthStore();
+    const userId = user?.id;
+
+    if (!userId) {
+        return <Screen center><ActivityIndicator /></Screen>;
+    }
+
+    const EnhancedDashboard = enhance(DashboardScreen);
+    return <EnhancedDashboard userId={userId} />;
 }
       

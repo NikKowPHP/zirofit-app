@@ -11,14 +11,14 @@ type Package = {
     name: string;
     description?: string;
     price: number;
-    sessions_count: number;
-    duration_weeks: number;
+    sessionsCount: number;
+    durationWeeks: number;
 }
 
 type PackageFormModalProps = {
     isVisible: boolean;
     onClose: () => void;
-    onSubmit: (data: { name: string, description?: string, price: number, sessions_count: number, duration_weeks: number }) => void;
+    onSubmit: (data: { name: string, description?: string, price: number, sessionsCount: number, durationWeeks: number }) => void;
     initialData?: Package | null;
     isSubmitting: boolean;
 }
@@ -36,8 +36,8 @@ export default function PackageFormModal({ isVisible, onClose, onSubmit, initial
             setName(initialData.name || '');
             setDescription(initialData.description || '');
             setPrice(initialData.price ? (initialData.price / 100).toString() : '');
-            setSessionsCount(initialData.sessions_count ? initialData.sessions_count.toString() : '');
-            setDurationWeeks(initialData.duration_weeks ? initialData.duration_weeks.toString() : '');
+            setSessionsCount(initialData.sessionsCount ? initialData.sessionsCount.toString() : '');
+            setDurationWeeks(initialData.durationWeeks ? initialData.durationWeeks.toString() : '');
         } else if (isVisible && !initialData) {
             setName('');
             setDescription('');
@@ -71,8 +71,8 @@ export default function PackageFormModal({ isVisible, onClose, onSubmit, initial
             name,
             description,
             price: priceInCents,
-            sessions_count: sessionsCountNum,
-            duration_weeks: durationWeeksNum,
+            sessionsCount: sessionsCountNum,
+            durationWeeks: durationWeeksNum,
         });
     }
 

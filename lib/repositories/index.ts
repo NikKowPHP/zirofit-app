@@ -1,0 +1,18 @@
+// Repository exports
+export { clientRepository } from './clientRepository';
+export { trainerProfileRepository } from './trainerProfileRepository';
+export { workoutSessionRepository } from './workoutSessionRepository';
+export { exerciseRepository } from './exerciseRepository';
+export { workoutTemplateRepository } from './workoutTemplateRepository';
+export { trainerProgramRepository } from './trainerProgramRepository';
+export { trainerServiceRepository } from './trainerServiceRepository';
+export { trainerPackageRepository } from './trainerPackageRepository';
+export { trainerTestimonialRepository } from './trainerTestimonialRepository';
+export { clientExerciseLogRepository } from './clientExerciseLogRepository';
+export { calendarEventRepository } from './calendarEventRepository';
+export { clientDashboardRepository } from './clientDashboardRepository';
+export { dashboardRepository } from './dashboardRepository';
+export { clientAssessmentRepository } from './clientAssessmentRepository';
+export { clientMeasurementRepository } from './clientMeasurementRepository';
+export { notificationRepository } from './notificationRepository';
+export { bookingRepository } from './bookingRepository';

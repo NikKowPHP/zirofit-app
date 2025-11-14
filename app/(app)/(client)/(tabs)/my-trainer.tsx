@@ -6,29 +6,26 @@ import { Text as UIText } from '@/components/ui/Text';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import * as WebBrowser from 'expo-web-browser';
-import { createCheckoutSession, getMyTrainer, getTrainerPackages } from '@/lib/api';
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { createCheckoutSession } from '@/lib/api';
+import { useState, useMemo } from 'react';
 import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
 import { supabase } from '@/lib/supabase';
 import { useTokens } from '@/hooks/useTheme';
+import { trainerProfileRepository } from '@/lib/repositories/trainerProfileRepository';
+import { trainerPackageRepository } from '@/lib/repositories/trainerPackageRepository';
+import withObservables from '@nozbe/with-observables';
 
-export default function MyTrainerScreen() {
+function MyTrainerScreen({ trainerProfiles, packages }: { trainerProfiles: any[], packages: any[] }) {
     const [loadingPackageId, setLoadingPackageId] = useState<string | null>(null);
     const tokens = useTokens();
-    
-    const { data: trainer, isLoading: isTrainerLoading } = useQuery({ 
-        queryKey: ['myTrainer'], 
-        queryFn: getMyTrainer 
-    });
 
-    const trainerId = trainer?.id;
-    
-    const { data: packages, isLoading: arePackagesLoading } = useQuery({
-        queryKey: ['trainerPackages', trainerId],
-        queryFn: () => getTrainerPackages(trainerId as string),
-        enabled: !!trainerId,
-    });
+    // For now, show the first available trainer (in a real app, filter by client-trainer relationship)
+    const trainer = useMemo(() => trainerProfiles[0], [trainerProfiles]);
+
+    const trainerPackages = useMemo(() => {
+        if (!trainer) return [];
+        return packages.filter(pkg => pkg.trainerId === trainer.userId);
+    }, [packages, trainer]);
 
     const handleBuyPackage = async (packageId: string) => {
         setLoadingPackageId(packageId);
@@ -51,22 +48,18 @@ export default function MyTrainerScreen() {
         await supabase.auth.signOut();
     };
 
-    if (isTrainerLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
-    }
-
     return (
         <SafeAreaView style={styles.container}>
             <VStack style={{ padding: tokens.spacing.lg, gap: tokens.spacing.lg, alignItems: 'center' }}>
                 <UIText variant="h3">My Trainer</UIText>
-                
+
                 {trainer ? (
                     <>
                         <Card style={{ padding: tokens.spacing.lg, alignItems: 'center', width: '100%' }}>
                             <View style={styles.avatarContainer}>
-                                <Image 
-                                    source={{ uri: trainer.avatar_url }} 
-                                    style={styles.avatar} 
+                                <Image
+                                    source={{ uri: trainer.avatarUrl }}
+                                    style={styles.avatar}
                                     defaultSource={require('@/assets/images/icon.png')}
                                 />
                             </View>
@@ -77,27 +70,25 @@ export default function MyTrainerScreen() {
 
                         <Card style={{ padding: tokens.spacing.lg, width: '100%' }}>
                             <UIText variant="h3" style={{ textAlign: 'center' }}>Training Packages</UIText>
-                            {arePackagesLoading ? <ActivityIndicator style={{marginTop: 20}} /> : (
-                                <VStack style={{ gap: tokens.spacing.md, marginTop: tokens.spacing.md }}>
-                                    {packages && packages.length > 0 ? packages.map((pkg: any) => (
-                                        <Card key={pkg.id} style={{ padding: tokens.spacing.md, backgroundColor: '#f5f5f5' }}>
-                                            <UIText variant="h4">{pkg.name}</UIText>
-                                            <Text>{pkg.description}</Text>
-                                            <Text style={styles.price}>${(pkg.price / 100).toFixed(2)}</Text>
-                                            <Button 
-                                                style={{ marginTop: tokens.spacing.md }}
-                                                variant="primary" 
-                                                onPress={() => handleBuyPackage(pkg.id)} 
-                                                disabled={!!loadingPackageId}
-                                            >
-                                                {loadingPackageId === pkg.id ? 'Processing...' : 'Buy Package'}
-                                            </Button>
-                                        </Card>
-                                    )) : (
-                                        <Text style={styles.noPackagesText}>This trainer has not set up any packages yet.</Text>
-                                    )}
-                                </VStack>
-                            )}
+                            <VStack style={{ gap: tokens.spacing.md, marginTop: tokens.spacing.md }}>
+                                {trainerPackages && trainerPackages.length > 0 ? trainerPackages.map((pkg: any) => (
+                                    <Card key={pkg.id} style={{ padding: tokens.spacing.md, backgroundColor: '#f5f5f5' }}>
+                                        <UIText variant="h4">{pkg.name}</UIText>
+                                        <Text>{pkg.description}</Text>
+                                        <Text style={styles.price}>${(pkg.price / 100).toFixed(2)}</Text>
+                                        <Button
+                                            style={{ marginTop: tokens.spacing.md }}
+                                            variant="primary"
+                                            onPress={() => handleBuyPackage(pkg.id)}
+                                            disabled={!!loadingPackageId}
+                                        >
+                                            {loadingPackageId === pkg.id ? 'Processing...' : 'Buy Package'}
+                                        </Button>
+                                    </Card>
+                                )) : (
+                                    <Text style={styles.noPackagesText}>This trainer has not set up any packages yet.</Text>
+                                )}
+                            </VStack>
                         </Card>
                     </>
                 ) : (
@@ -111,6 +102,13 @@ export default function MyTrainerScreen() {
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  trainerProfiles: trainerProfileRepository.observeTrainerProfiles(),
+  packages: trainerPackageRepository.observeTrainerPackages(),
+}));
+
+export default enhance(MyTrainerScreen);
 
 const styles = StyleSheet.create({
     container: { flex: 1 },

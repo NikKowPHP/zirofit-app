@@ -2,6 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useTheme } from '@/hooks/useTheme';
+import { SyncStatusIndicator } from '@/components/ui/SyncStatusIndicator';
 
 function TabBarIcon(props: { name: React.ComponentProps<typeof FontAwesome>['name']; color: string }) {
   return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
@@ -14,7 +15,8 @@ export default function TrainerTabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: theme.primary,
-        headerShown: false,
+        headerShown: true,
+        headerRight: () => <SyncStatusIndicator />,
       }}>
       <Tabs.Screen
         name="index"

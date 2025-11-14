@@ -1,0 +1,79 @@
+import { database } from '@/lib/db'
+import TrainerProfile from '@/lib/db/models/TrainerProfile'
+import { Q } from '@nozbe/watermelondb'
+
+const trainerProfilesCollection = database.collections.get<TrainerProfile>('trainer_profiles')
+
+export const trainerProfileRepository = {
+  observeTrainerProfiles: () => trainerProfilesCollection.query(Q.where('deleted_at', Q.eq(null))).observe(),
+
+  observeTrainerProfile: (id: string) => trainerProfilesCollection.findAndObserve(id),
+
+  observeTrainerProfileByUserId: (userId: string) =>
+    trainerProfilesCollection.query(
+      Q.where('user_id', userId),
+      Q.where('deleted_at', Q.eq(null))
+    ).observe(),
+
+  createTrainerProfile: async (data: {
+    userId: string
+    name: string
+    username: string
+    certifications: string
+    bio?: string
+    specialties: string
+    experienceYears: number
+    phone?: string
+    email?: string
+    website?: string
+    avatarUrl?: string
+    socialLinks?: string
+  }) => {
+    await database.write(async () => {
+      await trainerProfilesCollection.create(profile => {
+        profile.userId = data.userId
+        profile.name = data.name
+        profile.username = data.username
+        profile.certifications = data.certifications
+        profile.bio = data.bio
+        profile.specialties = data.specialties
+        profile.experienceYears = data.experienceYears
+        profile.phone = data.phone
+        profile.email = data.email
+        profile.website = data.website
+        profile.avatarUrl = data.avatarUrl
+        profile.socialLinks = data.socialLinks
+      })
+    })
+  },
+
+  updateTrainerProfile: async (id: string, updates: Partial<{
+    name: string
+    username: string
+    certifications: string
+    bio: string
+    specialties: string
+    experienceYears: number
+    phone: string
+    email: string
+    website: string
+    avatarUrl: string
+    socialLinks: string
+  }>) => {
+    await database.write(async () => {
+      const profile = await trainerProfilesCollection.find(id)
+      await profile.update(record => {
+        Object.assign(record, updates)
+      })
+    })
+  },
+
+  deleteTrainerProfile: async (id: string) => {
+    await database.write(async () => {
+      const profile = await trainerProfilesCollection.find(id)
+      await profile.update(record => {
+        record.deletedAt = Date.now()
+      })
+    })
+  },
+}

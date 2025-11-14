@@ -3,8 +3,8 @@ import { StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, DateData } from 'react-native-calendars';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getCalendarEvents, planSession, getClients, getPrograms } from '@/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { planSession } from '@/lib/api';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -12,6 +12,10 @@ import { Input } from '@/components/ui/Input';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
+import { calendarEventRepository } from '@/lib/repositories/calendarEventRepository';
+import { clientRepository } from '@/lib/repositories/clientRepository';
+import { trainerProgramRepository } from '@/lib/repositories/trainerProgramRepository';
+import withObservables from '@nozbe/with-observables';
 
 const extractArray = (response: unknown): any[] => {
     if (Array.isArray(response)) {
@@ -40,7 +44,11 @@ const extractArray = (response: unknown): any[] => {
     return [];
 };
 
-export default function CalendarScreen() {
+function CalendarScreen({ calendarEvents, clients, programs }: { 
+  calendarEvents: any[], 
+  clients: any[], 
+  programs: any[] 
+}) {
     const queryClient = useQueryClient();
     const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
     const tokens = useTokens();
@@ -55,11 +63,16 @@ export default function CalendarScreen() {
         };
     }, [currentMonth]);
 
-    const { data: eventsResponse } = useQuery({
-        queryKey: ['calendarEvents', startDate, endDate],
-        queryFn: () => getCalendarEvents({ startDate, endDate })
-    });
-    const events = useMemo(() => extractArray(eventsResponse), [eventsResponse]);
+    // Transform DB records to API format for compatibility
+    const events = useMemo(() => calendarEvents.map(event => ({
+      id: event.id,
+      title: event.title,
+      start: new Date(event.startTime).toISOString(),
+      end: new Date(event.endTime).toISOString(),
+      notes: event.notes,
+      status: event.status
+    })), [calendarEvents]);
+
     const markedDates = useMemo(() => {
         if (!events.length) return {};
         const dates: { [key: string]: { dots: { key: string; color: string }[] } } = {};
@@ -72,10 +85,6 @@ export default function CalendarScreen() {
         });
         return dates;
     }, [events]);
-    const { data: clientsResponse } = useQuery({ queryKey: ['clients'], queryFn: getClients });
-    const clients = useMemo(() => extractArray(clientsResponse), [clientsResponse]);
-    const { data: programsResponse } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
-    const programs = useMemo(() => extractArray(programsResponse), [programsResponse]);
     
     const [modalVisible, setModalVisible] = useState(false);
     const [selectedDate, setSelectedDate] = useState('');
@@ -94,8 +103,6 @@ export default function CalendarScreen() {
         mutationFn: planSession,
         onSuccess: () => {
             Alert.alert("Success", "Session planned successfully.");
-            queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
-            closeModal();
         },
         onError: (e: any) => {
             Alert.alert("Error", e.message);
@@ -137,12 +144,33 @@ export default function CalendarScreen() {
             Alert.alert("Missing Info", "Please provide notes and select a client.");
             return;
         };
-        planSessionMutation.mutate({ 
-            date: selectedDate, 
-            notes: sessionNotes,
-            clientId: selectedClient,
-            templateId: selectedTemplate,
-        });
+        
+        try {
+            // Create locally first for optimistic update
+            await calendarEventRepository.createCalendarEvent({
+                trainerId: 'current-trainer-id', // TODO: get from auth
+                clientId: selectedClient,
+                title: `Session with ${clients.find(c => c.id === selectedClient)?.name}`,
+                startTime: new Date(selectedDate + 'T10:00:00').getTime(), // Default 10 AM
+                endTime: new Date(selectedDate + 'T11:00:00').getTime(), // Default 1 hour
+                notes: sessionNotes,
+                status: 'scheduled',
+                sessionType: 'training',
+                templateId: selectedTemplate || undefined
+            });
+            
+            // Then sync to server
+            await planSessionMutation.mutateAsync({ 
+                date: selectedDate, 
+                notes: sessionNotes,
+                clientId: selectedClient,
+                templateId: selectedTemplate,
+            });
+            
+            closeModal();
+        } catch (error) {
+            Alert.alert("Error", "Failed to plan session");
+        }
     }
 
     return (
@@ -209,6 +237,14 @@ export default function CalendarScreen() {
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  calendarEvents: calendarEventRepository.observeCalendarEvents(),
+  clients: clientRepository.observeClients(),
+  programs: trainerProgramRepository.observeTrainerPrograms(),
+}));
+
+export default enhance(CalendarScreen);
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 10 },

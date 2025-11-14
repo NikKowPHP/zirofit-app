@@ -1,8 +1,8 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, ActivityIndicator, Pressable, Alert, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getPrograms, createProgram } from '@/lib/api';
+import { useMutation } from '@tanstack/react-query';
+import { createProgram } from '@/lib/api';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
@@ -14,6 +14,8 @@ import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
 import type { TrainerProgram } from '@/lib/api.types';
 import type { CreateProgramRequest } from '@/lib/api/types/request';
+import { trainerProgramRepository } from '@/lib/repositories/trainerProgramRepository';
+import withObservables from '@nozbe/with-observables';
 
 // Constants
 const ERROR_MESSAGES = {
@@ -23,10 +25,8 @@ const ERROR_MESSAGES = {
 type Program = TrainerProgram;
 type Template = { id: string, name: string };
 
-export default function ProgramsScreen() {
+function ProgramsScreen({ programs }: { programs: any[] }) {
     const router = useRouter();
-    const queryClient = useQueryClient();
-    const { data: programs, isLoading } = useQuery({ queryKey: ['programs'], queryFn: getPrograms });
     const tokens = useTokens();
 
     const [modalVisible, setModalVisible] = useState(false);
@@ -38,7 +38,6 @@ export default function ProgramsScreen() {
         mutationFn: createProgram,
         onSuccess: () => {
             Alert.alert('Success', 'Program created!');
-            queryClient.invalidateQueries({ queryKey: ['programs'] });
             setModalVisible(false);
             setProgramName('');
             setProgramDesc('');
@@ -46,19 +45,32 @@ export default function ProgramsScreen() {
         onError: (e: any) => Alert.alert('Error', e.message || ERROR_MESSAGES.CREATE_FAILED),
     });
 
-    const handleCreateProgram = useCallback(() => {
+    const handleCreateProgram = useCallback(async () => {
         if (!programName.trim()) {
             Alert.alert('Error', 'Please enter a program name.');
             return;
         }
-        
-        createProgramMutation.mutate({
-            name: programName.trim(),
-            description: programDesc.trim() || undefined,
-        } as any);
+
+        try {
+            // Create locally first for optimistic update
+            await trainerProgramRepository.createTrainerProgram({
+                trainerId: 'current-trainer-id', // TODO: get from auth
+                name: programName.trim(),
+                description: programDesc.trim() || undefined,
+                isActive: true
+            });
+
+            // Then sync to server
+            await createProgramMutation.mutateAsync({
+                name: programName.trim(),
+                description: programDesc.trim() || undefined,
+            } as any);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to create program');
+        }
     }, [programName, programDesc, createProgramMutation]);
 
-    const renderItem = ({ item }: { item: Program }) => (
+    const renderItem = ({ item }: { item: any }) => (
         <Card style={{ marginVertical: tokens.spacing.sm }}>
             <TouchableOpacity onPress={() => setExpandedProgram(expandedProgram === item.id ? null : item.id)}>
                 <VStack style={{ padding: tokens.spacing.md, flex: 1 }}>
@@ -68,20 +80,12 @@ export default function ProgramsScreen() {
             </TouchableOpacity>
             {expandedProgram === item.id && (
                 <VStack style={{ padding: tokens.spacing.md, borderTopWidth: 1, borderTopColor: tokens.colors.light.border }}>
-                    {item.templates?.map(template => (
-                        <Pressable key={template.id} onPress={() => router.push(`/(app)/(trainer)/(tabs)/programs/${template.id}`)}>
-                            <Text style={styles.templateName}>{template.name}</Text>
-                        </Pressable>
-                    ))}
-                    {/* In a real app, would add a "Create Template" button here */}
+                    {/* TODO: Add templates when template repository is available */}
+                    <Text style={styles.templateName}>Templates will be shown here</Text>
                 </VStack>
             )}
         </Card>
     );
-
-    if (isLoading) {
-        return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
-    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -108,6 +112,12 @@ export default function ProgramsScreen() {
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  programs: trainerProgramRepository.observeTrainerPrograms(),
+}));
+
+export default enhance(ProgramsScreen);
 
 const styles = StyleSheet.create({
     container: { flex: 1, padding: 10 },

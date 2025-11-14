@@ -2,37 +2,38 @@ import { View, Text } from '@/components/Themed';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { VStack } from '@/components/ui/Stack';
-import { createClient } from '@/lib/api';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
+import { clientRepository } from '@/lib/repositories/clientRepository';
 
 export default function CreateClientScreen() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const router = useRouter();
-    const queryClient = useQueryClient();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const mutation = useMutation({
-        mutationFn: createClient,
-        onSuccess: () => {
-            Alert.alert('Success', 'Client has been invited.');
-            queryClient.invalidateQueries({ queryKey: ['clients'] });
-            router.back();
-        },
-        onError: (error: any) => {
-            Alert.alert('Error', error.message || 'Failed to invite client.');
-        }
-    });
-
-    const handleInvite = () => {
+    const handleInvite = async () => {
         if (!email || !name || !phone) {
             Alert.alert('Error', 'Please fill in all fields.');
             return;
         }
-        mutation.mutate({ email, name, phone });
+
+        setIsLoading(true);
+        try {
+            await clientRepository.createClient({
+                name,
+                email,
+                phone,
+            });
+            Alert.alert('Success', 'Client has been created.');
+            router.back();
+        } catch (error) {
+            Alert.alert('Error', 'Failed to create client.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -58,8 +59,8 @@ export default function CreateClientScreen() {
                     onChangeText={setPhone}
                     keyboardType="phone-pad"
                 />
-                <Button onPress={handleInvite} disabled={mutation.isPending}>
-                    {mutation.isPending ? 'Sending Invitation...' : 'Invite Client'}
+                <Button onPress={handleInvite} disabled={isLoading}>
+                    {isLoading ? 'Creating Client...' : 'Create Client'}
                 </Button>
             </VStack>
         </View>

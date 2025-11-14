@@ -1,8 +1,6 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useQuery } from '@tanstack/react-query';
-import { getTrainerProfile } from '@/lib/api';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
@@ -10,13 +8,24 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { trainerProfileRepository } from '@/lib/repositories/trainerProfileRepository';
+import withObservables from '@nozbe/with-observables';
 
-export default function ProfileScreen() {
-    const { data: profile, isLoading } = useQuery({ queryKey: ['trainerProfile'], queryFn: getTrainerProfile });
+import { useMemo } from 'react';
+import useAuthStore from '@/store/authStore';
+
+function ProfileScreen({ profiles }: { profiles: any[] }) {
     const router = useRouter();
     const tokens = useTokens();
-    
-    if (isLoading || !profile) {
+    const { user } = useAuthStore();
+
+    // Get the current user's profile
+    const profile = useMemo(() => {
+        if (!user || !profiles.length) return null;
+        return profiles.find(p => p.userId === user.id) || null;
+    }, [profiles, user]);
+
+    if (!profile) {
         return <SafeAreaView style={styles.center}><ActivityIndicator /></SafeAreaView>
     }
 
@@ -47,6 +56,12 @@ export default function ProfileScreen() {
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  profiles: trainerProfileRepository.observeTrainerProfiles(),
+}));
+
+export default enhance(ProfileScreen);
 
 const styles = StyleSheet.create({
     container: { flex: 1 },

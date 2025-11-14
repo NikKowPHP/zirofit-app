@@ -1,7 +1,5 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, Alert, ActivityIndicator, ScrollView, Image, Pressable } from 'react-native';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as api from '@/lib/api';
 import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
@@ -13,23 +11,25 @@ import PackageFormModal from '@/components/profile/PackageFormModal';
 import TestimonialFormModal from '@/components/profile/TestimonialFormModal';
 import { Card } from '@/components/ui/Card';
 import * as ImagePicker from 'expo-image-picker';
-
-import type {
-  TrainerService,
-  TrainerPackage,
-  TrainerTestimonial,
-  AddTrainerServiceRequest,
-  AddTrainerPackageRequest,
-  AddTrainerTestimonialRequest,
-  UpdateTrainerServiceRequest,
-  UpdateTrainerPackageRequest,
-  UpdateTrainerTestimonialRequest
-} from '@/lib/api/types';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { trainerProfileRepository, trainerServiceRepository, trainerPackageRepository, trainerTestimonialRepository } from '@/lib/repositories';
+import TrainerProfile from '@/lib/db/models/TrainerProfile';
+import TrainerService from '@/lib/db/models/TrainerService';
+import TrainerPackage from '@/lib/db/models/TrainerPackage';
+import TrainerTestimonial from '@/lib/db/models/TrainerTestimonial';
+import React from 'react';
 
 type Service = TrainerService;
 type Package = TrainerPackage;
 type Testimonial = TrainerTestimonial;
 type Transformation = { id: string; photo_url: string; };
+
+interface EditProfileScreenProps {
+  profile: TrainerProfile[];
+  services: TrainerService[];
+  packages: TrainerPackage[];
+  testimonials: TrainerTestimonial[];
+}
 
 // Constants
 const MODAL_ANIMATION_DURATION = 300;
@@ -39,15 +39,10 @@ const ERROR_MESSAGES = {
   UPLOAD_FAILED: 'Failed to upload photo. Please try again.',
 } as const;
 
-
-export default function EditProfileScreen() {
-    const queryClient = useQueryClient();
+function EditProfileScreen({ profile, services, packages, testimonials }: EditProfileScreenProps) {
     const tokens = useTokens();
-    
-    const { data: profile, isLoading } = useQuery({
-        queryKey: ['trainerProfile'],
-        queryFn: api.getTrainerProfile
-    });
+
+    const profileData = profile.length > 0 ? profile[0] : null;
 
     // Form states
     const [name, setName] = useState('');
@@ -65,93 +60,14 @@ export default function EditProfileScreen() {
 
     // Initialize form data when profile loads
     useEffect(() => {
-        if (profile) {
-            setName(profile.name || '');
-            setUsername(profile.username || '');
-            setCertifications((profile.certifications || []).join(', '));
-            setPhone(profile.phone || '');
+        if (profileData) {
+            setName(profileData.name || '');
+            setUsername(profileData.username || '');
+            const certs = Array.isArray(profileData.certifications) ? profileData.certifications : [];
+            setCertifications(certs.join(', '));
+            setPhone(profileData.phone || '');
         }
-    }, [profile]);
-
-    // Generic mutation options with improved error handling
-    const genericMutationOptions = useCallback((entity: string) => ({
-        onSuccess: () => {
-            Alert.alert('Success', `${entity} saved successfully.`);
-            queryClient.invalidateQueries({ queryKey: ['trainerProfile'] });
-        },
-        onError: (error: any) => {
-            const errorMessage = error?.message || ERROR_MESSAGES.SAVE_FAILED;
-            Alert.alert('Error', errorMessage);
-        },
-    }), [queryClient]);
-
-    // Core info mutation
-    const coreInfoMutation = useMutation({
-        mutationFn: api.updateProfileCoreInfo,
-        ...genericMutationOptions('Core Info')
-    });
-    
-    // Service Mutations with proper typing
-    const addServiceMutation = useMutation({
-        mutationFn: (data: AddTrainerServiceRequest) => api.addTrainerService(data),
-        ...genericMutationOptions('Service')
-    });
-    
-    const updateServiceMutation = useMutation({
-        mutationFn: (data: UpdateTrainerServiceRequest) =>
-            api.updateTrainerService(data.serviceId, data),
-        ...genericMutationOptions('Service')
-    });
-    
-    const deleteServiceMutation = useMutation({
-        mutationFn: (serviceId: string) => api.deleteTrainerService(serviceId),
-        ...genericMutationOptions('Service')
-    });
-
-    // Package Mutations with proper typing
-    const addPackageMutation = useMutation({
-        mutationFn: (data: AddTrainerPackageRequest) => api.addTrainerPackage(data),
-        ...genericMutationOptions('Package')
-    });
-    
-    const updatePackageMutation = useMutation({
-        mutationFn: (data: UpdateTrainerPackageRequest) =>
-            api.updateTrainerPackage(data.packageId, data),
-        ...genericMutationOptions('Package')
-    });
-    
-    const deletePackageMutation = useMutation({
-        mutationFn: (packageId: string) => api.deleteTrainerPackage(packageId),
-        ...genericMutationOptions('Package')
-    });
-
-    // Testimonial Mutations with proper typing
-    const addTestimonialMutation = useMutation({
-        mutationFn: (data: AddTrainerTestimonialRequest) => api.addTrainerTestimonial(data),
-        ...genericMutationOptions('Testimonial')
-    });
-    
-    const updateTestimonialMutation = useMutation({
-        mutationFn: (data: UpdateTrainerTestimonialRequest) =>
-            api.updateTrainerTestimonial(data.testimonialId, data),
-        ...genericMutationOptions('Testimonial')
-    });
-    
-    const deleteTestimonialMutation = useMutation({
-        mutationFn: (testimonialId: string) => api.deleteTrainerTestimonial(testimonialId),
-        ...genericMutationOptions('Testimonial')
-    });
-
-    // Transformation Mutations
-    const uploadPhotoMutation = useMutation({
-        mutationFn: api.uploadTransformationPhoto,
-        ...genericMutationOptions('Photo')
-    });
-    
-    const deletePhotoMutation = useMutation({
-        mutationFn: api.deleteTransformationPhoto,
-        ...genericMutationOptions('Photo')
-    });
+    }, [profileData]);
 
     // Improved handlers with better error handling
     const confirmDelete = useCallback((onConfirm: () => void, entityName: string = 'item') => {
@@ -165,6 +81,144 @@ export default function EditProfileScreen() {
         );
     }, []);
 
+    const handleSaveCoreInfo = async () => {
+        if (!profileData) return;
+        try {
+            await trainerProfileRepository.updateTrainerProfile(profileData.id, {
+                name,
+                username,
+                phone,
+                // Note: certifications would need to be handled differently since it's stored as JSON
+            });
+            Alert.alert('Success', 'Core Info saved successfully.');
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleAddService = async (data: any) => {
+        try {
+            await trainerServiceRepository.createTrainerService({
+                trainerId: profileData?.id || '',
+                name: data.name,
+                description: data.description,
+                price: data.price,
+                duration: data.duration,
+                isActive: true,
+            });
+            Alert.alert('Success', 'Service saved successfully.');
+            setServiceModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleUpdateService = async (serviceId: string, data: any) => {
+        try {
+            await trainerServiceRepository.updateTrainerService(serviceId, {
+                name: data.name,
+                description: data.description,
+                price: data.price,
+                duration: data.duration,
+            });
+            Alert.alert('Success', 'Service saved successfully.');
+            setServiceModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleDeleteService = async (serviceId: string) => {
+        try {
+            await trainerServiceRepository.deleteTrainerService(serviceId);
+            Alert.alert('Success', 'Service deleted successfully.');
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.DELETE_FAILED);
+        }
+    };
+
+    const handleAddPackage = async (data: any) => {
+        try {
+            await trainerPackageRepository.createTrainerPackage({
+                trainerId: profileData?.id || '',
+                name: data.name,
+                description: data.description,
+                price: data.price,
+                sessionsCount: data.sessionsCount,
+                durationWeeks: data.durationWeeks,
+                isActive: true,
+            });
+            Alert.alert('Success', 'Package saved successfully.');
+            setPackageModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleUpdatePackage = async (packageId: string, data: any) => {
+        try {
+            await trainerPackageRepository.updateTrainerPackage(packageId, {
+                name: data.name,
+                description: data.description,
+                price: data.price,
+                sessionsCount: data.sessionsCount,
+                durationWeeks: data.durationWeeks,
+            });
+            Alert.alert('Success', 'Package saved successfully.');
+            setPackageModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleDeletePackage = async (packageId: string) => {
+        try {
+            await trainerPackageRepository.deleteTrainerPackage(packageId);
+            Alert.alert('Success', 'Package deleted successfully.');
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.DELETE_FAILED);
+        }
+    };
+
+    const handleAddTestimonial = async (data: any) => {
+        try {
+            await trainerTestimonialRepository.createTrainerTestimonial({
+                trainerId: profileData?.id || '',
+                clientName: data.clientName,
+                content: data.content,
+                rating: data.rating,
+                isActive: true,
+            });
+            Alert.alert('Success', 'Testimonial saved successfully.');
+            setTestimonialModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleUpdateTestimonial = async (testimonialId: string, data: any) => {
+        try {
+            await trainerTestimonialRepository.updateTrainerTestimonial(testimonialId, {
+                clientName: data.clientName,
+                content: data.content,
+                rating: data.rating,
+            });
+            Alert.alert('Success', 'Testimonial saved successfully.');
+            setTestimonialModalVisible(false);
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.SAVE_FAILED);
+        }
+    };
+
+    const handleDeleteTestimonial = async (testimonialId: string) => {
+        try {
+            await trainerTestimonialRepository.deleteTrainerTestimonial(testimonialId);
+            Alert.alert('Success', 'Testimonial deleted successfully.');
+        } catch (error) {
+            Alert.alert('Error', ERROR_MESSAGES.DELETE_FAILED);
+        }
+    };
+
     const handlePickImage = useCallback(async () => {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
@@ -175,45 +229,19 @@ export default function EditProfileScreen() {
             });
 
             if (!result.canceled && result.assets[0]) {
-                const uri = result.assets[0].uri;
-                const formData = new FormData();
-                formData.append('photo', {
-                    uri,
-                    name: `photo_${Date.now()}.jpg`,
-                    type: 'image/jpeg',
-                } as any);
-                
-                uploadPhotoMutation.mutate({ formData });
+                // For now, just show that photo upload is not implemented offline
+                Alert.alert('Info', 'Photo upload will be implemented when backend sync is available.');
             }
         } catch (error) {
             Alert.alert('Error', 'Failed to pick image. Please try again.');
         }
-    }, [uploadPhotoMutation]);
+    }, []);
 
-
-    // Calculate overall loading state
-    const isAnyMutationPending = [
-        coreInfoMutation.isPending,
-        addServiceMutation.isPending,
-        updateServiceMutation.isPending,
-        deleteServiceMutation.isPending,
-        addPackageMutation.isPending,
-        updatePackageMutation.isPending,
-        deletePackageMutation.isPending,
-        addTestimonialMutation.isPending,
-        updateTestimonialMutation.isPending,
-        deleteTestimonialMutation.isPending,
-        uploadPhotoMutation.isPending,
-        deletePhotoMutation.isPending,
-    ].some(Boolean);
-
-    if (isLoading || isAnyMutationPending) {
+    if (!profileData) {
         return (
             <View style={styles.center}>
                 <ActivityIndicator size="large" />
-                <Text style={styles.loadingText}>
-                    {isLoading ? 'Loading profile...' : 'Saving changes...'}
-                </Text>
+                <Text style={styles.loadingText}>Loading profile...</Text>
             </View>
         );
     }
@@ -229,15 +257,9 @@ export default function EditProfileScreen() {
                     <Input placeholder="Certifications" value={certifications} onChangeText={setCertifications} />
                     <Input placeholder="Phone Number" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
                     <Button
-                        onPress={() => coreInfoMutation.mutate({
-                            name,
-                            username,
-                            certifications: certifications.split(',').map(s => s.trim()).filter(s => s),
-                            phone
-                        })}
-                        disabled={coreInfoMutation.isPending}
+                        onPress={handleSaveCoreInfo}
                     >
-                        {coreInfoMutation.isPending ? 'Saving...' : 'Save Core Info'}
+                        Save Core Info
                     </Button>
                 </VStack>
 
@@ -246,7 +268,7 @@ export default function EditProfileScreen() {
                 {/* Services */}
                 <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
                     <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Services</UIText>
-                    {profile?.services?.map((s: Service) => (
+                    {services?.map((s: Service) => (
                         <Card key={s.id}>
                             <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                 <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
@@ -258,10 +280,9 @@ export default function EditProfileScreen() {
                                     <Button onPress={() => { setSelectedService(s); setServiceModalVisible(true); }}>Edit</Button>
                                     <Button
                                         variant="danger"
-                                        onPress={() => confirmDelete(() => deleteServiceMutation.mutate(s.id), 'service')}
-                                        disabled={deleteServiceMutation.isPending}
+                                        onPress={() => confirmDelete(() => handleDeleteService(s.id), 'service')}
                                     >
-                                        {deleteServiceMutation.isPending ? 'Deleting...' : 'Delete'}
+                                        Delete
                                     </Button>
                                 </VStack>
                             </HStack>
@@ -275,7 +296,7 @@ export default function EditProfileScreen() {
                 {/* Packages */}
                 <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
                     <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Packages</UIText>
-                    {profile?.packages?.map((p: Package) => (
+                    {packages?.map((p: Package) => (
                         <Card key={p.id}>
                             <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                 <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
@@ -287,10 +308,9 @@ export default function EditProfileScreen() {
                                     <Button onPress={() => { setSelectedPackage(p); setPackageModalVisible(true); }}>Edit</Button>
                                     <Button
                                         variant="danger"
-                                        onPress={() => confirmDelete(() => deletePackageMutation.mutate(p.id), 'package')}
-                                        disabled={deletePackageMutation.isPending}
+                                        onPress={() => confirmDelete(() => handleDeletePackage(p.id), 'package')}
                                     >
-                                        {deletePackageMutation.isPending ? 'Deleting...' : 'Delete'}
+                                        Delete
                                     </Button>
                                 </VStack>
                             </HStack>
@@ -304,21 +324,20 @@ export default function EditProfileScreen() {
                 {/* Testimonials */}
                  <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
                     <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Testimonials</UIText>
-                    {profile?.testimonials?.map((t: Testimonial) => (
+                    {testimonials?.map((t: Testimonial) => (
                          <Card key={t.id}>
                             <HStack style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                                 <VStack style={{ flex: 1, marginRight: tokens.spacing.sm }}>
                                     <Text style={styles.itemName}>"{t.content}"</Text>
-                                    <Text style={styles.itemDetails}>- {t.client_name}</Text>
+                                    <Text style={styles.itemDetails}>- {t.clientName}</Text>
                                 </VStack>
                                 <VStack style={{ gap: tokens.spacing.sm }}>
                                     <Button onPress={() => { setSelectedTestimonial(t); setTestimonialModalVisible(true); }}>Edit</Button>
                                     <Button
                                         variant="danger"
-                                        onPress={() => confirmDelete(() => deleteTestimonialMutation.mutate(t.id), 'testimonial')}
-                                        disabled={deleteTestimonialMutation.isPending}
+                                        onPress={() => confirmDelete(() => handleDeleteTestimonial(t.id), 'testimonial')}
                                     >
-                                        {deleteTestimonialMutation.isPending ? 'Deleting...' : 'Delete'}
+                                        Delete
                                     </Button>
                                 </VStack>
                             </HStack>
@@ -333,25 +352,16 @@ export default function EditProfileScreen() {
                 <VStack style={{ gap: tokens.spacing.md, width: '90%', padding: tokens.spacing.lg }}>
                     <UIText variant="h3" style={{ textAlign: 'center' }}>Manage Transformation Photos</UIText>
                     <View style={styles.photoGrid}>
-                        {profile?.transformations?.map((photo: Transformation) => (
-                            <View key={photo.id} style={styles.photoContainer}>
-                                <Image source={{ uri: photo.photo_url }} style={styles.photo} />
-                                <Pressable
-                                    style={styles.deleteIcon}
-                                    onPress={() => confirmDelete(() => deletePhotoMutation.mutate(photo.id), 'photo')}
-                                    disabled={deletePhotoMutation.isPending}
-                                >
-                                    <Text style={{color: 'white'}}>{deletePhotoMutation.isPending ? '...' : 'X'}</Text>
-                                </Pressable>
-                            </View>
-                        ))}
+                        {/* Transformation photos would be implemented when backend sync is available */}
+                        <Text style={{ textAlign: 'center', padding: tokens.spacing.lg }}>
+                            Photo management will be available when backend sync is implemented.
+                        </Text>
                     </View>
                     <Button
                         onPress={handlePickImage}
                         style={{ marginTop: tokens.spacing.md }}
-                        disabled={uploadPhotoMutation.isPending}
                     >
-                        {uploadPhotoMutation.isPending ? "Uploading..." : "Upload Photo"}
+                        Upload Photo (Coming Soon)
                     </Button>
                 </VStack>
 
@@ -363,42 +373,39 @@ export default function EditProfileScreen() {
                 onClose={() => setServiceModalVisible(false)}
                 onSubmit={(data) => {
                     if (selectedService) {
-                        updateServiceMutation.mutate({ serviceId: selectedService.id, ...data });
+                        handleUpdateService(selectedService.id, data);
                     } else {
-                        addServiceMutation.mutate(data as any);
+                        handleAddService(data);
                     }
-                    setServiceModalVisible(false);
                 }}
                 initialData={selectedService}
-                isSubmitting={addServiceMutation.isPending || updateServiceMutation.isPending}
+                isSubmitting={false}
             />
             <PackageFormModal
                 isVisible={isPackageModalVisible}
                 onClose={() => setPackageModalVisible(false)}
                 onSubmit={(data) => {
                     if (selectedPackage) {
-                        updatePackageMutation.mutate({ packageId: selectedPackage.id, ...data });
+                        handleUpdatePackage(selectedPackage.id, data);
                     } else {
-                        addPackageMutation.mutate(data as any);
+                        handleAddPackage(data);
                     }
-                    setPackageModalVisible(false);
                 }}
                 initialData={selectedPackage}
-                isSubmitting={addPackageMutation.isPending || updatePackageMutation.isPending}
+                isSubmitting={false}
             />
             <TestimonialFormModal
                 isVisible={isTestimonialModalVisible}
                 onClose={() => setTestimonialModalVisible(false)}
                 onSubmit={(data) => {
                     if (selectedTestimonial) {
-                        updateTestimonialMutation.mutate({ testimonialId: selectedTestimonial.id, ...data });
+                        handleUpdateTestimonial(selectedTestimonial.id, data);
                     } else {
-                        addTestimonialMutation.mutate(data as any);
+                        handleAddTestimonial(data);
                     }
-                    setTestimonialModalVisible(false);
                 }}
                 initialData={selectedTestimonial}
-                isSubmitting={addTestimonialMutation.isPending || updateTestimonialMutation.isPending}
+                isSubmitting={false}
             />
         </>
     );
@@ -416,4 +423,19 @@ const styles = StyleSheet.create({
   photo: { width: 100, height: 100, borderRadius: 8, backgroundColor: '#eee' },
   deleteIcon: { position: 'absolute', top: 2, right: 2, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 12, width: 24, height: 24, justifyContent: 'center', alignItems: 'center' }
 });
-      
+
+// Wrap component with withObservables for reactive data
+const enhance = (WrappedComponent: React.ComponentType<any>) => {
+    return (props: any) => {
+        const EnhancedComponent = withObservables([], () => ({
+            profile: trainerProfileRepository.observeTrainerProfiles(),
+            services: trainerServiceRepository.observeTrainerServices(),
+            packages: trainerPackageRepository.observeTrainerPackages(),
+            testimonials: trainerTestimonialRepository.observeTrainerTestimonials(),
+        }))(WrappedComponent);
+
+        return <EnhancedComponent {...props} />;
+    };
+};
+
+export default enhance(EditProfileScreen);

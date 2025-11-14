@@ -3,45 +3,65 @@ import { StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { VStack, HStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
-import { useQuery } from '@tanstack/react-query';
-import { getProgressData, getClientAssessments } from '@/lib/api';
 import { VictoryChart, VictoryLine, VictoryAxis } from 'victory-native';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import type { ProgressData, ClientAssessment } from '@/lib/api/types';
 import useAuthStore from '@/store/authStore';
 import { useTheme, useTokens } from '@/hooks/useTheme';
+import { clientMeasurementRepository } from '@/lib/repositories/clientMeasurementRepository';
+import { clientAssessmentRepository } from '@/lib/repositories/clientAssessmentRepository';
+import withObservables from '@nozbe/with-observables';
+import { combineLatest, map } from 'rxjs/operators';
+import { of, combineLatest as combineLatestStatic } from 'rxjs';
 
 type Metric = 'weight' | 'bodyfat';
 type ActiveTab = Metric | 'assessments';
 
-export default function MyProgressScreen() {
+function MyProgressScreen({ measurements, assessments }: {
+  measurements: any[],
+  assessments: any[]
+}) {
     const [activeTab, setActiveTab] = useState<ActiveTab>('weight');
-    const { profile } = useAuthStore();
+    const { user } = useAuthStore();
     const theme = useTheme();
     const tokens = useTokens();
 
-    const { data: progressData, isLoading: isProgressLoading } = useQuery<ProgressData>({ 
-        queryKey: ['progressData'], 
-        queryFn: () => getProgressData(),
-        enabled: activeTab === 'weight' || activeTab === 'bodyfat',
-    });
+    // Filter data for current user
+    const userMeasurements = useMemo(() => {
+        if (!user?.id) return [];
+        return measurements.filter(m => m.clientId === user.id);
+    }, [measurements, user?.id]);
 
-    const { data: assessments, isLoading: areAssessmentsLoading } = useQuery<ClientAssessment[]>({
-        queryKey: ['assessments', profile?.id],
-        queryFn: ({ queryKey }) => getClientAssessments(queryKey[1] as string),
-        enabled: activeTab === 'assessments' && !!profile?.id,
-    });
+    const userAssessments = useMemo(() => {
+        if (!user?.id) return [];
+        return assessments.filter(a => a.clientId === user.id);
+    }, [assessments, user?.id]);
+
+    // Create chart data from measurements
+    const progressData = useMemo(() => {
+        const weightData = userMeasurements
+            .filter(m => m.measurementType === 'weight')
+            .sort((a, b) => a.measuredAt - b.measuredAt)
+            .map((m, index) => ({ x: index, y: m.value, date: new Date(m.measuredAt) }));
+
+        const bodyFatData = userMeasurements
+            .filter(m => m.measurementType === 'body_fat')
+            .sort((a, b) => a.measuredAt - b.measuredAt)
+            .map((m, index) => ({ x: index, y: m.value, date: new Date(m.measuredAt) }));
+
+        return {
+            weight: weightData,
+            bodyfat: bodyFatData
+        };
+    }, [userMeasurements]);
 
     const renderChart = () => {
-        if (isProgressLoading) {
-            return <ActivityIndicator />;
-        }
-        if (!progressData || !progressData[activeTab as keyof ProgressData] || (progressData as any)[activeTab]?.length === 0) {
+        if (!progressData[activeTab as 'weight' | 'bodyfat'] || progressData[activeTab as 'weight' | 'bodyfat'].length === 0) {
             return <Text>No {activeTab} data logged yet.</Text>;
         }
 
-        const data = (progressData as any)[activeTab].map((d: any, index: number) => ({ x: index, y: d.value }));
+        const data = progressData[activeTab as 'weight' | 'bodyfat'];
 
         return (
             <VictoryChart height={200} padding={{ top: 20, bottom: 60, left: 60, right: 20 }}>
@@ -53,31 +73,45 @@ export default function MyProgressScreen() {
     };
 
     const renderAssessments = () => {
-        if (areAssessmentsLoading) {
-            return <ActivityIndicator />;
-        }
-        if (!assessments || (assessments as any[]).length === 0) {
+        if (!userAssessments || userAssessments.length === 0) {
             return <Text>No assessments found.</Text>;
         }
 
         return (
             <ScrollView style={{width: '100%'}}>
                 <VStack style={{ gap: 12 }}>
-                    {(assessments as any[]).map((assessment: any) => (
+                    {userAssessments.map((assessment: any) => (
                         <Card key={assessment.id} style={{ padding: 12 }}>
-                            <UIText variant="h5">{assessment.name}</UIText>
-                            <Text style={styles.dateText}>{new Date(assessment.date).toDateString()}</Text>
-                             {(assessment.metrics as any[]).map((metric: any) => (
-                                <HStack key={metric.id} style={{ justifyContent: 'space-between', marginVertical: 4 }}>
-                                    <Text>{metric.name}:</Text>
-                                    <Text style={styles.metricValue}>{metric.value} {metric.unit}</Text>
+                            <UIText variant="h5">Assessment</UIText>
+                            <Text style={styles.dateText}>{new Date(assessment.assessmentDate).toDateString()}</Text>
+                            {assessment.weight && (
+                                <HStack style={{ justifyContent: 'space-between', marginVertical: 4 }}>
+                                    <Text>Weight:</Text>
+                                    <Text style={styles.metricValue}>{assessment.weight} kg</Text>
                                 </HStack>
-                            ))}
+                            )}
+                            {assessment.bodyFatPercentage && (
+                                <HStack style={{ justifyContent: 'space-between', marginVertical: 4 }}>
+                                    <Text>Body Fat:</Text>
+                                    <Text style={styles.metricValue}>{assessment.bodyFatPercentage}%</Text>
+                                </HStack>
+                            )}
+                            {assessment.notes && (
+                                <Text style={{ marginTop: 8, fontStyle: 'italic' }}>{assessment.notes}</Text>
+                            )}
                         </Card>
                     ))}
                 </VStack>
             </ScrollView>
         )
+    }
+
+    if (!user?.id) {
+        return (
+            <SafeAreaView style={styles.container}>
+                <ActivityIndicator />
+            </SafeAreaView>
+        );
     }
 
     return (
@@ -110,6 +144,13 @@ export default function MyProgressScreen() {
         </SafeAreaView>
     );
 }
+
+const enhance = withObservables([], () => ({
+  measurements: clientMeasurementRepository.observeClientMeasurements(),
+  assessments: clientAssessmentRepository.observeClientAssessments(),
+}));
+
+export default enhance(MyProgressScreen);
 
 const styles = StyleSheet.create({
     container: { flex: 1 },
