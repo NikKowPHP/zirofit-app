@@ -1,29 +1,20 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Session, User } from '@supabase/supabase-js';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
-export type UserProfile = {
-  // This should match your backend's profile structure
+export type AuthUser = {
   id: string;
-  role: 'client' | 'trainer';
-  is_google_user?: boolean;
-  google_user_data?: {
-    id: string;
-    email: string;
-    name: string;
-    picture?: string;
-  };
+  email: string;
+  name?: string;
   [key: string]: any; // Allow other properties
 };
 
 type AuthState = {
   session: Session | null;
   user: User | null;
-  profile: UserProfile | null;
   authenticationState: 'loading' | 'authenticated' | 'unauthenticated';
   setSession: (session: Session | null) => void;
-  setProfile: (profile: UserProfile | null) => void;
 };
 
 const useAuthStore = create<AuthState>()(
@@ -35,25 +26,20 @@ const useAuthStore = create<AuthState>()(
       authenticationState: 'loading',
       setSession: (session) => {
         set((state) => {
-            // If the user ID changes (or on logout), clear the profile to force a refetch.
-            const profile = state.user?.id === session?.user?.id ? state.profile : null;
             return {
                 session,
                 user: session?.user ?? null,
-                profile,
                 authenticationState: session ? 'authenticated' : 'unauthenticated',
             };
         });
       },
-      setProfile: (profile) => set({ profile }),
     }),
     {
       name: 'auth-storage', // unique name
       storage: createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ 
+      partialize: (state) => ({
         session: state.session,
-        user: state.user,
-        profile: state.profile
+        user: state.user
        }), // Only persist these fields
        onRehydrateStorage: () => (state) => {
         if (state) {

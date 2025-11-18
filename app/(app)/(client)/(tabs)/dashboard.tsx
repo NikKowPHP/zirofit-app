@@ -1,25 +1,19 @@
-import { useEffect, useMemo } from 'react';
-import { View, Text } from '@/components/Themed';
-import { ActivityIndicator, Alert } from 'react-native';
+import { Text } from '@/components/Themed';
+import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
+import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
+import { Screen } from '@/components/ui/Screen';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
-import { Screen } from '@/components/ui/Screen';
-import UpcomingSessions from '@/components/dashboard/UpcomingSessions';
-import FindTrainerPrompt from '@/components/dashboard/FindTrainerPrompt';
-import { router } from 'expo-router';
-import useAuthStore from '@/store/authStore';
 import { clientDashboardRepository } from '@/lib/repositories/clientDashboardRepository';
+import useAuthStore from '@/store/authStore';
 import withObservables from '@nozbe/with-observables';
+import { router } from 'expo-router';
+import { ActivityIndicator } from 'react-native';
 
 function DashboardScreen({ dashboardData }: { dashboardData: any }) {
-    const { authenticationState, profile, user } = useAuthStore();
+    const { authenticationState, user } = useAuthStore();
 
-    // Handle redirect for non-client users
-    useEffect(() => {
-        if (authenticationState === 'authenticated' && profile?.role !== 'client') {
-            router.replace('/(app)/(trainer)');
-        }
-    }, [authenticationState, profile?.role]);
+    // Role should be determined during authentication flow in app index
 
     // If not authenticated, show login prompt
     if (authenticationState === 'unauthenticated') {

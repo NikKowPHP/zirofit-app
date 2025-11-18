@@ -1,5 +1,5 @@
 import { Model } from '@nozbe/watermelondb'
-import { text, field, readonly } from '@nozbe/watermelondb/decorators'
+import { field, readonly, text } from '@nozbe/watermelondb/decorators'
 
 export default class TrainerProfile extends Model {
   static table = 'trainer_profiles'
@@ -16,7 +16,6 @@ export default class TrainerProfile extends Model {
   @text('website') website?: string
   @text('avatar_url') avatarUrl?: string
   @text('social_links') socialLinks?: string // JSON
-  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

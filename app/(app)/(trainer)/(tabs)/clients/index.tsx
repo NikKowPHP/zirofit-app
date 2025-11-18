@@ -56,7 +56,7 @@ function ClientsScreen({ clients }: { clients: any[] }) {
     }, [navigation, router]);
 
     const renderItem = ({ item }: { item: Client }) => (
-        <Pressable onPress={() => router.push(`/client/${item.id}`)}>
+        <Pressable onPress={() => router.push(`/(app)/(trainer)/(tabs)/clients/${item.id}`)}>
             <Card style={{ padding: tokens.spacing.md, marginVertical: tokens.spacing.sm }}>
                 <HStack style={{ gap: tokens.spacing.md, alignItems: 'center' }}>
                     <View style={styles.avatarContainer}>

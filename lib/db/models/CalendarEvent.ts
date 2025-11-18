@@ -1,5 +1,5 @@
 import { Model } from '@nozbe/watermelondb'
-import { text, field, readonly } from '@nozbe/watermelondb/decorators'
+import { field, readonly, text } from '@nozbe/watermelondb/decorators'
 
 export default class CalendarEvent extends Model {
   static table = 'calendar_events'

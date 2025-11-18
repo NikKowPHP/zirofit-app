@@ -1,5 +1,5 @@
-import useAuthStore from './authStore';
 import { act } from '@testing-library/react-native';
+import useAuthStore from './authStore';
 
 // Mock Supabase session
 const mockSession = {
@@ -46,14 +46,24 @@ describe('authStore', () => {
         expect(state.authenticationState).toBe('unauthenticated');
     });
 
-    it('should set the user profile', () => {
-        const mockProfile = { id: '123', role: 'client' as const, name: 'John Doe' };
-        
+    it('should handle session changes correctly', () => {
+        // Test that clearing session also clears user and sets unauthenticated state
         act(() => {
-            useAuthStore.getState().setProfile(mockProfile);
+            useAuthStore.getState().setSession(mockSession);
         });
-
-        expect(useAuthStore.getState().profile).toEqual(mockProfile);
+        
+        let state = useAuthStore.getState();
+        expect(state.authenticationState).toBe('authenticated');
+        expect(state.user).toEqual(mockSession.user);
+        
+        // Clear session
+        act(() => {
+            useAuthStore.getState().setSession(null);
+        });
+        
+        state = useAuthStore.getState();
+        expect(state.authenticationState).toBe('unauthenticated');
+        expect(state.user).toBeNull();
     });
 });
       

@@ -83,4 +83,18 @@ export const trainerProfileRepository = {
       })
     })
   },
+
+  // Utility function to get the current user's trainer profile
+  getTrainerProfileByUserId: async (userId: string) => {
+    try {
+      const profiles = await trainerProfilesCollection.query(
+        Q.where('user_id', userId),
+        Q.where('deleted_at', Q.eq(null))
+      ).fetch()
+      return profiles.length > 0 ? profiles[0] : null
+    } catch (error) {
+      console.error('Error fetching current user trainer profile:', error)
+      return null
+    }
+  }
 }

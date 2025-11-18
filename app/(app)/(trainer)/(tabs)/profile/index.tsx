@@ -1,25 +1,25 @@
-import { View, Text } from '@/components/Themed';
-import { StyleSheet, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Text, View } from '@/components/Themed';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { useRouter } from 'expo-router';
-import { supabase } from '@/lib/supabase';
 import { trainerProfileRepository } from '@/lib/repositories/trainerProfileRepository';
+import { supabase } from '@/lib/supabase';
 import withObservables from '@nozbe/with-observables';
+import { useRouter } from 'expo-router';
+import { ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { useMemo } from 'react';
 import useAuthStore from '@/store/authStore';
+import { useMemo } from 'react';
 
 function ProfileScreen({ profiles }: { profiles: any[] }) {
     const router = useRouter();
     const tokens = useTokens();
     const { user } = useAuthStore();
 
-    // Get the current user's profile
+    // Get the current user's profile from local DB
     const profile = useMemo(() => {
         if (!user || !profiles.length) return null;
         return profiles.find(p => p.userId === user.id) || null;

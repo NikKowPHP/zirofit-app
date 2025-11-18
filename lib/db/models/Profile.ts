@@ -18,7 +18,6 @@ export default class Profile extends Model {
   @field('average_rating') averageRating?: number
   @text('availability') availability?: string // JSON
   @field('min_service_price') minServicePrice?: number
-  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

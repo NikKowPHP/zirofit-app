@@ -1,8 +1,6 @@
 import { View, Text } from '@/components/Themed';
 import { StyleSheet, ActivityIndicator, Pressable, Alert, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation } from '@tanstack/react-query';
-import { createProgram } from '@/lib/api';
 import { VStack } from '@/components/ui/Stack';
 import { Text as UIText } from '@/components/ui/Text';
 import { useTokens } from '@/hooks/useTheme';
@@ -12,38 +10,25 @@ import { useRouter } from 'expo-router';
 import { useState, useCallback } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import type { TrainerProgram } from '@/lib/api.types';
-import type { CreateProgramRequest } from '@/lib/api/types/request';
 import { trainerProgramRepository } from '@/lib/repositories/trainerProgramRepository';
 import withObservables from '@nozbe/with-observables';
+import useAuthStore from '@/store/authStore';
 
 // Constants
 const ERROR_MESSAGES = {
   CREATE_FAILED: 'Failed to create program. Please try again.',
 } as const;
 
-type Program = TrainerProgram;
-type Template = { id: string, name: string };
-
 function ProgramsScreen({ programs }: { programs: any[] }) {
     const router = useRouter();
     const tokens = useTokens();
+    const { user } = useAuthStore();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [programName, setProgramName] = useState('');
     const [programDesc, setProgramDesc] = useState('');
     const [expandedProgram, setExpandedProgram] = useState<string | null>(null);
-
-    const createProgramMutation = useMutation({
-        mutationFn: createProgram,
-        onSuccess: () => {
-            Alert.alert('Success', 'Program created!');
-            setModalVisible(false);
-            setProgramName('');
-            setProgramDesc('');
-        },
-        onError: (e: any) => Alert.alert('Error', e.message || ERROR_MESSAGES.CREATE_FAILED),
-    });
+    const [isCreating, setIsCreating] = useState(false);
 
     const handleCreateProgram = useCallback(async () => {
         if (!programName.trim()) {
@@ -51,24 +36,32 @@ function ProgramsScreen({ programs }: { programs: any[] }) {
             return;
         }
 
+        if (!user?.id) {
+            Alert.alert('Error', 'User not authenticated.');
+            return;
+        }
+
+        setIsCreating(true);
         try {
-            // Create locally first for optimistic update
+            // Create locally - sync service will handle server sync
             await trainerProgramRepository.createTrainerProgram({
-                trainerId: 'current-trainer-id', // TODO: get from auth
+                trainerId: user.id,
                 name: programName.trim(),
                 description: programDesc.trim() || undefined,
                 isActive: true
             });
 
-            // Then sync to server
-            await createProgramMutation.mutateAsync({
-                name: programName.trim(),
-                description: programDesc.trim() || undefined,
-            } as any);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to create program');
+            Alert.alert('Success', 'Program created!');
+            setModalVisible(false);
+            setProgramName('');
+            setProgramDesc('');
+        } catch (error: any) {
+            console.error('Error creating program:', error);
+            Alert.alert('Error', error.message || ERROR_MESSAGES.CREATE_FAILED);
+        } finally {
+            setIsCreating(false);
         }
-    }, [programName, programDesc, createProgramMutation]);
+    }, [programName, programDesc, user?.id]);
 
     const renderItem = ({ item }: { item: any }) => (
         <Card style={{ marginVertical: tokens.spacing.sm }}>
@@ -104,8 +97,8 @@ function ProgramsScreen({ programs }: { programs: any[] }) {
                 <VStack style={{ gap: tokens.spacing.md }}>
                     <Input placeholder="Program Name" value={programName} onChangeText={setProgramName} />
                     <Input placeholder="Description (optional)" value={programDesc} onChangeText={setProgramDesc} />
-                    <Button onPress={handleCreateProgram} disabled={createProgramMutation.isPending}>
-                        {createProgramMutation.isPending ? 'Creating...' : 'Create Program'}
+                    <Button onPress={handleCreateProgram} disabled={isCreating}>
+                        {isCreating ? 'Creating...' : 'Create Program'}
                     </Button>
                 </VStack>
             </Modal>

@@ -296,8 +296,8 @@ export class SyncService {
       ).fetch()
 
       if (changedRecords.length > 0) {
-        const created = changedRecords.filter(r => r.syncStatus === 'created').map(r => this.transformRecordForAPI(r))
-        const updated = changedRecords.filter(r => r.syncStatus === 'updated').map(r => this.transformRecordForAPI(r))
+        const created = changedRecords.filter(r => r.syncStatus === 'created').map(r => this.transformRecordForAPI(r, tableName))
+        const updated = changedRecords.filter(r => r.syncStatus === 'updated').map(r => this.transformRecordForAPI(r, tableName))
         const deleted = changedRecords.filter(r => r.syncStatus === 'deleted').map(r => r.id)
 
         changes[tableName] = { created, updated, deleted }
@@ -364,7 +364,7 @@ export class SyncService {
     return transformed
   }
 
-  private transformRecordForAPI(record: any): any {
+  private transformRecordForAPI(record: any, tableName?: string): any {
     // Helper function to convert snake_case to camelCase
     const toCamelCase = (str: string): string => {
       return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
@@ -372,16 +372,65 @@ export class SyncService {
 
     // Use _raw as the primary source - it contains actual database values without circular references
     const rawRecord = record._raw || {}
+    // Get table name from parameter, record's collection, or model class
+    const actualTableName = tableName || record.collection?.table || record.modelClass?.table || ''
     
     // Properties to exclude (WatermelonDB internals)
     const excludeProps = new Set([
       '_status',
       '_changed',
       'sync_status', // We don't want to send sync status to the server
+      '_table',
     ])
 
     const transformed: any = {
       id: record.id || rawRecord.id,
+    }
+
+    // Special transformation for client_measurements to match backend schema
+    if (actualTableName === 'client_measurements') {
+      const measurementType = rawRecord.measurement_type || record.measurementType
+      const value = rawRecord.value || record.value
+      const unit = rawRecord.unit || record.unit
+      const measuredAt = rawRecord.measured_at || record.measuredAt
+      const notes = rawRecord.notes || record.notes
+      const clientId = rawRecord.client_id || record.clientId
+
+      // Convert timestamp to ISO date string for measurementDate
+      const measurementDate = measuredAt ? new Date(measuredAt).toISOString().split('T')[0] : null
+
+      transformed.clientId = clientId
+      transformed.measurementDate = measurementDate
+      transformed.notes = notes || null
+
+      // Transform based on measurement type
+      if (measurementType === 'weight') {
+        // Convert value to weightKg (convert to kg if needed)
+        let weightKg = value
+        if (unit && unit.toLowerCase() !== 'kg') {
+          // Convert lbs to kg
+          if (unit.toLowerCase() === 'lbs' || unit.toLowerCase() === 'lb') {
+            weightKg = value * 0.453592
+          }
+          // Add other conversions as needed
+        }
+        transformed.weightKg = weightKg
+        transformed.bodyFatPercentage = null
+      } else if (measurementType === 'body_fat' || measurementType === 'bodyFat') {
+        transformed.bodyFatPercentage = value
+        transformed.weightKg = null
+      } else {
+        // Store other measurement types in customMetrics
+        transformed.customMetrics = JSON.stringify([{
+          name: measurementType,
+          value: value.toString(),
+          unit: unit || ''
+        }])
+        transformed.weightKg = null
+        transformed.bodyFatPercentage = null
+      }
+
+      return transformed
     }
 
     // Extract all fields from _raw (these are the actual database values)

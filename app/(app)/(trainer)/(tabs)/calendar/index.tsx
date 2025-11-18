@@ -3,8 +3,6 @@ import { StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import { useMemo } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, DateData } from 'react-native-calendars';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { planSession } from '@/lib/api';
 import { useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -16,40 +14,14 @@ import { calendarEventRepository } from '@/lib/repositories/calendarEventReposit
 import { clientRepository } from '@/lib/repositories/clientRepository';
 import { trainerProgramRepository } from '@/lib/repositories/trainerProgramRepository';
 import withObservables from '@nozbe/with-observables';
-
-const extractArray = (response: unknown): any[] => {
-    if (Array.isArray(response)) {
-        return response;
-    }
-
-    if (response && typeof response === 'object') {
-        const record = response as Record<string, unknown>;
-
-        const data = record['data'];
-        if (Array.isArray(data)) {
-            return data as any[];
-        }
-
-        const items = record['items'];
-        if (Array.isArray(items)) {
-            return items as any[];
-        }
-
-        const events = record['events'];
-        if (Array.isArray(events)) {
-            return events as any[];
-        }
-    }
-
-    return [];
-};
+import useAuthStore from '@/store/authStore';
 
 function CalendarScreen({ calendarEvents, clients, programs }: { 
   calendarEvents: any[], 
   clients: any[], 
   programs: any[] 
 }) {
-    const queryClient = useQueryClient();
+    const { user } = useAuthStore();
     const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM format
     const tokens = useTokens();
 
@@ -99,15 +71,7 @@ function CalendarScreen({ calendarEvents, clients, programs }: {
         return events.filter((event: any) => event.start.split('T')[0] === selectedDate);
     }, [selectedDate, events]);
 
-    const planSessionMutation = useMutation({
-        mutationFn: planSession,
-        onSuccess: () => {
-            Alert.alert("Success", "Session planned successfully.");
-        },
-        onError: (e: any) => {
-            Alert.alert("Error", e.message);
-        }
-    })
+    const [isSaving, setIsSaving] = useState(false);
 
     const openModal = (date: DateData) => {
         setSelectedDate(date.dateString);
@@ -143,12 +107,18 @@ function CalendarScreen({ calendarEvents, clients, programs }: {
         if (!sessionNotes || !selectedClient) {
             Alert.alert("Missing Info", "Please provide notes and select a client.");
             return;
-        };
+        }
+
+        if (!user?.id) {
+            Alert.alert("Error", "User not authenticated.");
+            return;
+        }
         
+        setIsSaving(true);
         try {
-            // Create locally first for optimistic update
+            // Create locally - sync service will handle server sync
             await calendarEventRepository.createCalendarEvent({
-                trainerId: 'current-trainer-id', // TODO: get from auth
+                trainerId: user.id,
                 clientId: selectedClient,
                 title: `Session with ${clients.find(c => c.id === selectedClient)?.name}`,
                 startTime: new Date(selectedDate + 'T10:00:00').getTime(), // Default 10 AM
@@ -159,17 +129,13 @@ function CalendarScreen({ calendarEvents, clients, programs }: {
                 templateId: selectedTemplate || undefined
             });
             
-            // Then sync to server
-            await planSessionMutation.mutateAsync({ 
-                date: selectedDate, 
-                notes: sessionNotes,
-                clientId: selectedClient,
-                templateId: selectedTemplate,
-            });
-            
+            Alert.alert("Success", "Session planned successfully.");
             closeModal();
-        } catch (error) {
-            Alert.alert("Error", "Failed to plan session");
+        } catch (error: any) {
+            console.error('Error planning session:', error);
+            Alert.alert("Error", error.message || "Failed to plan session");
+        } finally {
+            setIsSaving(false);
         }
     }
 
@@ -214,8 +180,8 @@ function CalendarScreen({ calendarEvents, clients, programs }: {
                         <UIText variant="body">{selectedTemplate ? programs.find(p => p.id === selectedTemplate)?.name : 'Select a program'}</UIText>
                     </TouchableOpacity>
 
-                    <Button onPress={handlePlanSession} disabled={planSessionMutation.isPending}>
-                        {planSessionMutation.isPending ? 'Saving...' : 'Save Session'}
+                    <Button onPress={handlePlanSession} disabled={isSaving}>
+                        {isSaving ? 'Saving...' : 'Save Session'}
                     </Button>
                 </VStack>
             </Modal>
