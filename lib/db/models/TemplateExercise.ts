@@ -1,24 +1,21 @@
 import { Model } from '@nozbe/watermelondb'
-import { text, field, readonly, relation } from '@nozbe/watermelondb/decorators'
-import Exercise from './Exercise'
+import { field, readonly, text } from '@nozbe/watermelondb/decorators'
 
 export default class TemplateExercise extends Model {
   static table = 'template_exercises'
 
-  static associations = {
-    exercises: { type: 'belongs_to' as const, key: 'exercise_id' },
-  }
-
   @text('template_id') templateId!: string
   @text('exercise_id') exerciseId!: string
-  @text('notes') notes?: string
-  @field('order') order?: number
   @text('sets') sets?: string // JSON string
-  @text('sync_status') syncStatus?: string
+  @text('repetitions') repetitions?: string // JSON string
+  @text('weight') weight?: string // JSON string
+  @text('rest_time') restTime?: string // JSON string
+  @field('order') order!: number
+  @text('notes') notes?: string
+  @text('intensity_level') intensityLevel?: string
+  @text('target_rpe') targetRpe?: string // Rate of Perceived Exertion
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number
   @field('deleted_at') deletedAt?: number
-
-  @relation('exercises', 'exercise_id') exercise!: Exercise
 }

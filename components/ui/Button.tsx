@@ -1,10 +1,11 @@
+import { ReactNode } from 'react';
 import { Platform, TouchableOpacity, StyleSheet, Text, TouchableOpacityProps, TextStyle, ViewStyle } from 'react-native';
 import { useTheme, useTokens } from '@/hooks/useTheme';
 import { triggerHaptic } from '@/lib/haptics';
 
 interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost';
-  children: string;
+  children: ReactNode;
 }
 
 export function Button({ variant = 'primary', children, style, ...props }: ButtonProps) {

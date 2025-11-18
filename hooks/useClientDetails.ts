@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { clientRepository } from '@/lib/repositories/clientRepository';
-import { database } from '@/lib/db';
 import type { Client } from '@/lib/api/types';
+import { database } from '@/lib/db';
 import ClientModel from '@/lib/db/models/Client';
+import { clientRepository } from '@/lib/repositories/clientRepository';
+import { useEffect, useState } from 'react';
 
 export function useClientDetails(clientId: string) {
   const [data, setData] = useState<ClientModel | null>(null);

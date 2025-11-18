@@ -42,7 +42,6 @@ export const clientRepository = {
         client.emergencyContactPhone = data.emergencyContactPhone
         client.status = data.status
         client.trainerId = data.trainerId
-        client.syncStatus = 'created'
       })
     })
   },
@@ -66,10 +65,7 @@ export const clientRepository = {
       const client = await clientsCollection.find(id)
       await client.update(record => {
         Object.assign(record, updates)
-        // Mark as needing sync to server if not already synced
-        if (record.syncStatus === 'synced') {
-          record.syncStatus = 'updated'
-        }
+        // Note: sync status is handled automatically by WatermelonDB
       })
     })
   },
@@ -79,8 +75,7 @@ export const clientRepository = {
       const client = await clientsCollection.find(id)
       await client.update(record => {
         record.deletedAt = Date.now()
-        // Mark as needing sync to server
-        record.syncStatus = 'deleted'
+        // Note: sync status is handled automatically by WatermelonDB
       })
     })
   },

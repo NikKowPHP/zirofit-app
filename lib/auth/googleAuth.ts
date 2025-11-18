@@ -1,6 +1,5 @@
-import { supabase } from '../supabase';
 import { getMe } from '../api';
-import useAuthStore from '@/store/authStore';
+import { supabase } from '../supabase';
 
 /**
  * Creates or updates user profile for Google OAuth users
@@ -23,7 +22,7 @@ const upsertGoogleUserProfile = async (user: any, role?: 'client' | 'trainer') =
     };
 
     // Update the auth store with the user profile
-    useAuthStore.getState().setProfile(userProfile);
+    // Profile will be synced automatically after authentication in app index
     
     return userProfile;
   } catch (error) {
@@ -200,7 +199,7 @@ export const handleGoogleOAuthCallback = async (): Promise<GoogleAuthResponse> =
       if (googleUserData) {
         profile.is_google_user = true;
         profile.google_user_data = googleUserData;
-        useAuthStore.getState().setProfile(profile);
+        // Profile is now managed through local DB sync
       }
     }
 

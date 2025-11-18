@@ -22,12 +22,9 @@ export const trainerProfileRepository = {
     certifications: string
     bio?: string
     specialties: string
-    experienceYears: number
     phone?: string
     email?: string
-    website?: string
     avatarUrl?: string
-    socialLinks?: string
   }) => {
     await database.write(async () => {
       await trainerProfilesCollection.create(profile => {
@@ -37,13 +34,9 @@ export const trainerProfileRepository = {
         profile.certifications = data.certifications
         profile.bio = data.bio
         profile.specialties = data.specialties
-        profile.experienceYears = data.experienceYears
         profile.phone = data.phone
         profile.email = data.email
-        profile.website = data.website
         profile.avatarUrl = data.avatarUrl
-        profile.socialLinks = data.socialLinks
-        ;(profile as any).syncStatus = 'created'
       })
     })
   },
@@ -54,21 +47,14 @@ export const trainerProfileRepository = {
     certifications: string
     bio: string
     specialties: string
-    experienceYears: number
     phone: string
     email: string
-    website: string
     avatarUrl: string
-    socialLinks: string
   }>) => {
     await database.write(async () => {
       const profile = await trainerProfilesCollection.find(id)
       await profile.update(record => {
         Object.assign(record, updates)
-        // Mark as needing sync to server if not already synced
-        if ((record as any).syncStatus === 'synced') {
-          ;(record as any).syncStatus = 'updated'
-        }
       })
     })
   },
@@ -78,8 +64,6 @@ export const trainerProfileRepository = {
       const profile = await trainerProfilesCollection.find(id)
       await profile.update(record => {
         record.deletedAt = Date.now()
-        // Mark as needing sync to server
-        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

@@ -21,31 +21,54 @@ export default function AppIndex() {
     try {
       if (!user) return;
       
+      // Always try to get role first from API, regardless of sync status
+      let roleFetched = false;
+      try {
+        const profileResponse = await getMe();
+        if (profileResponse?.role) {
+          setUserRole(profileResponse.role);
+          roleFetched = true;
+          console.log('Successfully fetched role from API:', profileResponse.role);
+        }
+      } catch (error) {
+        console.warn('Could not fetch role from API:', error);
+      }
+      
       // Use the enhanced profile sync service with error handling
       const syncResult = await ProfileSyncService.syncUserProfile(user.id);
       
-      if (syncResult.success) {
-        // Try to get role from API as fallback if sync service doesn't provide it
-        try {
-          const profileResponse = await getMe();
-          if (profileResponse?.role) {
-            setUserRole(profileResponse.role);
-          }
-        } catch (error) {
-          console.warn('Could not fetch role from API, using local data');
-        }
-      } else {
+      if (!syncResult.success) {
         console.error('Profile sync failed:', syncResult.error);
         
-        // For critical errors, still try to determine role from any available data
-        if (syncResult.error?.type === 'network') {
-          console.log('Network error during sync, will retry on next app launch');
+        // If we still don't have a role, try one more time as fallback
+        if (!roleFetched) {
+          try {
+            const fallbackProfile = await getMe();
+            if (fallbackProfile?.role) {
+              setUserRole(fallbackProfile.role);
+              console.log('Successfully fetched role from fallback API call:', fallbackProfile.role);
+            }
+          } catch (fallbackError) {
+            console.error('Fallback role fetch also failed:', fallbackError);
+          }
         }
       }
       
       setProfilesSynced(true);
     } catch (error) {
       console.error('Unexpected error during profile sync:', error);
+      
+      // As a last resort, try to get role directly
+      try {
+        const lastResortProfile = await getMe();
+        if (lastResortProfile?.role) {
+          setUserRole(lastResortProfile.role);
+          console.log('Successfully fetched role from last resort API call:', lastResortProfile.role);
+        }
+      } catch (lastResortError) {
+        console.error('Last resort role fetch failed:', lastResortError);
+      }
+      
       // Still mark as synced to prevent infinite loading
       setProfilesSynced(true);
     }

@@ -155,14 +155,11 @@ export class ProfileSyncService {
         name: profileResponse.name || '',
         username: profileResponse.username || '',
         certifications: profileResponse.certifications ? JSON.stringify(profileResponse.certifications) : '[]',
-        bio: profileResponse.bio,
+        bio: profileResponse.bio || profileResponse.about_me, // Map aboutMe to bio
         specialties: profileResponse.specialties ? JSON.stringify(profileResponse.specialties) : '[]',
-        experienceYears: profileResponse.experience_years || 0,
         phone: profileResponse.phone,
         email: profileResponse.email,
-        website: profileResponse.website,
-        avatarUrl: profileResponse.avatar_url,
-        socialLinks: profileResponse.social_links ? JSON.stringify(profileResponse.social_links) : '{}',
+        avatarUrl: profileResponse.avatar_url || profileResponse.profile_photo_path, // Map profilePhotoPath to avatarUrl
       });
     }
   }
@@ -191,7 +188,6 @@ export class ProfileSyncService {
         if (profiles) {
           await profiles.update(record => {
             record.deletedAt = Date.now();
-            ;(record as any).syncStatus = 'deleted';
           });
         }
 
@@ -200,7 +196,6 @@ export class ProfileSyncService {
         if (trainerProfiles) {
           await trainerProfiles.update(record => {
             record.deletedAt = Date.now();
-            ;(record as any).syncStatus = 'deleted';
           });
         }
       });

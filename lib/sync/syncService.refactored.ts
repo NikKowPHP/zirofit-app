@@ -1,16 +1,19 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useSyncStore } from '@/store/syncStore'
-import { ApiAdapter } from './adapters/ApiAdapter'
-import { DatabaseAdapter } from './adapters/DatabaseAdapter'
 import { SyncFactory } from './factories/SyncFactory'
 import { DataTransformer } from './transformers/DataTransformer'
 import { SyncValidator } from './validators/SyncValidator'
+import { ApiAdapter } from './adapters/ApiAdapter'
+import { DatabaseAdapter } from './adapters/DatabaseAdapter'
+
+const LAST_PULLED_AT_KEY = 'last_pulled_at'
 
 /**
- * Refactored sync service using Separation of Concerns (SoC) principles
- * Each responsibility is handled by a dedicated atomic class
+ * @deprecated Use SyncManager instead. This is the refactored version that uses atomic classes.
+ * The original syncService.ts will be updated to use this implementation.
  */
-export class SyncManager {
-  private static instance: SyncManager
+export class SyncService {
+  private static instance: SyncService
   private dataTransformer: DataTransformer
   private validator: SyncValidator
   private apiAdapter: ApiAdapter
@@ -23,30 +26,19 @@ export class SyncManager {
     this.databaseAdapter = SyncFactory.getDatabaseAdapter()
   }
 
-  static getInstance(): SyncManager {
-    if (!SyncManager.instance) {
-      SyncManager.instance = new SyncManager()
+  static getInstance(): SyncService {
+    if (!SyncService.instance) {
+      SyncService.instance = new SyncService()
     }
-    return SyncManager.instance
+    return SyncService.instance
   }
 
-  /**
-   * Initialize underlying sync dependencies if needed.
-   * Currently acts as a safe entry point for future setup hooks.
-   */
-  initialize(): void {
-    console.log('SyncManager: initialize called')
-  }
-
-  /**
-   * Pull changes from backend and apply to local database
-   */
   async pullChanges(): Promise<void> {
     try {
       useSyncStore.getState().setStatus('syncing')
       
       const lastPulledAt = await SyncFactory.getLastPulledAt()
-      console.log('SyncManager: Pulling changes, last pulled at:', lastPulledAt)
+      console.log('SyncService: Pulling changes, last pulled at:', lastPulledAt)
 
       const response = await this.apiAdapter.pullChanges(lastPulledAt ?? undefined)
       
@@ -57,12 +49,12 @@ export class SyncManager {
       const { changes, timestamp } = response.data
 
       if (!changes) {
-        console.warn('SyncManager: No changes object in sync response')
+        console.warn('SyncService: No changes object in sync response')
         this.updateSyncStatus('idle')
         return
       }
 
-      console.log('SyncManager: Processing changes:', Object.keys(changes))
+      console.log('SyncService: Processing changes:', Object.keys(changes))
 
       // Process changes through database adapter
       const results = await this.databaseAdapter.processChanges(changes)
@@ -70,9 +62,9 @@ export class SyncManager {
       // Log processing results
       results.forEach(result => {
         if (result.errors.length > 0) {
-          console.error(`SyncManager: Errors processing ${result.tableName}:`, result.errors)
+          console.error(`SyncService: Errors processing ${result.tableName}:`, result.errors)
         }
-        console.log(`SyncManager: ${result.tableName} - Created: ${result.created}, Updated: ${result.updated}, Deleted: ${result.deleted}`)
+        console.log(`SyncService: ${result.tableName} - Created: ${result.created}, Updated: ${result.updated}, Deleted: ${result.deleted}`)
       })
 
       // Update last pulled timestamp
@@ -80,61 +72,37 @@ export class SyncManager {
         await SyncFactory.setLastPulledAt(timestamp.toString())
       }
 
-      // Update sync stats
+      // Debug: Log what we just synced
       const stats = await this.databaseAdapter.getTableStats()
-      console.log('SyncManager: === SYNC PULL COMPLETED ===')
+      console.log('=== SYNC PULL COMPLETED ===')
       Object.entries(stats).forEach(([table, count]) => {
-        console.log(`SyncManager: ${table} count: ${count}`)
+        console.log(`${table} count: ${count}`)
       })
 
       this.updateSyncStatus('idle')
 
     } catch (error) {
-      console.error('SyncManager: Error pulling changes:', error)
+      console.error('SyncService: Error pulling changes:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown sync error'
       useSyncStore.getState().setError(errorMessage)
       throw error
     }
   }
 
-  /**
-   * Push local changes to backend
-   */
   async pushChanges(): Promise<void> {
     try {
       useSyncStore.getState().setStatus('syncing')
       
-      console.log('SyncManager: Collecting local changes...')
+      console.log('SyncService: Collecting local changes...')
       
       // Get all changed records through database adapter
       const tableNames = this.getSyncTableNames()
       const changes = await this.databaseAdapter.collectChanges(tableNames)
 
-      console.log('SyncManager: Changes to push:', JSON.stringify(changes, null, 2))
-
-      const payloadSummary = Object.entries(changes).map(([tableName, tableChanges]) => {
-        const created = Array.isArray(tableChanges?.created) ? tableChanges?.created.length : 0
-        const updated = Array.isArray(tableChanges?.updated) ? tableChanges?.updated.length : 0
-        const deleted = Array.isArray(tableChanges?.deleted) ? tableChanges?.deleted.length : 0
-
-        return {
-          tableName: tableName || '<undefined>',
-          hasValidName: Boolean(tableName && tableName !== 'undefined'),
-          created,
-          updated,
-          deleted
-        }
-      })
-
-      console.log('SyncManager: Push payload summary:', payloadSummary)
-
-      const invalidTables = payloadSummary.filter((entry) => !entry.hasValidName)
-      if (invalidTables.length > 0) {
-        console.warn('SyncManager: Invalid table names detected in push payload.', invalidTables)
-      }
+      console.log('SyncService: Changes to push:', JSON.stringify(changes, null, 2))
 
       if (Object.keys(changes).length === 0) {
-        console.log('SyncManager: No changes to push')
+        console.log('SyncService: No changes to push')
         this.updateSyncStatus('idle')
         return
       }
@@ -143,13 +111,13 @@ export class SyncManager {
       const validationResult = this.validator.validateSyncChanges(changes)
       
       if (!validationResult.isValid) {
-        console.error('SyncManager: Changes validation failed:', this.validator.summarizeValidation(validationResult))
+        console.error('SyncService: Changes validation failed:', this.validator.summarizeValidation(validationResult))
         useSyncStore.getState().setError('Data validation failed before sync')
         this.updateSyncStatus('idle')
         return
       }
 
-      console.log('SyncManager: Validation summary:', this.validator.summarizeValidation(validationResult))
+      console.log('SyncService: Validation summary:', this.validator.summarizeValidation(validationResult))
 
       // Push validated changes to backend
       const response = await this.apiAdapter.pushChanges(changes as any)
@@ -162,23 +130,20 @@ export class SyncManager {
       await this.databaseAdapter.markAsSynced(changes)
 
       this.updateSyncStatus('idle')
-      console.log('SyncManager: === SYNC PUSH COMPLETED ===')
+      console.log('=== SYNC PUSH COMPLETED ===')
 
     } catch (error) {
-      console.error('SyncManager: Error pushing changes:', error)
+      console.error('SyncService: Error pushing changes:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown push error'
       useSyncStore.getState().setError(errorMessage)
       throw error
     }
   }
 
-  /**
-   * Reset sync timestamp to force full resync
-   */
   async resetSyncTimestamp(): Promise<void> {
-    console.log('SyncManager: Resetting sync timestamp...')
+    console.log('SyncService: Resetting sync timestamp...')
     await SyncFactory.resetSyncTimestamp()
-    console.log('SyncManager: Sync timestamp reset - next sync will pull all data')
+    console.log('SyncService: Sync timestamp reset - next sync will pull all data')
   }
 
   /**
@@ -218,7 +183,7 @@ export class SyncManager {
    * Force sync (both pull and push)
    */
   async forceSync(): Promise<void> {
-    console.log('SyncManager: Starting forced sync...')
+    console.log('SyncService: Starting forced sync...')
     try {
       // First pull changes from server
       await this.pullChanges()
@@ -226,9 +191,9 @@ export class SyncManager {
       // Then push local changes
       await this.pushChanges()
       
-      console.log('SyncManager: Force sync completed successfully')
+      console.log('SyncService: Force sync completed successfully')
     } catch (error) {
-      console.error('SyncManager: Force sync failed:', error)
+      console.error('SyncService: Force sync failed:', error)
       throw error
     }
   }
@@ -298,4 +263,4 @@ export class SyncManager {
 }
 
 // Export singleton instance
-export const syncManager = SyncManager.getInstance()
+export const syncService = SyncService.getInstance()

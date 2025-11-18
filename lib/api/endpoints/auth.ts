@@ -1,11 +1,10 @@
+import type { AuthUser } from '@/store/authStore';
 import { apiFetch } from '../core/apiFetch';
 import type {
-  AuthRequest,
   AuthResponse,
   LoginRequest,
   RegisterRequest
 } from '../types';
-import type { UserProfile } from '@/store/authStore';
 
 /**
  * Authentication API endpoints
@@ -14,17 +13,17 @@ import type { UserProfile } from '@/store/authStore';
 /**
  * Normalize various backend response shapes to a user profile object
  */
-const normalizeUserProfile = (response: any): UserProfile | null => {
+const normalizeUserProfile = (response: any): AuthUser | null => {
   if (!response || typeof response !== 'object' || Array.isArray(response)) {
     return null;
   }
 
   if ('user' in response && response.user) {
-    return response.user as UserProfile;
+    return response.user as AuthUser;
   }
 
   if ('profile' in response && response.profile) {
-    return response.profile as UserProfile;
+    return response.profile as AuthUser;
   }
 
   if ('data' in response && response.data) {
@@ -32,25 +31,25 @@ const normalizeUserProfile = (response: any): UserProfile | null => {
 
     if (data && typeof data === 'object') {
       if ('user' in data && data.user) {
-        return data.user as UserProfile;
+        return data.user as AuthUser;
       }
       if ('profile' in data && data.profile) {
-        return data.profile as UserProfile;
+        return data.profile as AuthUser;
       }
       if (!Array.isArray(data)) {
-        return data as UserProfile;
+        return data as AuthUser;
       }
     }
   }
 
-  return response as UserProfile;
+  return response as AuthUser;
 };
 
 /**
  * Get current user information
  * @returns User information or null if not authenticated
  */
-export const getMe = async (): Promise<UserProfile | null> => {
+export const getMe = async (): Promise<AuthUser | null> => {
   const response = await apiFetch('/auth/me');
   return normalizeUserProfile(response);
 };

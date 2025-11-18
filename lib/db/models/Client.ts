@@ -1,5 +1,5 @@
 import { Model } from '@nozbe/watermelondb'
-import { text, field, readonly } from '@nozbe/watermelondb/decorators'
+import { field, readonly, text } from '@nozbe/watermelondb/decorators'
 
 export default class Client extends Model {
   static table = 'clients'
@@ -18,7 +18,6 @@ export default class Client extends Model {
   @text('emergency_contact_phone') emergencyContactPhone?: string
   @text('status') status?: string
   @text('trainer_id') trainerId?: string
-  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

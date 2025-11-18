@@ -47,7 +47,6 @@ export const profileRepository = {
         profile.averageRating = data.averageRating
         profile.availability = data.availability
         profile.minServicePrice = data.minServicePrice
-        ;(profile as any).syncStatus = 'created'
       })
     })
   },
@@ -71,10 +70,7 @@ export const profileRepository = {
       const profile = await profilesCollection.find(id)
       await profile.update(record => {
         Object.assign(record, updates)
-        // Mark as needing sync to server if not already synced
-        if ((record as any).syncStatus === 'synced') {
-          ;(record as any).syncStatus = 'updated'
-        }
+        // Note: sync status is handled automatically by WatermelonDB
       })
     })
   },
@@ -84,8 +80,7 @@ export const profileRepository = {
       const profile = await profilesCollection.find(id)
       await profile.update(record => {
         record.deletedAt = Date.now()
-        // Mark as needing sync to server
-        ;(record as any).syncStatus = 'deleted'
+        // Note: sync status is handled automatically by WatermelonDB
       })
     })
   },

@@ -739,6 +739,16 @@ export class SyncService {
     // Process changes in transaction for atomicity
     await this.prisma.$transaction(async (tx) => {
       for (const [tableName, tableChanges] of Object.entries(changes)) {
+        if (!tableName) {
+          console.warn('SyncService: Skipping change set with invalid table name', { tableChanges });
+          continue;
+        }
+
+        if (!tableChanges || typeof tableChanges !== 'object') {
+          console.warn('SyncService: Skipping invalid change payload for table', { tableName, tableChanges });
+          continue;
+        }
+
         await this.applyTableChanges(tx, tableName as SyncTableName, tableChanges, userId);
       }
     });
@@ -1337,18 +1347,36 @@ export class SyncService {
     changes: SyncChanges,
     userId: string
   ) {
+    if (!tableName) {
+      console.warn('SyncService: applyTableChanges received empty tableName, skipping payload.', { changes });
+      return;
+    }
+
+    if (!changes || typeof changes !== 'object') {
+      console.warn('SyncService: applyTableChanges received invalid change payload, skipping.', { tableName, changes });
+      return;
+    }
+
+    const deletions = Array.isArray(changes.deleted) ? changes.deleted : [];
+    const updates = Array.isArray(changes.updated) ? changes.updated : [];
+    const creations = Array.isArray(changes.created) ? changes.created : [];
+
+    if (!Array.isArray(changes.deleted) || !Array.isArray(changes.updated) || !Array.isArray(changes.created)) {
+      console.warn('SyncService: Normalizing malformed change arrays', { tableName });
+    }
+
     // Apply deletions first (soft deletes)
-    for (const id of changes.deleted) {
+    for (const id of deletions) {
       await this.applyDeletion(tx, tableName, id, userId);
     }
 
     // Apply updates
-    for (const record of changes.updated) {
+    for (const record of updates) {
       await this.applyUpdate(tx, tableName, record, userId);
     }
 
     // Apply creations
-    for (const record of changes.created) {
+    for (const record of creations) {
       await this.applyCreation(tx, tableName, record, userId);
     }
   }

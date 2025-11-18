@@ -1,30 +1,30 @@
-import { Database } from '@nozbe/watermelondb'
+import { Database, Q } from '@nozbe/watermelondb'
 import LokiJSAdapter from '@nozbe/watermelondb/adapters/lokijs'
-import { Q } from '@nozbe/watermelondb'
 
-import { mySchema } from './schema'
+import Booking from './models/Booking'
+import CalendarEvent from './models/CalendarEvent'
 import Client from './models/Client'
-import Profile from './models/Profile'
-import TrainerProfile from './models/TrainerProfile'
-import WorkoutSession from './models/WorkoutSession'
-import Exercise from './models/Exercise'
-import WorkoutTemplate from './models/WorkoutTemplate'
 import ClientAssessment from './models/ClientAssessment'
+import ClientExerciseLog from './models/ClientExerciseLog'
 import ClientMeasurement from './models/ClientMeasurement'
 import ClientPhoto from './models/ClientPhoto'
-import ClientExerciseLog from './models/ClientExerciseLog'
-import TrainerService from './models/TrainerService'
-import TrainerPackage from './models/TrainerPackage'
-import TrainerTestimonial from './models/TrainerTestimonial'
-import TrainerProgram from './models/TrainerProgram'
-import CalendarEvent from './models/CalendarEvent'
+import Exercise from './models/Exercise'
 import Notification from './models/Notification'
-import Booking from './models/Booking'
+import Profile from './models/Profile'
 import TemplateExercise from './models/TemplateExercise'
+import TrainerPackage from './models/TrainerPackage'
+import TrainerProfile from './models/TrainerProfile'
+import TrainerProgram from './models/TrainerProgram'
+import TrainerService from './models/TrainerService'
+import TrainerTestimonial from './models/TrainerTestimonial'
+import WorkoutSession from './models/WorkoutSession'
+import WorkoutTemplate from './models/WorkoutTemplate'
+import { mySchema } from './schema'
 
 // First, create the adapter to the underlying database:
 const adapter = new LokiJSAdapter({
   schema: mySchema,
+  migrations,
   useWebWorker: false, // optional
   useIncrementalIndexedDB: true, // Enable incremental IndexedDB for better performance
   dbName: 'zirofit-app-db', // Set a persistent database name to prevent resets

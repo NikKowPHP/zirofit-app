@@ -66,7 +66,9 @@ export const workoutTemplateRepository = {
         templateExercise.templateId = templateId
         templateExercise.exerciseId = exerciseId
         templateExercise.notes = options?.notes
-        templateExercise.order = options?.order
+        if (options?.order !== undefined) {
+          templateExercise.order = options.order
+        }
         templateExercise.sets = options?.sets
         ;(templateExercise as any).syncStatus = 'created'
       })
