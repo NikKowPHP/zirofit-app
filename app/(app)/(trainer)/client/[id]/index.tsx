@@ -12,7 +12,7 @@ import { Modal } from '@/components/ui/Modal';
 import React from 'react';
 
 interface ClientDetailScreenProps {
-  client: Client[];
+  client: Client | Client[];
   templates: WorkoutTemplate[];
   workoutSessions: WorkoutSession[];
 }
@@ -28,8 +28,13 @@ function ClientDetailScreen({ client, templates, workoutSessions }: ClientDetail
   console.log('=== CLIENT WORKOUTS TAB DEBUG ===');
   console.log('Client ID from params:', clientId);
   console.log('Client ID type:', typeof clientId);
+  console.log('Client data:', client);
+  console.log('Client is array:', Array.isArray(client));
 
-  const clientData = client.length > 0 ? client[0] : null;
+  // Handle both single Client and Client[] from withObservables
+  const clientData = Array.isArray(client) 
+    ? (client.length > 0 ? client[0] : null)
+    : (client || null);
 
   const handleStartWorkout = async (templateId?: string) => {
     if (!clientId) return;
@@ -65,14 +70,19 @@ function ClientDetailScreen({ client, templates, workoutSessions }: ClientDetail
     });
   };
 
-  if (!clientData) {
+  // Show the UI even if client data isn't loaded yet - workouts are independent
+  // Only show loading if we have no data at all (client, sessions, templates)
+  const hasAnyData = clientData || (workoutSessions && workoutSessions.length > 0) || (templates && templates.length > 0);
+  const isLoading = !hasAnyData && clientId !== undefined;
+  
+  if (isLoading) {
     return <View style={styles.center}><ActivityIndicator /></View>
   }
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={workoutSessions}
+        data={workoutSessions || []}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
             <View style={styles.workoutItem}>
@@ -103,7 +113,7 @@ function ClientDetailScreen({ client, templates, workoutSessions }: ClientDetail
             Start Free Workout
           </Button>
           <Text style={{textAlign: 'center', marginBottom: 8}}>Or select a template</Text>
-          {templates.map(item => (
+          {(templates || []).map(item => (
             <Button
               key={item.id}
               onPress={() => handleStartWorkout(item.id)}
@@ -112,7 +122,7 @@ function ClientDetailScreen({ client, templates, workoutSessions }: ClientDetail
               {item.name}
             </Button>
           ))}
-          {templates.length === 0 && (
+          {(!templates || templates.length === 0) && (
             <Text>No templates available.</Text>
           )}
         </View>

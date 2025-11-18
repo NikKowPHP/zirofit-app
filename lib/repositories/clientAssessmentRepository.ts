@@ -36,6 +36,7 @@ export const clientAssessmentRepository = {
         assessment.measurements = data.measurements
         assessment.photos = data.photos
         assessment.notes = data.notes
+        ;(assessment as any).syncStatus = 'created'
       })
     })
   },
@@ -53,6 +54,10 @@ export const clientAssessmentRepository = {
       const assessment = await clientAssessmentsCollection.find(id)
       await assessment.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -62,6 +67,8 @@ export const clientAssessmentRepository = {
       const assessment = await clientAssessmentsCollection.find(id)
       await assessment.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

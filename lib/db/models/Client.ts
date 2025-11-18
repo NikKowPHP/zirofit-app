@@ -18,6 +18,7 @@ export default class Client extends Model {
   @text('emergency_contact_phone') emergencyContactPhone?: string
   @text('status') status?: string
   @text('trainer_id') trainerId?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

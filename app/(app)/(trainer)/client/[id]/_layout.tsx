@@ -16,7 +16,7 @@ function ClientHeader() {
 
   console.log('ClientHeader - Client ID:', id);
   console.log('ClientHeader - Client data:', client);
-  console.log('ClientHeader - Client name:', client?.name);
+  console.log('ClientHeader - Client name:', (client as Client)?.name);
   console.log('ClientHeader - Is offline mode:', isOffline);
 
   return (

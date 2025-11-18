@@ -13,6 +13,7 @@ export default class WorkoutTemplate extends Model {
   @text('name') name!: string
   @text('description') description?: string
   @text('trainer_id') trainerId?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

@@ -14,5 +14,6 @@ export { clientDashboardRepository } from './clientDashboardRepository';
 export { dashboardRepository } from './dashboardRepository';
 export { clientAssessmentRepository } from './clientAssessmentRepository';
 export { clientMeasurementRepository } from './clientMeasurementRepository';
+export { clientPhotoRepository } from './clientPhotoRepository';
 export { notificationRepository } from './notificationRepository';
 export { bookingRepository } from './bookingRepository';

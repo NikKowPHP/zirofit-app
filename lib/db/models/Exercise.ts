@@ -10,6 +10,7 @@ export default class Exercise extends Model {
   @text('equipment') equipment?: string
   @text('instructions') instructions?: string
   @text('media_url') mediaUrl?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

@@ -28,6 +28,7 @@ export const workoutTemplateRepository = {
         template.name = data.name
         template.description = data.description
         template.trainerId = data.trainerId
+        ;(template as any).syncStatus = 'created'
       })
     })
   },
@@ -41,6 +42,10 @@ export const workoutTemplateRepository = {
       const template = await workoutTemplatesCollection.find(id)
       await template.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -63,6 +68,7 @@ export const workoutTemplateRepository = {
         templateExercise.notes = options?.notes
         templateExercise.order = options?.order
         templateExercise.sets = options?.sets
+        ;(templateExercise as any).syncStatus = 'created'
       })
     })
   },
@@ -78,6 +84,8 @@ export const workoutTemplateRepository = {
       for (const templateExercise of templateExercises) {
         await templateExercise.update(record => {
           record.deletedAt = Date.now()
+          // Mark as needing sync to server
+          ;(record as any).syncStatus = 'deleted'
         })
       }
     })
@@ -98,6 +106,10 @@ export const workoutTemplateRepository = {
       for (const templateExercise of templateExercises) {
         await templateExercise.update(record => {
           Object.assign(record, updates)
+          // Mark as needing sync to server if not already synced
+          if ((record as any).syncStatus === 'synced') {
+            ;(record as any).syncStatus = 'updated'
+          }
         })
       }
     })

@@ -12,6 +12,7 @@ export default class ClientAssessment extends Model {
   @text('measurements') measurements?: string // JSON
   @text('photos') photos?: string // JSON array
   @text('notes') notes?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

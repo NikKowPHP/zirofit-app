@@ -34,6 +34,7 @@ export const trainerPackageRepository = {
         pkg.sessionsCount = data.sessionsCount
         pkg.durationWeeks = data.durationWeeks
         pkg.isActive = data.isActive ?? true
+        ;(pkg as any).syncStatus = 'created'
       })
     })
   },
@@ -50,6 +51,10 @@ export const trainerPackageRepository = {
       const pkg = await trainerPackagesCollection.find(id)
       await pkg.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -59,6 +64,8 @@ export const trainerPackageRepository = {
       const pkg = await trainerPackagesCollection.find(id)
       await pkg.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

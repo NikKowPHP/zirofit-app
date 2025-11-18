@@ -40,6 +40,7 @@ export const workoutSessionRepository = {
         session.finishedAt = data.finishedAt
         session.notes = data.notes
         session.name = data.name
+        ;(session as any).syncStatus = 'created'
       })
     })
   },
@@ -54,6 +55,10 @@ export const workoutSessionRepository = {
       const session = await workoutSessionsCollection.find(id)
       await session.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -63,6 +68,8 @@ export const workoutSessionRepository = {
       const session = await workoutSessionsCollection.find(id)
       await session.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

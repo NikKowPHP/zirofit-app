@@ -25,6 +25,7 @@ export const exerciseRepository = {
         exercise.equipment = data.equipment
         exercise.instructions = data.instructions
         exercise.mediaUrl = data.mediaUrl
+        ;(exercise as any).syncStatus = 'created'
       })
     })
   },
@@ -41,6 +42,10 @@ export const exerciseRepository = {
       const exercise = await exercisesCollection.find(id)
       await exercise.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -50,6 +55,8 @@ export const exerciseRepository = {
       const exercise = await exercisesCollection.find(id)
       await exercise.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

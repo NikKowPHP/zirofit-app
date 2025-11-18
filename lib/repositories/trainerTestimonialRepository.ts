@@ -31,6 +31,7 @@ export const trainerTestimonialRepository = {
         testimonial.content = data.content
         testimonial.rating = data.rating
         testimonial.isActive = data.isActive ?? true
+        ;(testimonial as any).syncStatus = 'created'
       })
     })
   },
@@ -45,6 +46,10 @@ export const trainerTestimonialRepository = {
       const testimonial = await trainerTestimonialsCollection.find(id)
       await testimonial.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -54,6 +59,8 @@ export const trainerTestimonialRepository = {
       const testimonial = await trainerTestimonialsCollection.find(id)
       await testimonial.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

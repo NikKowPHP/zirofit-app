@@ -67,6 +67,9 @@ export class SyncService {
           await this.processChanges('clients', changes.clients)
           console.log('Processed clients')
 
+          await this.processChanges('profiles', changes.profiles)
+          console.log('Processed profiles')
+
           await this.processChanges('trainer_profiles', changes.trainer_profiles)
           console.log('Processed trainer_profiles')
 
@@ -115,7 +118,7 @@ export class SyncService {
       // Get all changed records
       const changes = await this.collectChanges()
 
-      console.log('Changes to push:', changes)
+      console.log('Changes to push:', JSON.stringify(changes, null, 2))
 
       if (Object.keys(changes).length === 0) {
         console.log('No changes to push')
@@ -172,18 +175,44 @@ export class SyncService {
         try {
           const transformed = this.transformRecordForDB(record)
           console.log(`Creating ${tableName} record:`, { id: record.id, transformedKeys: Object.keys(transformed) })
-          await collection.create(model => {
-            // Set properties individually, excluding read-only properties
-            Object.keys(transformed).forEach(key => {
-              if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
-                ;(model as any)[key] = transformed[key]
-              }
+
+          // Check for existing record with same unique fields to handle sync conflicts
+          let existingRecord = null
+          if (tableName === 'clients' && record.email) {
+            // For clients, check by email (unique field)
+            existingRecord = await collection.query(
+              Q.where('email', record.email)
+            ).fetch().catch(() => [])
+            existingRecord = existingRecord.length > 0 ? existingRecord[0] : null
+          }
+
+          if (existingRecord) {
+            // Update existing record with server data instead of creating duplicate
+            console.log(`Updating existing ${tableName} record instead of creating duplicate:`, { existingId: existingRecord.id, serverId: record.id })
+            await existingRecord.update(model => {
+              // Set properties individually, excluding read-only properties and syncStatus
+              Object.keys(transformed).forEach(key => {
+                if (!['id', '_raw', 'createdAt', 'updatedAt', 'syncStatus'].includes(key)) {
+                  ;(model as any)[key] = transformed[key]
+                }
+              })
+              model.syncStatus = 'synced' // Mark as already synced
             })
-            ;(model as any).syncStatus = 'synced' // Mark as already synced
-          })
-          console.log(`Successfully created ${tableName} record: ${record.id}`)
+            console.log(`Successfully updated existing ${tableName} record: ${existingRecord.id} with server data`)
+          } else {
+            // Create new record
+            await collection.create(model => {
+              // Set properties individually, excluding read-only properties and syncStatus
+              Object.keys(transformed).forEach(key => {
+                if (!['id', '_raw', 'createdAt', 'updatedAt', 'syncStatus'].includes(key)) {
+                  ;(model as any)[key] = transformed[key]
+                }
+              })
+            })
+            console.log(`Successfully created ${tableName} record: ${record.id}`)
+          }
         } catch (error) {
-          console.error(`Error creating ${tableName} record ${record.id}:`, error)
+          console.error(`Error processing ${tableName} record ${record.id}:`, error)
         }
       }
     }
@@ -198,13 +227,13 @@ export class SyncService {
             const transformed = this.transformRecordForDB(record)
             console.log(`Updating ${tableName} record:`, { id: record.id })
             await existing.update(model => {
-              // Set properties individually, excluding read-only properties
+              // Set properties individually, excluding read-only properties and syncStatus
               Object.keys(transformed).forEach(key => {
-                if (!['id', '_raw', 'createdAt', 'updatedAt'].includes(key)) {
+                if (!['id', '_raw', 'createdAt', 'updatedAt', 'syncStatus'].includes(key)) {
                   ;(model as any)[key] = transformed[key]
                 }
               })
-              ;(model as any).syncStatus = 'synced' // Mark as already synced
+              model.syncStatus = 'synced' // Mark as already synced
             })
             console.log(`Successfully updated ${tableName} record: ${record.id}`)
           } else {
@@ -242,6 +271,7 @@ export class SyncService {
     // Query for records that need to be pushed (sync_status is not 'synced')
     const tables = [
       'clients',
+      'profiles',
       'trainer_profiles',
       'workout_sessions',
       'exercises',
@@ -266,9 +296,9 @@ export class SyncService {
       ).fetch()
 
       if (changedRecords.length > 0) {
-        const created = changedRecords.filter(r => (r as any).syncStatus === 'created').map(r => this.transformRecordForAPI(r))
-        const updated = changedRecords.filter(r => (r as any).syncStatus === 'updated').map(r => this.transformRecordForAPI(r))
-        const deleted = changedRecords.filter(r => (r as any).syncStatus === 'deleted').map(r => r.id)
+        const created = changedRecords.filter(r => r.syncStatus === 'created').map(r => this.transformRecordForAPI(r))
+        const updated = changedRecords.filter(r => r.syncStatus === 'updated').map(r => this.transformRecordForAPI(r))
+        const deleted = changedRecords.filter(r => r.syncStatus === 'deleted').map(r => r.id)
 
         changes[tableName] = { created, updated, deleted }
       }
@@ -286,10 +316,24 @@ export class SyncService {
         const recordsToMark = [...(tableChanges.created || []), ...(tableChanges.updated || [])]
         for (const recordData of recordsToMark) {
           try {
-            const record = await collection.find(recordData.id)
-            await record.update((r: any) => {
-              r.syncStatus = 'synced'
-            })
+            // First try to find by the returned ID
+            let record = await collection.find(recordData.id).catch(() => null)
+
+            // If not found by ID, try to find by unique fields (for created records that got new server IDs)
+            if (!record && tableName === 'clients' && recordData.email) {
+              const existingRecords = await collection.query(
+                Q.where('email', recordData.email)
+              ).fetch().catch(() => [])
+              record = existingRecords.length > 0 ? existingRecords[0] : null
+            }
+
+            if (record) {
+              await record.update((r) => {
+                r.syncStatus = 'synced'
+              })
+            } else {
+              console.warn(`Could not find record to mark as synced: ${recordData.id} in ${tableName}`)
+            }
           } catch (error) {
             console.warn(`Could not find record ${recordData.id} in ${tableName} to mark as synced`)
           }
@@ -307,9 +351,9 @@ export class SyncService {
     // Remove id since it's auto-generated for new records
     delete transformed.id
 
-    // Convert timestamps
-    if (record.created_at) transformed.createdAt = new Date(record.created_at)
-    if (record.updated_at) transformed.updatedAt = new Date(record.updated_at)
+    // Keep timestamps as numbers (WatermelonDB stores them as numbers)
+    if (record.created_at) transformed.createdAt = record.created_at
+    if (record.updated_at) transformed.updatedAt = record.updated_at
     if (record.deleted_at) transformed.deletedAt = record.deleted_at
 
     // Rename fields to match DB schema
@@ -321,17 +365,75 @@ export class SyncService {
   }
 
   private transformRecordForAPI(record: any): any {
-    // Transform DB record to API format
-    const transformed: any = { ...record }
+    // Helper function to convert snake_case to camelCase
+    const toCamelCase = (str: string): string => {
+      return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+    }
 
-    // Convert dates back
-    if (record.createdAt) transformed.created_at = record.createdAt.getTime()
-    if (record.updatedAt) transformed.updated_at = record.updatedAt.getTime()
-    if (record.deletedAt) transformed.deleted_at = record.deletedAt
+    // Use _raw as the primary source - it contains actual database values without circular references
+    const rawRecord = record._raw || {}
+    
+    // Properties to exclude (WatermelonDB internals)
+    const excludeProps = new Set([
+      '_status',
+      '_changed',
+      'sync_status', // We don't want to send sync status to the server
+    ])
 
-    // Rename fields back
-    if (record.userId !== undefined) transformed.user_id = record.userId
-    // ... other renames
+    const transformed: any = {
+      id: record.id || rawRecord.id,
+    }
+
+    // Extract all fields from _raw (these are the actual database values)
+    // _raw contains snake_case keys, but API expects camelCase
+    for (const key of Object.keys(rawRecord)) {
+      // Skip excluded properties
+      if (excludeProps.has(key)) {
+        continue
+      }
+
+      const value = rawRecord[key]
+      
+      // Skip undefined and null values (but allow 0, false, empty string)
+      if (value === undefined || value === null) {
+        continue
+      }
+
+      // Skip if it's the id (already set)
+      if (key === 'id') {
+        continue
+      }
+
+      // Only include primitive values and simple serializable types
+      const valueType = typeof value
+      if (
+        valueType === 'string' ||
+        valueType === 'number' ||
+        valueType === 'boolean' ||
+        value === null
+      ) {
+        // Convert snake_case to camelCase for API
+        const camelKey = toCamelCase(key)
+        transformed[camelKey] = value
+      } else if (Array.isArray(value)) {
+        // For arrays, try to serialize if they contain primitives
+        // Skip if they contain objects (likely relations)
+        if (value.length === 0 || (typeof value[0] !== 'object' && value[0] !== null)) {
+          const camelKey = toCamelCase(key)
+          transformed[camelKey] = value
+        }
+      }
+      // Skip objects, functions, and other complex types that might have circular references
+    }
+
+    // Also check model properties for fields that might not be in _raw yet
+    // This is important for fields like trainerId that are required by the API
+    const modelProps = ['trainerId', 'userId']
+    for (const prop of modelProps) {
+      if (!transformed[prop] && record[prop] !== undefined && record[prop] !== null) {
+        transformed[prop] = record[prop]
+      }
+    }
 
     return transformed
   }

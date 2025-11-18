@@ -37,6 +37,7 @@ export const clientExerciseLogRepository = {
         log.sets = data.sets
         log.notes = data.notes
         log.completedAt = data.completedAt
+        ;(log as any).syncStatus = 'created'
       })
     })
   },
@@ -50,6 +51,10 @@ export const clientExerciseLogRepository = {
       const log = await clientExerciseLogsCollection.find(id)
       await log.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -59,6 +64,8 @@ export const clientExerciseLogRepository = {
       const log = await clientExerciseLogsCollection.find(id)
       await log.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

@@ -40,6 +40,7 @@ export const notificationRepository = {
         notification.type = data.type
         notification.isRead = data.isRead || false
         notification.data = data.data
+        ;(notification as any).syncStatus = 'created'
       })
     })
   },
@@ -55,6 +56,10 @@ export const notificationRepository = {
       const notification = await notificationsCollection.find(id)
       await notification.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -64,6 +69,10 @@ export const notificationRepository = {
       const notification = await notificationsCollection.find(id)
       await notification.update(record => {
         record.isRead = true
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -78,6 +87,10 @@ export const notificationRepository = {
       for (const notification of unreadNotifications) {
         await notification.update(record => {
           record.isRead = true
+          // Mark as needing sync to server if not already synced
+          if ((record as any).syncStatus === 'synced') {
+            ;(record as any).syncStatus = 'updated'
+          }
         })
       }
     })
@@ -88,6 +101,8 @@ export const notificationRepository = {
       const notification = await notificationsCollection.find(id)
       await notification.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

@@ -9,6 +9,7 @@ export default class TrainerTestimonial extends Model {
   @text('content') content!: string
   @field('rating') rating!: number
   @field('is_active') isActive!: boolean
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

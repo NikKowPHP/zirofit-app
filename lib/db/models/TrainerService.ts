@@ -10,6 +10,7 @@ export default class TrainerService extends Model {
   @field('price') price!: number
   @field('duration') duration!: number
   @field('is_active') isActive!: boolean
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

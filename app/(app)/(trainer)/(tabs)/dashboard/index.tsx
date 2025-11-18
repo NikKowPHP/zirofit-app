@@ -12,10 +12,27 @@ import { dashboardRepository } from '@/lib/repositories/dashboardRepository';
 import withObservables from '@nozbe/with-observables';
 import { debugDatabase } from '@/lib/db';
 import { syncService } from '@/lib/sync/syncService';
+import { syncManager } from '@/lib/sync/syncManager';
 import { clientRepository } from '@/lib/repositories/clientRepository';
+import useAuthStore from '@/store/authStore';
+import { useState } from 'react';
 
 function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
     const tokens = useTokens();
+    const [isSyncing, setIsSyncing] = useState(false);
+    const user = useAuthStore(state => state.user);
+
+    const handleManualSync = async () => {
+        setIsSyncing(true);
+        try {
+            await syncManager.forceSync();
+            console.log('Manual sync completed');
+        } catch (error) {
+            console.error('Manual sync failed:', error);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
     return (
         <Screen>
@@ -24,7 +41,8 @@ function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
                     <UIText variant="h3">Trainer Dashboard</UIText>
 
                     {/* Debug and Test Buttons */}
-                    <VStack style={{ gap: tokens.spacing.sm }}>
+                    {__DEV__ && (
+                        <VStack style={{ gap: tokens.spacing.sm }}>
                         <TouchableOpacity
                             onPress={() => debugDatabase()}
                             style={{
@@ -39,12 +57,17 @@ function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
 
                         <TouchableOpacity
                             onPress={async () => {
+                                if (!user?.id) {
+                                    console.error('Cannot create test client: user not logged in');
+                                    return;
+                                }
                                 const testClientId = `test-client-${Date.now()}`
                                 await clientRepository.createClient({
                                     name: 'Test Client',
                                     email: `test${Date.now()}@example.com`,
                                     status: 'active',
-                                    goals: 'Get fit and healthy'
+                                    goals: 'Get fit and healthy',
+                                    trainerId: user.id
                                 })
                                 console.log('Created test client:', testClientId)
                             }}
@@ -73,7 +96,27 @@ function TrainerDashboard({ dashboardData }: { dashboardData: any }) {
                         >
                             <Text style={{ color: 'white', fontWeight: 'bold' }}>🔄 Reset Sync</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={handleManualSync}
+                            disabled={isSyncing}
+                            style={{
+                                backgroundColor: isSyncing ? '#ccc' : '#007bff',
+                                padding: tokens.spacing.sm,
+                                borderRadius: 4,
+                                alignItems: 'center',
+                                flexDirection: 'row',
+                                justifyContent: 'center',
+                                gap: 8
+                            }}
+                        >
+                            {isSyncing && <ActivityIndicator size="small" color="white" />}
+                            <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                                {isSyncing ? '🔄 Syncing...' : '🔄 Manual Sync'}
+                            </Text>
+                        </TouchableOpacity>
                     </VStack>
+                    )}
 
                     {dashboardData?.businessPerformance && (
                         <AnalyticsChart title="Business Performance" data={[

@@ -14,6 +14,7 @@ export default class TemplateExercise extends Model {
   @text('notes') notes?: string
   @field('order') order?: number
   @text('sets') sets?: string // JSON string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

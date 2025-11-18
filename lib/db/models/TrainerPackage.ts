@@ -11,6 +11,7 @@ export default class TrainerPackage extends Model {
   @field('sessions_count') sessionsCount!: number
   @field('duration_weeks') durationWeeks!: number
   @field('is_active') isActive!: boolean
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

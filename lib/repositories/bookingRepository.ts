@@ -56,6 +56,7 @@ export const bookingRepository = {
         booking.status = data.status || 'pending'
         booking.packageId = data.packageId
         booking.notes = data.notes
+        ;(booking as any).syncStatus = 'created'
       })
     })
   },
@@ -71,6 +72,10 @@ export const bookingRepository = {
       const booking = await bookingsCollection.find(id)
       await booking.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -80,6 +85,10 @@ export const bookingRepository = {
       const booking = await bookingsCollection.find(id)
       await booking.update(record => {
         record.status = 'confirmed'
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -89,6 +98,10 @@ export const bookingRepository = {
       const booking = await bookingsCollection.find(id)
       await booking.update(record => {
         record.status = 'declined'
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -98,6 +111,10 @@ export const bookingRepository = {
       const booking = await bookingsCollection.find(id)
       await booking.update(record => {
         record.status = 'cancelled'
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -107,6 +124,8 @@ export const bookingRepository = {
       const booking = await bookingsCollection.find(id)
       await booking.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

@@ -10,6 +10,7 @@ export default class Notification extends Model {
   @text('type') type!: string
   @field('is_read') isRead!: boolean
   @text('data') data?: string // JSON
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

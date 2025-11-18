@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import { clientRepository } from '@/lib/repositories/clientRepository';
+import useAuthStore from '@/store/authStore';
 
 export default function CreateClientScreen() {
     const [email, setEmail] = useState('');
@@ -13,10 +14,16 @@ export default function CreateClientScreen() {
     const [phone, setPhone] = useState('');
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const user = useAuthStore(state => state.user);
 
     const handleInvite = async () => {
         if (!email || !name || !phone) {
             Alert.alert('Error', 'Please fill in all fields.');
+            return;
+        }
+
+        if (!user?.id) {
+            Alert.alert('Error', 'You must be logged in to create a client.');
             return;
         }
 
@@ -26,11 +33,14 @@ export default function CreateClientScreen() {
                 name,
                 email,
                 phone,
+                trainerId: user.id,
             });
             Alert.alert('Success', 'Client has been created.');
             router.back();
         } catch (error) {
-            Alert.alert('Error', 'Failed to create client.');
+            console.error('Error creating client:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create client.';
+            Alert.alert('Error', errorMessage);
         } finally {
             setIsLoading(false);
         }

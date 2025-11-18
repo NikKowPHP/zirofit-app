@@ -10,6 +10,7 @@ export default class ClientExerciseLog extends Model {
   @text('sets') sets!: string // JSON
   @text('notes') notes?: string
   @field('completed_at') completedAt!: number
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

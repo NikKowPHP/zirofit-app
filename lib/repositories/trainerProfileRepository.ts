@@ -43,6 +43,7 @@ export const trainerProfileRepository = {
         profile.website = data.website
         profile.avatarUrl = data.avatarUrl
         profile.socialLinks = data.socialLinks
+        ;(profile as any).syncStatus = 'created'
       })
     })
   },
@@ -64,6 +65,10 @@ export const trainerProfileRepository = {
       const profile = await trainerProfilesCollection.find(id)
       await profile.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -73,6 +78,8 @@ export const trainerProfileRepository = {
       const profile = await trainerProfilesCollection.find(id)
       await profile.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

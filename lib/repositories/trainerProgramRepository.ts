@@ -27,6 +27,7 @@ export const trainerProgramRepository = {
         program.name = data.name
         program.description = data.description
         program.isActive = data.isActive
+        ;(program as any).syncStatus = 'created'
       })
     })
   },
@@ -40,6 +41,10 @@ export const trainerProgramRepository = {
       const program = await trainerProgramsCollection.find(id)
       await program.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -49,6 +54,8 @@ export const trainerProgramRepository = {
       const program = await trainerProgramsCollection.find(id)
       await program.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

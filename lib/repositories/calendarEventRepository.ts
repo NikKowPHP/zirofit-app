@@ -43,6 +43,7 @@ export const calendarEventRepository = {
         event.status = data.status
         event.sessionType = data.sessionType
         event.templateId = data.templateId
+        ;(event as any).syncStatus = 'created'
       })
     })
   },
@@ -62,6 +63,10 @@ export const calendarEventRepository = {
       const event = await calendarEventsCollection.find(id)
       await event.update(record => {
         Object.assign(record, updates)
+        // Mark as needing sync to server if not already synced
+        if ((record as any).syncStatus === 'synced') {
+          ;(record as any).syncStatus = 'updated'
+        }
       })
     })
   },
@@ -71,6 +76,8 @@ export const calendarEventRepository = {
       const event = await calendarEventsCollection.find(id)
       await event.update(record => {
         record.deletedAt = Date.now()
+        // Mark as needing sync to server
+        ;(record as any).syncStatus = 'deleted'
       })
     })
   },

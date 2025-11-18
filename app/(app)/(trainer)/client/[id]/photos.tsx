@@ -3,25 +3,34 @@ import { useClientDetails } from '@/hooks/useClientDetails';
 import { useLocalSearchParams } from 'expo-router';
 import { ActivityIndicator, FlatList, StyleSheet, Image } from 'react-native';
 import { VStack } from '@/components/ui/Stack';
+import { withObservables } from '@nozbe/watermelondb/react';
+import { clientPhotoRepository } from '@/lib/repositories';
+import ClientPhoto from '@/lib/db/models/ClientPhoto';
 
-export default function PhotosTab() {
+interface PhotosTabProps {
+  photos: ClientPhoto[];
+}
+
+function PhotosTab({ photos }: PhotosTabProps) {
   const { id } = useLocalSearchParams();
-  const { data: client, isLoading } = useClientDetails(id as string);
+  const { data: client, isLoading: clientLoading } = useClientDetails(id as string);
+
+  const isLoading = clientLoading;
 
   if (isLoading || !client) {
     return <View style={styles.container}><ActivityIndicator /></View>
   }
-  
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={client.photos}
+        data={photos}
         keyExtractor={item => item.id}
         numColumns={2}
-        renderItem={({ item }) => (
+        renderItem={({ item }: { item: ClientPhoto }) => (
           <VStack style={styles.photoContainer}>
-            <Image source={{ uri: item.photo_url }} style={styles.photo} />
-            <Text style={styles.date}>{new Date(item.taken_at).toLocaleDateString()}</Text>
+            <Image source={{ uri: item.photoUrl }} style={styles.photo} />
+            <Text style={styles.date}>{new Date(item.takenAt).toLocaleDateString()}</Text>
           </VStack>
         )}
         ListEmptyComponent={<Text>No photos uploaded yet.</Text>}
@@ -47,4 +56,24 @@ const styles = StyleSheet.create({
         marginTop: 5,
     }
 });
+
+const enhance = (WrappedComponent: React.ComponentType<any>) => {
+  return (props: any) => {
+    const { id } = useLocalSearchParams();
+    const clientId = Array.isArray(id) ? id[0] : id;
+
+    // Only create observables if we have a valid clientId
+    const observables = clientId ? {
+      photos: clientPhotoRepository.observePhotosByClient(clientId),
+    } : {
+      photos: [],
+    };
+
+    const EnhancedComponent = withObservables([], () => observables)(WrappedComponent);
+
+    return <EnhancedComponent {...props} />;
+  };
+};
+
+export default enhance(PhotosTab);
       

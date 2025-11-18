@@ -16,6 +16,7 @@ export default class TrainerProfile extends Model {
   @text('website') website?: string
   @text('avatar_url') avatarUrl?: string
   @text('social_links') socialLinks?: string // JSON
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

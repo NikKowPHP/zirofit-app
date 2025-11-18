@@ -10,6 +10,7 @@ export default class ClientMeasurement extends Model {
   @text('unit') unit!: string
   @field('measured_at') measuredAt!: number
   @text('notes') notes?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

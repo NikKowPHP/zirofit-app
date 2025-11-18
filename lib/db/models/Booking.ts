@@ -11,6 +11,7 @@ export default class Booking extends Model {
   @text('status') status!: string
   @text('package_id') packageId?: string
   @text('notes') notes?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

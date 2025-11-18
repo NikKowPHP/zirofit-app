@@ -8,6 +8,7 @@ export default class ClientPhoto extends Model {
   @text('photo_url') photoUrl!: string
   @text('caption') caption?: string
   @field('taken_at') takenAt!: number
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

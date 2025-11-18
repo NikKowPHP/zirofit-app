@@ -1,7 +1,7 @@
 import { appSchema, tableSchema } from '@nozbe/watermelondb'
 
 export const mySchema = appSchema({
-  version: 1,
+  version: 3,
   tables: [
     // Clients table
     tableSchema({
@@ -27,6 +27,30 @@ export const mySchema = appSchema({
         { name: 'deleted_at', type: 'number', isOptional: true },
       ],
     }),
+    // Profiles table
+    tableSchema({
+      name: 'profiles',
+      columns: [
+        { name: 'user_id', type: 'string' },
+        { name: 'certifications', type: 'string', isOptional: true },
+        { name: 'phone', type: 'string', isOptional: true },
+        { name: 'about_me', type: 'string', isOptional: true },
+        { name: 'philosophy', type: 'string', isOptional: true },
+        { name: 'methodology', type: 'string', isOptional: true },
+        { name: 'branding', type: 'string', isOptional: true },
+        { name: 'banner_image_path', type: 'string', isOptional: true },
+        { name: 'profile_photo_path', type: 'string', isOptional: true },
+        { name: 'specialties', type: 'string', isOptional: true }, // JSON array
+        { name: 'training_types', type: 'string', isOptional: true }, // JSON array
+        { name: 'average_rating', type: 'number', isOptional: true },
+        { name: 'availability', type: 'string', isOptional: true }, // JSON
+        { name: 'min_service_price', type: 'number', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
+        { name: 'created_at', type: 'number' },
+        { name: 'updated_at', type: 'number' },
+        { name: 'deleted_at', type: 'number', isOptional: true },
+      ],
+    }),
     // Trainer Profiles table
     tableSchema({
       name: 'trainer_profiles',
@@ -43,6 +67,7 @@ export const mySchema = appSchema({
         { name: 'website', type: 'string', isOptional: true },
         { name: 'avatar_url', type: 'string', isOptional: true },
         { name: 'social_links', type: 'string', isOptional: true }, // JSON string
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -59,6 +84,7 @@ export const mySchema = appSchema({
         { name: 'finished_at', type: 'number', isOptional: true },
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'name', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -74,6 +100,7 @@ export const mySchema = appSchema({
         { name: 'equipment', type: 'string', isOptional: true },
         { name: 'instructions', type: 'string', isOptional: true },
         { name: 'media_url', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -86,6 +113,7 @@ export const mySchema = appSchema({
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string', isOptional: true },
         { name: 'trainer_id', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -100,6 +128,7 @@ export const mySchema = appSchema({
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'order', type: 'number', isOptional: true },
         { name: 'sets', type: 'string', isOptional: true }, // JSON string for sets data
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -117,6 +146,7 @@ export const mySchema = appSchema({
         { name: 'measurements', type: 'string', isOptional: true }, // JSON string
         { name: 'photos', type: 'string', isOptional: true }, // JSON string
         { name: 'notes', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -132,6 +162,7 @@ export const mySchema = appSchema({
         { name: 'unit', type: 'string' },
         { name: 'measured_at', type: 'number' },
         { name: 'notes', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -145,6 +176,7 @@ export const mySchema = appSchema({
         { name: 'photo_url', type: 'string' },
         { name: 'caption', type: 'string', isOptional: true },
         { name: 'taken_at', type: 'number' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -160,6 +192,7 @@ export const mySchema = appSchema({
         { name: 'sets', type: 'string' }, // JSON string
         { name: 'notes', type: 'string', isOptional: true },
         { name: 'completed_at', type: 'number' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -175,6 +208,7 @@ export const mySchema = appSchema({
         { name: 'price', type: 'number' },
         { name: 'duration', type: 'number' },
         { name: 'is_active', type: 'boolean' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -191,6 +225,7 @@ export const mySchema = appSchema({
         { name: 'sessions_count', type: 'number' },
         { name: 'duration_weeks', type: 'number' },
         { name: 'is_active', type: 'boolean' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -205,6 +240,7 @@ export const mySchema = appSchema({
         { name: 'content', type: 'string' },
         { name: 'rating', type: 'number' },
         { name: 'is_active', type: 'boolean' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -218,6 +254,7 @@ export const mySchema = appSchema({
         { name: 'name', type: 'string' },
         { name: 'description', type: 'string', isOptional: true },
         { name: 'is_active', type: 'boolean' },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -236,6 +273,7 @@ export const mySchema = appSchema({
         { name: 'status', type: 'string' },
         { name: 'session_type', type: 'string' },
         { name: 'template_id', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -251,6 +289,7 @@ export const mySchema = appSchema({
         { name: 'type', type: 'string' },
         { name: 'is_read', type: 'boolean' },
         { name: 'data', type: 'string', isOptional: true }, // JSON string
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },
@@ -267,6 +306,7 @@ export const mySchema = appSchema({
         { name: 'status', type: 'string' },
         { name: 'package_id', type: 'string', isOptional: true },
         { name: 'notes', type: 'string', isOptional: true },
+        { name: 'sync_status', type: 'string', isOptional: true }, // sync status
         { name: 'created_at', type: 'number' },
         { name: 'updated_at', type: 'number' },
         { name: 'deleted_at', type: 'number', isOptional: true },

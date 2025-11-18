@@ -8,6 +8,7 @@ export default class TrainerProgram extends Model {
   @text('name') name!: string
   @text('description') description?: string
   @field('is_active') isActive!: boolean
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

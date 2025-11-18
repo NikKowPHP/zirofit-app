@@ -11,6 +11,7 @@ export default class WorkoutSession extends Model {
   @field('finished_at') finishedAt?: number
   @text('notes') notes?: string
   @text('name') name?: string
+  @text('sync_status') syncStatus?: string
 
   @readonly @field('created_at') createdAt!: number
   @readonly @field('updated_at') updatedAt!: number

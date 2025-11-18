@@ -4,6 +4,7 @@ import { Q } from '@nozbe/watermelondb'
 
 import { mySchema } from './schema'
 import Client from './models/Client'
+import Profile from './models/Profile'
 import TrainerProfile from './models/TrainerProfile'
 import WorkoutSession from './models/WorkoutSession'
 import Exercise from './models/Exercise'
@@ -25,8 +26,8 @@ import TemplateExercise from './models/TemplateExercise'
 const adapter = new LokiJSAdapter({
   schema: mySchema,
   useWebWorker: false, // optional
-  useIncrementalIndexedDB: true, // optional
-  // dbName: 'myapp', // optional
+  useIncrementalIndexedDB: true, // Enable incremental IndexedDB for better performance
+  dbName: 'zirofit-app-db', // Set a persistent database name to prevent resets
 })
 
 // Then, make a Watermelon database from it!
@@ -34,6 +35,7 @@ export const database = new Database({
   adapter,
   modelClasses: [
     Client,
+    Profile,
     TrainerProfile,
     WorkoutSession,
     Exercise,
@@ -59,6 +61,7 @@ export const debugDatabase = async () => {
 
   const collections = [
     'clients',
+    'profiles',
     'trainer_profiles',
     'exercises',
     'workout_sessions',
@@ -102,6 +105,7 @@ export const debugUnsyncedRecords = async () => {
 
   const collections = [
     'clients',
+    'profiles',
     'trainer_profiles',
     'exercises',
     'workout_sessions',
